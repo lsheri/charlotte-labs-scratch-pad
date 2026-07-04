@@ -88,7 +88,7 @@ function AdminDashboard() {
                 <div key={r.id} className="flex items-center justify-between gap-3 border-b pb-2 last:border-0">
                   <div className="min-w-0">
                     <div className="truncate font-medium">
-                      {getReceiptDisplayName({ metadata: r.metadata, created_at: r.created_at })}
+                      {getReceiptDisplayName({ id: r.id, metadata: r.metadata, created_at: r.created_at })}
                     </div>
                     <div className="text-xs text-muted-foreground">{anonymousLabel(r.user_id)}</div>
                   </div>
