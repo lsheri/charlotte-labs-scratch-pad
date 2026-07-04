@@ -304,9 +304,31 @@ function ThreadsInbox() {
           </CardContent>
         </Card>
       ) : hasClasses ? (
-        <div className="grid gap-8 lg:gap-12 lg:grid-cols-[280px_minmax(220px,1fr)_minmax(0,2fr)]">
+        <div
+          ref={gridRef}
+          className="relative grid gap-6 lg:grid-cols-[220px_minmax(320px,1fr)_minmax(0,3fr)]"
+        >
+          {/* SVG overlay for dashed navy connection lines */}
+          <svg
+            className="pointer-events-none absolute inset-0 h-full w-full"
+            style={{ zIndex: 1 }}
+            aria-hidden
+          >
+            {lines.map((l) => (
+              <path
+                key={l.id}
+                d={l.d}
+                fill="none"
+                stroke="#1e3a8a"
+                strokeWidth={3}
+                strokeDasharray="8 6"
+                strokeLinecap="round"
+              />
+            ))}
+          </svg>
+
           {/* Left column: Assignments */}
-          <aside className="space-y-3">
+          <aside className="relative space-y-3" style={{ zIndex: 2 }}>
             <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Assignments
             </h2>
