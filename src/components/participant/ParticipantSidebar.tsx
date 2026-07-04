@@ -3,6 +3,7 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   Home, MessageSquare, Receipt, Plug, Fingerprint, LogOut, Plus,
   Briefcase, GraduationCap, ChevronRight, FileText, Check, ChevronsUpDown, User,
+  Building2,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { CharlotteLogo } from "@/components/CharlotteLogo";
@@ -24,13 +25,11 @@ import {
   SidebarMenuSubButton, SidebarHeader, SidebarFooter, useSidebar,
 } from "@/components/ui/sidebar";
 
-const toolsGroup = {
-  label: "Tools",
-  items: [
-    { title: "Extension", url: "/participant/extension", icon: Plug, hasHealthDot: true },
-    { title: "Fingerprint", url: "/participant/fingerprint", icon: Fingerprint },
-  ],
-};
+const baseToolsItems = [
+  { title: "Extension", url: "/participant/extension", icon: Plug, hasHealthDot: true },
+  { title: "Fingerprint", url: "/participant/fingerprint", icon: Fingerprint },
+];
+
 
 type SidebarClass = {
   id: string;
@@ -43,7 +42,7 @@ export function ParticipantSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const path = useRouterState({ select: (r) => r.location.pathname });
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
   const fetchHealth = useServerFn(getExtensionHealth);
   const fetchClasses = useServerFn(listClassSidebar);
@@ -91,6 +90,14 @@ export function ParticipantSidebar() {
       { title: activeClass ? "Receipts" : "All Receipts", url: receiptsUrl, icon: Receipt },
     ],
   };
+  const toolsGroup = {
+    label: "Tools",
+    items: [
+      ...baseToolsItems,
+      ...(isAdmin ? [{ title: "Department View", url: "/admin", icon: Building2 }] : []),
+    ],
+  };
+
 
   const isActive = (url: string, exact?: boolean) =>
     exact ? path === url : path === url || path.startsWith(url + "/");
