@@ -10,10 +10,9 @@ import { getFluencyRecommendations } from "@/serverfn/recommendations";
 import { getMyFluencyProfile } from "@/serverfn/fluency-profile";
 import { LiteracyReceipt } from "@/components/receipt/LiteracyReceipt";
 import { ReceiptBuildingState } from "@/components/receipt/ReceiptBuildingState";
-import { TemplatePicker } from "@/components/receipt/TemplatePicker";
 import { TemplateTabs } from "@/components/receipt/TemplateTabs";
-// Non-kept templates deleted in fork prune. Verification & Study Gaps templates
-// will replace them in Phase 4/5.
+import { StudyGapTemplate } from "@/components/receipt/templates/StudyGapTemplate";
+import { VerificationRiskTemplate } from "@/components/receipt/templates/VerificationRiskTemplate";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
