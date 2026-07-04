@@ -31,14 +31,16 @@ import {
 import charlotteMascot from "@/assets/charlotte-mascot.png";
 import { setPendingReceiptJob } from "@/lib/pendingReceiptJob";
 
-export const Route = createFileRoute("/participant/threads/")({ component: ThreadsInbox });
+export const Route = createFileRoute("/participant/threads/")({
+  component: () => <ThreadsInbox />,
+});
 
 type SidebarClass = {
   id: string; name: string; courseCode: string | null;
   assignments: { id: string; code: string; title: string; dueAt: string | null }[];
 };
 
-function ThreadsInbox() {
+export function ThreadsInbox({ classId }: { classId?: string } = {}) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const listFn = useServerFn(listMyThreads);
