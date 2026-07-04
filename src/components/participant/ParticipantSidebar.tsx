@@ -39,27 +39,40 @@ type SidebarClass = {
   assignments: { id: string; code: string; title: string; dueAt: string | null }[];
 };
 
-type SidebarClass = {
-  id: string;
-  name: string;
-  courseCode: string | null;
-  assignments: { id: string; code: string; title: string; dueAt: string | null }[];
-};
-
 export function ParticipantSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const path = useRouterState({ select: (r) => r.location.pathname });
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const fetchHealth = useServerFn(getExtensionHealth);
   const fetchClasses = useServerFn(listClassSidebar);
   const [healthStatus, setHealthStatus] = useState<"green" | "amber" | "red" | "unknown" | null>(null);
   const [classes, setClasses] = useState<SidebarClass[]>([]);
+  const [activeWorkspaceId, setActiveWorkspaceId] = useActiveWorkspaceId();
 
   useEffect(() => {
     fetchHealth().then((h) => setHealthStatus(h.status)).catch(() => {});
     fetchClasses().then((r) => setClasses((r.classes ?? []) as any)).catch(() => {});
   }, [fetchHealth, fetchClasses]);
+
+  const activeClass = activeWorkspaceId
+    ? classes.find((c) => c.id === activeWorkspaceId) ?? null
+    : null;
+  const activeLabel = activeClass ? (activeClass.courseCode ?? activeClass.name) : "Personal";
+  const threadsUrl = activeClass ? `/participant/department/${activeClass.id}/threads` : "/participant/threads";
+  const receiptsUrl = activeClass ? `/participant/department/${activeClass.id}/receipts` : "/participant/receipts";
+  const homeUrl = activeClass ? `/participant/department/${activeClass.id}` : "/participant";
+
+  const workspaceGroup = {
+    label: "Workspace",
+    items: [
+      { title: "Home", url: homeUrl, icon: Home, exact: !activeClass },
+      { title: "Workspaces", url: "/participant/workspaces", icon: Briefcase },
+      { title: activeClass ? "Threads" : "All Threads", url: threadsUrl, icon: MessageSquare },
+      { title: activeClass ? "Receipts" : "All Receipts", url: receiptsUrl, icon: Receipt },
+    ],
+  };
 
   const isActive = (url: string, exact?: boolean) =>
     exact ? path === url : path === url || path.startsWith(url + "/");
@@ -69,6 +82,12 @@ export function ParticipantSidebar() {
     : s === "amber" ? "bg-amber-500"
     : s === "red" ? "bg-destructive"
     : "bg-muted-foreground/40";
+
+  const pickWorkspace = (id: string | null) => {
+    setActiveWorkspaceId(id);
+    if (id) navigate({ to: `/participant/department/${id}` as any });
+    else navigate({ to: "/participant" });
+  };
 
   const renderGroup = (g: typeof workspaceGroup) => (
     <SidebarGroup key={g.label}>
