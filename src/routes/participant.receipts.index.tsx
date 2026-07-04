@@ -13,6 +13,7 @@ import { ProvenanceVial } from "@/components/provenance/ProvenanceVial";
 import { PendingReceiptJobCard } from "@/components/receipt/PendingReceiptJobCard";
 import { IncompleteJobsPanel } from "@/components/receipt/IncompleteJobsPanel";
 import { EditableReceiptTitle } from "@/components/receipt/EditableReceiptTitle";
+import { useActiveWorkspaceId } from "@/lib/activeWorkspace";
 
 export const Route = createFileRoute("/participant/receipts/")({
   component: ReceiptsRoute,
