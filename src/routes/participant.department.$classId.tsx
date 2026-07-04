@@ -242,3 +242,59 @@ function ClassDashboard() {
     </div>
   );
 }
+
+/** Tiny multi-line sparkline. Renders one horizontal line per series with
+ *  colored dots at each week. Pure SVG; no chart deps. */
+function MiniSeries({
+  weeks,
+  series,
+  max,
+  emptyLabel,
+}: {
+  weeks: string[];
+  series: { label: string; values: number[] }[];
+  max?: number;
+  emptyLabel: string;
+}) {
+  if (!weeks.length || !series.length) {
+    return <p className="py-4 text-center text-xs text-muted-foreground">{emptyLabel}</p>;
+  }
+  const W = 220;
+  const H = 60;
+  const PAD = 4;
+  const cap = max ?? Math.max(1, ...series.flatMap((s) => s.values));
+  const n = Math.max(2, weeks.length);
+  const x = (i: number) => PAD + (i * (W - PAD * 2)) / (n - 1);
+  const y = (v: number) => H - PAD - ((Math.max(0, Math.min(cap, v)) / cap) * (H - PAD * 2));
+  const palette = ["hsl(217 91% 45%)", "hsl(150 60% 40%)", "hsl(30 90% 50%)", "hsl(340 75% 50%)"];
+
+  return (
+    <div className="space-y-2">
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+        {series.map((s, si) => {
+          const color = palette[si % palette.length];
+          const pts = s.values.map((v, i) => `${x(i)},${y(v)}`).join(" ");
+          return (
+            <g key={s.label}>
+              <polyline points={pts} fill="none" stroke={color} strokeWidth={1.5} />
+              {s.values.map((v, i) => (
+                <circle key={i} cx={x(i)} cy={y(v)} r={1.6} fill={color} />
+              ))}
+            </g>
+          );
+        })}
+      </svg>
+      <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground">
+        {series.map((s, si) => (
+          <div key={s.label} className="flex items-center gap-1">
+            <span
+              className="inline-block h-2 w-2 rounded-full"
+              style={{ background: palette[si % palette.length] }}
+            />
+            <span className="truncate">{s.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
