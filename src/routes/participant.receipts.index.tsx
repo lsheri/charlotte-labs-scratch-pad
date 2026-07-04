@@ -15,8 +15,13 @@ import { IncompleteJobsPanel } from "@/components/receipt/IncompleteJobsPanel";
 import { EditableReceiptTitle } from "@/components/receipt/EditableReceiptTitle";
 
 export const Route = createFileRoute("/participant/receipts/")({
-  component: () => <ReceiptsList />,
+  component: ReceiptsRoute,
 });
+
+function ReceiptsRoute() {
+  const [activeWorkspaceId] = useActiveWorkspaceId();
+  return <ReceiptsList classId={activeWorkspaceId ?? undefined} />;
+}
 
 interface R { id: string; tool_used: string; prompt_preview: string | null; created_at: string; metadata: any; }
 
