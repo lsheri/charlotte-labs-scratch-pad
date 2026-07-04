@@ -377,7 +377,7 @@ function ThreadsInbox() {
           </aside>
 
           {/* Center column: focused-assignment action */}
-          <div className="hidden lg:flex flex-col items-center justify-center gap-2 py-2">
+          <div className="relative hidden lg:flex flex-col items-center justify-center gap-2 py-2" style={{ zIndex: 2 }}>
             {focused ? (
               <>
                 <div className="text-center text-xs text-muted-foreground">
