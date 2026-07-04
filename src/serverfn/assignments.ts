@@ -32,6 +32,7 @@ export const listClassSidebar = createServerFn({ method: "GET" })
       .order("due_at", { ascending: true, nullsFirst: false });
 
     return {
+      personalSessionId,
       classes: classes.map((c: any) => ({
         id: c.id,
         name: c.name,
@@ -47,6 +48,7 @@ export const listClassSidebar = createServerFn({ method: "GET" })
       })),
     };
   });
+
 
 /** Thread ↔ assignment mappings for the current user. */
 export const listMyAssignmentMappings = createServerFn({ method: "GET" })
