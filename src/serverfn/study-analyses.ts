@@ -2,6 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+type Json = string | number | boolean | null | Json[] | { [key: string]: Json };
+
 const STUDY_TEMPLATE_KEYS = ["verification_risk", "study_gaps"] as const;
 type StudyTemplateKey = (typeof STUDY_TEMPLATE_KEYS)[number];
 
