@@ -176,6 +176,35 @@ function ReceiptPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [Boolean(run)]);
 
+  // Auto-run study templates the user selected on the create dialog.
+  const runStudyFn = useServerFn(runStudyTemplate);
+  const jobId = job?.id;
+  useEffect(() => {
+    if (!run || !receiptId) return;
+    const keys = [jobId, receiptId].filter(Boolean) as string[];
+    let templates: string[] = [];
+    for (const k of keys) {
+      try {
+        const raw = localStorage.getItem(`receipt-templates:${k}`);
+        if (raw) {
+          templates = JSON.parse(raw) as string[];
+          break;
+        }
+      } catch {}
+    }
+    if (!templates.length) return;
+    for (const t of templates) {
+      if (t === "verification_risk" || t === "study_gaps") {
+        runStudyFn({ data: { receiptId, templateKey: t as any } }).catch(() => {});
+      }
+    }
+    for (const k of keys) {
+      try { localStorage.removeItem(`receipt-templates:${k}`); } catch {}
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [Boolean(run), receiptId, jobId]);
+
+
   const retryAt = job?.retry_after ? new Date(job.retry_after) : null;
   const retryAtLabel = retryAt
     ? retryAt.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
