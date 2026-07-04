@@ -32,6 +32,7 @@ import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/em
 import { Route as ApiPublicTeamOutreachRouteImport } from './routes/api/public/team-outreach'
 import { Route as ApiPublicExtensionStatusRouteImport } from './routes/api/public/extension-status'
 import { Route as ApiPublicCaptureConversationRouteImport } from './routes/api/public/capture-conversation'
+import { Route as ParticipantDepartmentClassIdThreadsRouteImport } from './routes/participant.department.$classId.threads'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -164,6 +165,12 @@ const ApiPublicCaptureConversationRoute =
     path: '/api/public/capture-conversation',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ParticipantDepartmentClassIdThreadsRoute =
+  ParticipantDepartmentClassIdThreadsRouteImport.update({
+    id: '/threads',
+    path: '/threads',
+    getParentRoute: () => ParticipantDepartmentClassIdRoute,
+  } as any)
 const LovableEmailTransactionalSendRoute =
   LovableEmailTransactionalSendRouteImport.update({
     id: '/lovable/email/transactional/send',
@@ -249,6 +256,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/participant/department/$classId/threads': typeof ParticipantDepartmentClassIdThreadsRoute
   '/participant/department/$classId/assignments/$assignmentId': typeof ParticipantDepartmentClassIdAssignmentsAssignmentIdRoute
 }
 export interface FileRoutesByTo {
@@ -282,6 +290,7 @@ export interface FileRoutesByTo {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/participant/department/$classId/threads': typeof ParticipantDepartmentClassIdThreadsRoute
   '/participant/department/$classId/assignments/$assignmentId': typeof ParticipantDepartmentClassIdAssignmentsAssignmentIdRoute
 }
 export interface FileRoutesById {
@@ -317,6 +326,7 @@ export interface FileRoutesById {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/participant/department/$classId/threads': typeof ParticipantDepartmentClassIdThreadsRoute
   '/participant/department/$classId/assignments/$assignmentId': typeof ParticipantDepartmentClassIdAssignmentsAssignmentIdRoute
 }
 export interface FileRouteTypes {
@@ -353,6 +363,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/participant/department/$classId/threads'
     | '/participant/department/$classId/assignments/$assignmentId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -386,6 +397,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/participant/department/$classId/threads'
     | '/participant/department/$classId/assignments/$assignmentId'
   id:
     | '__root__'
@@ -420,6 +432,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/participant/department/$classId/threads'
     | '/participant/department/$classId/assignments/$assignmentId'
   fileRoutesById: FileRoutesById
 }
@@ -608,6 +621,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCaptureConversationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/participant/department/$classId/threads': {
+      id: '/participant/department/$classId/threads'
+      path: '/threads'
+      fullPath: '/participant/department/$classId/threads'
+      preLoaderRoute: typeof ParticipantDepartmentClassIdThreadsRouteImport
+      parentRoute: typeof ParticipantDepartmentClassIdRoute
+    }
     '/lovable/email/transactional/send': {
       id: '/lovable/email/transactional/send'
       path: '/lovable/email/transactional/send'
@@ -675,11 +695,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface ParticipantDepartmentClassIdRouteChildren {
+  ParticipantDepartmentClassIdThreadsRoute: typeof ParticipantDepartmentClassIdThreadsRoute
   ParticipantDepartmentClassIdAssignmentsAssignmentIdRoute: typeof ParticipantDepartmentClassIdAssignmentsAssignmentIdRoute
 }
 
 const ParticipantDepartmentClassIdRouteChildren: ParticipantDepartmentClassIdRouteChildren =
   {
+    ParticipantDepartmentClassIdThreadsRoute:
+      ParticipantDepartmentClassIdThreadsRoute,
     ParticipantDepartmentClassIdAssignmentsAssignmentIdRoute:
       ParticipantDepartmentClassIdAssignmentsAssignmentIdRoute,
   }
