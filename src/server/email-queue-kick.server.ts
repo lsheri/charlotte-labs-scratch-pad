@@ -13,7 +13,7 @@
 //     with the cron or other concurrent kicks).
 
 const QUEUE_PROCESS_URL =
-  'https://project--587b3636-dac3-4081-bfb6-e7028ae194bd.lovable.app/lovable/email/queue/process';
+  'https://project--992dda35-bf38-49fe-ae5a-117a3bd97346-dev.lovable.app/lovable/email/queue/process';
 
 export function kickEmailQueue(): void {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;

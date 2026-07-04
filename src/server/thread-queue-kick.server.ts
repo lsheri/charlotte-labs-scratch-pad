@@ -1,6 +1,6 @@
 // Fire-and-forget kick to the thread-jobs sweeper. See receipt-queue-kick.server.ts
 // for the full rationale on why `waitUntil` is required on Cloudflare Workers.
-const URL = 'https://project--587b3636-dac3-4081-bfb6-e7028ae194bd.lovable.app/api/public/hooks/process-thread-jobs';
+const URL = 'https://project--992dda35-bf38-49fe-ae5a-117a3bd97346-dev.lovable.app/api/public/hooks/process-thread-jobs';
 
 export function kickThreadQueue(): void {
   const key = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY;
