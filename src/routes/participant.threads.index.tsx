@@ -49,7 +49,7 @@ function ThreadsInbox() {
   const mappingsFn = useServerFn(listMyAssignmentMappings);
   const mapFn = useServerFn(mapThreadToAssignment);
   const unmapFn = useServerFn(unmapThreadFromAssignment);
-  const attachFn = useServerFn(attachReceiptToAssignment);
+  
 
   const [threads, setThreads] = useState<any[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
