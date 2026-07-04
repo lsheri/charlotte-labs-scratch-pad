@@ -111,14 +111,14 @@ function WorkspaceDetail() {
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-sm font-medium">
-            <Receipt className="h-4 w-4" /> Workflows ({receipts.length})
+            <Receipt className="h-4 w-4" /> Receipts ({receipts.length})
           </h2>
           <Button asChild size="sm" variant="ghost">
             <Link to="/participant/receipts">View all</Link>
           </Button>
         </div>
         {receipts.length === 0 ? (
-          <Card><CardContent className="py-6 text-center text-sm text-muted-foreground">No workflows in this workspace yet.</CardContent></Card>
+          <Card><CardContent className="py-6 text-center text-sm text-muted-foreground">No receipts in this workspace yet.</CardContent></Card>
         ) : (
           <div className="space-y-2">
             {receipts.slice(0, 20).map((r: any) => (
