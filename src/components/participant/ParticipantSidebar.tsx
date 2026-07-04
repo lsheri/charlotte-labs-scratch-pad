@@ -3,8 +3,9 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   Home, MessageSquare, Receipt, Plug, Fingerprint, LogOut, Plus,
   Briefcase, GraduationCap, ChevronRight, FileText, Check, ChevronsUpDown, User,
-  Building2,
+  Building2, Presentation,
 } from "lucide-react";
+import { PitchDeck } from "@/components/participant/PitchDeck";
 import { useServerFn } from "@tanstack/react-start";
 import { CharlotteLogo } from "@/components/CharlotteLogo";
 import { Button } from "@/components/ui/button";
