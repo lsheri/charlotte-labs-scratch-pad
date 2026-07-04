@@ -206,3 +206,53 @@ export const getOpenVerificationItems = createServerFn({ method: "GET" })
     }
     return { items };
   });
+
+/** Recent study gap topics + counts across the user's last N receipts. */
+export const getRecentStudyGaps = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: receipts } = await context.supabase
+      .from("receipts")
+      .select("id, created_at")
+      .eq("participant_id", context.userId)
+      .order("created_at", { ascending: false })
+      .limit(10);
+    const ids = (receipts ?? []).map((r: any) => r.id);
+    if (!ids.length) return { topics: [], receiptCount: 0, highRiskCount: 0 };
+
+    const { data: analyses } = await context.supabase
+      .from("template_analyses")
+      .select("receipt_id, analysis_json")
+      .in("receipt_id", ids)
+      .eq("template_key", "study_gaps")
+      .eq("status", "ok");
+
+    const topics: Array<{
+      receiptId: string;
+      name: string;
+      risk: string;
+      evidence: string;
+    }> = [];
+    let highRiskCount = 0;
+    for (const a of (analyses ?? []) as any[]) {
+      const json = a.analysis_json ?? {};
+      for (const t of json.topics ?? []) {
+        topics.push({
+          receiptId: a.receipt_id,
+          name: String(t.name ?? ""),
+          risk: String(t.risk ?? "medium"),
+          evidence: String(t.evidence ?? ""),
+        });
+        if (t.risk === "high") highRiskCount++;
+      }
+    }
+    // Sort high → low
+    const order: Record<string, number> = { high: 0, medium_high: 1, medium: 2, low: 3 };
+    topics.sort((a, b) => (order[a.risk] ?? 9) - (order[b.risk] ?? 9));
+    return {
+      topics: topics.slice(0, 8),
+      receiptCount: (analyses ?? []).length,
+      highRiskCount,
+    };
+  });
+
