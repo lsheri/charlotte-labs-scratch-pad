@@ -22,7 +22,6 @@ import { Route as ParticipantExtensionRouteImport } from './routes/participant.e
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as ParticipantThreadsIndexRouteImport } from './routes/participant.threads.index'
 import { Route as ParticipantReceiptsIndexRouteImport } from './routes/participant.receipts.index'
-import { Route as ShareProofReceiptIdRouteImport } from './routes/share.proof.$receiptId'
 import { Route as ParticipantWorkspacesWorkspaceIdRouteImport } from './routes/participant.workspaces.$workspaceId'
 import { Route as ParticipantThreadsNewRouteImport } from './routes/participant.threads.new'
 import { Route as ParticipantThreadsThreadIdRouteImport } from './routes/participant.threads.$threadId'
@@ -106,11 +105,6 @@ const ParticipantReceiptsIndexRoute =
     path: '/receipts/',
     getParentRoute: () => ParticipantRoute,
   } as any)
-const ShareProofReceiptIdRoute = ShareProofReceiptIdRouteImport.update({
-  id: '/share/proof/$receiptId',
-  path: '/share/proof/$receiptId',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ParticipantWorkspacesWorkspaceIdRoute =
   ParticipantWorkspacesWorkspaceIdRouteImport.update({
     id: '/$workspaceId',
@@ -223,7 +217,6 @@ export interface FileRoutesByFullPath {
   '/participant/threads/$threadId': typeof ParticipantThreadsThreadIdRoute
   '/participant/threads/new': typeof ParticipantThreadsNewRoute
   '/participant/workspaces/$workspaceId': typeof ParticipantWorkspacesWorkspaceIdRoute
-  '/share/proof/$receiptId': typeof ShareProofReceiptIdRoute
   '/participant/receipts/': typeof ParticipantReceiptsIndexRoute
   '/participant/threads/': typeof ParticipantThreadsIndexRoute
   '/api/public/cron/researcher-digest': typeof ApiPublicCronResearcherDigestRoute
@@ -254,7 +247,6 @@ export interface FileRoutesByTo {
   '/participant/threads/$threadId': typeof ParticipantThreadsThreadIdRoute
   '/participant/threads/new': typeof ParticipantThreadsNewRoute
   '/participant/workspaces/$workspaceId': typeof ParticipantWorkspacesWorkspaceIdRoute
-  '/share/proof/$receiptId': typeof ShareProofReceiptIdRoute
   '/participant/receipts': typeof ParticipantReceiptsIndexRoute
   '/participant/threads': typeof ParticipantThreadsIndexRoute
   '/api/public/cron/researcher-digest': typeof ApiPublicCronResearcherDigestRoute
@@ -287,7 +279,6 @@ export interface FileRoutesById {
   '/participant/threads/$threadId': typeof ParticipantThreadsThreadIdRoute
   '/participant/threads/new': typeof ParticipantThreadsNewRoute
   '/participant/workspaces/$workspaceId': typeof ParticipantWorkspacesWorkspaceIdRoute
-  '/share/proof/$receiptId': typeof ShareProofReceiptIdRoute
   '/participant/receipts/': typeof ParticipantReceiptsIndexRoute
   '/participant/threads/': typeof ParticipantThreadsIndexRoute
   '/api/public/cron/researcher-digest': typeof ApiPublicCronResearcherDigestRoute
@@ -321,7 +312,6 @@ export interface FileRouteTypes {
     | '/participant/threads/$threadId'
     | '/participant/threads/new'
     | '/participant/workspaces/$workspaceId'
-    | '/share/proof/$receiptId'
     | '/participant/receipts/'
     | '/participant/threads/'
     | '/api/public/cron/researcher-digest'
@@ -352,7 +342,6 @@ export interface FileRouteTypes {
     | '/participant/threads/$threadId'
     | '/participant/threads/new'
     | '/participant/workspaces/$workspaceId'
-    | '/share/proof/$receiptId'
     | '/participant/receipts'
     | '/participant/threads'
     | '/api/public/cron/researcher-digest'
@@ -384,7 +373,6 @@ export interface FileRouteTypes {
     | '/participant/threads/$threadId'
     | '/participant/threads/new'
     | '/participant/workspaces/$workspaceId'
-    | '/share/proof/$receiptId'
     | '/participant/receipts/'
     | '/participant/threads/'
     | '/api/public/cron/researcher-digest'
@@ -409,7 +397,6 @@ export interface RootRouteChildren {
   ApiPublicExtensionStatusRoute: typeof ApiPublicExtensionStatusRoute
   ApiPublicTeamOutreachRoute: typeof ApiPublicTeamOutreachRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
-  ShareProofReceiptIdRoute: typeof ShareProofReceiptIdRoute
   ApiPublicCronResearcherDigestRoute: typeof ApiPublicCronResearcherDigestRoute
   ApiPublicHooksProcessReceiptJobsRoute: typeof ApiPublicHooksProcessReceiptJobsRoute
   ApiPublicHooksProcessThreadJobsRoute: typeof ApiPublicHooksProcessThreadJobsRoute
@@ -512,13 +499,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/participant/receipts/'
       preLoaderRoute: typeof ParticipantReceiptsIndexRouteImport
       parentRoute: typeof ParticipantRoute
-    }
-    '/share/proof/$receiptId': {
-      id: '/share/proof/$receiptId'
-      path: '/share/proof/$receiptId'
-      fullPath: '/share/proof/$receiptId'
-      preLoaderRoute: typeof ShareProofReceiptIdRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/participant/workspaces/$workspaceId': {
       id: '/participant/workspaces/$workspaceId'
@@ -688,7 +668,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicExtensionStatusRoute: ApiPublicExtensionStatusRoute,
   ApiPublicTeamOutreachRoute: ApiPublicTeamOutreachRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
-  ShareProofReceiptIdRoute: ShareProofReceiptIdRoute,
   ApiPublicCronResearcherDigestRoute: ApiPublicCronResearcherDigestRoute,
   ApiPublicHooksProcessReceiptJobsRoute: ApiPublicHooksProcessReceiptJobsRoute,
   ApiPublicHooksProcessThreadJobsRoute: ApiPublicHooksProcessThreadJobsRoute,
