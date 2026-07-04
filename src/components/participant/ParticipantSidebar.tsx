@@ -25,13 +25,11 @@ import {
   SidebarMenuSubButton, SidebarHeader, SidebarFooter, useSidebar,
 } from "@/components/ui/sidebar";
 
-const toolsGroup = {
-  label: "Tools",
-  items: [
-    { title: "Extension", url: "/participant/extension", icon: Plug, hasHealthDot: true },
-    { title: "Fingerprint", url: "/participant/fingerprint", icon: Fingerprint },
-  ],
-};
+const baseToolsItems = [
+  { title: "Extension", url: "/participant/extension", icon: Plug, hasHealthDot: true },
+  { title: "Fingerprint", url: "/participant/fingerprint", icon: Fingerprint },
+];
+
 
 type SidebarClass = {
   id: string;
