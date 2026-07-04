@@ -264,7 +264,7 @@ function ThreadsInbox() {
       window.removeEventListener("resize", compute);
       window.removeEventListener("scroll", compute, true);
     };
-  }, [mappings, threads, classes, focusedAssignment, orderedThreads]);
+  }, [mappings, threads, classes, focusedAssignment]);
 
   return (
     <div className="space-y-6 relative">
