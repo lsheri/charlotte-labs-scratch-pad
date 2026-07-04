@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +14,7 @@ import { toast } from "sonner";
 import { posthog } from "@/lib/posthog";
 
 export const Route = createFileRoute("/auth")({ component: AuthPage });
+
 
 const MISSION_RADAR_DIMS = [
   { label: "Your", value: 0.92 },
@@ -98,22 +98,7 @@ function AuthPage() {
     }
   };
 
-  const handleGoogle = async () => {
-    setBusy(true);
-    posthog.capture("signin_started", { method: "google" });
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
-      posthog.capture("signin_failed", { method: "google", error: String(result.error) });
-      setBusy(false);
-      toast.error("Google sign-in failed");
-      return;
-    }
-    if (result.redirected) return;
-    posthog.capture("signin_completed", { method: "google" });
-    navigate({ to: "/" });
-  };
+
 
   return (
     <div
@@ -235,15 +220,6 @@ function AuthPage() {
               </TabsContent>
             </Tabs>
 
-            <div className="my-4 flex items-center gap-3">
-              <div className="h-px flex-1 bg-border" />
-              <span className="text-xs text-muted-foreground">or</span>
-              <div className="h-px flex-1 bg-border" />
-            </div>
-
-            <Button variant="outline" className="w-full" onClick={handleGoogle} disabled={busy}>
-              Continue with Google
-            </Button>
           </CardContent>
         </Card>
       </div>
