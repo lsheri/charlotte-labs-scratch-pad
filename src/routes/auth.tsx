@@ -98,22 +98,7 @@ function AuthPage() {
     }
   };
 
-  const handleGoogle = async () => {
-    setBusy(true);
-    posthog.capture("signin_started", { method: "google" });
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
-      posthog.capture("signin_failed", { method: "google", error: String(result.error) });
-      setBusy(false);
-      toast.error("Google sign-in failed");
-      return;
-    }
-    if (result.redirected) return;
-    posthog.capture("signin_completed", { method: "google" });
-    navigate({ to: "/" });
-  };
+
 
   return (
     <div
