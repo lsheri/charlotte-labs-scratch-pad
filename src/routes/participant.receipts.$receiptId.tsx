@@ -179,6 +179,7 @@ function ReceiptPage() {
 
   // Auto-run study templates the user selected on the create dialog.
   const runStudyFn = useServerFn(runStudyTemplate);
+  const attachAssignmentFn = useServerFn(attachReceiptToAssignment);
   const jobId = job?.id;
   useEffect(() => {
     if (!run || !receiptId) return;
@@ -193,11 +194,20 @@ function ReceiptPage() {
         }
       } catch {}
     }
-    if (!templates.length) return;
     for (const t of templates) {
       if (t === "verification_risk" || t === "study_gaps") {
         runStudyFn({ data: { receiptId, templateKey: t as any } }).catch(() => {});
       }
+    }
+    // Attach to assignment if the create dialog flagged one for this job.
+    for (const k of keys) {
+      try {
+        const aid = localStorage.getItem(`assignment-attach:${k}`);
+        if (aid) {
+          attachAssignmentFn({ data: { receiptId, assignmentId: aid } }).catch(() => {});
+          localStorage.removeItem(`assignment-attach:${k}`);
+        }
+      } catch {}
     }
     for (const k of keys) {
       try { localStorage.removeItem(`receipt-templates:${k}`); } catch {}
