@@ -123,6 +123,51 @@ export function ParticipantSidebar() {
           {!collapsed && <span className="font-semibold tracking-tight">Charlotte Labs</span>}
         </Link>
         {!collapsed && (
+          <div className="px-2 pb-1">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="w-full rounded-md border bg-background px-2.5 py-2 text-left transition hover:bg-accent"
+                  aria-label="Switch workspace"
+                >
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Working in
+                  </div>
+                  <div className="mt-0.5 flex items-center gap-2">
+                    {activeClass ? (
+                      <GraduationCap className="h-4 w-4 shrink-0 text-primary" />
+                    ) : (
+                      <User className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    )}
+                    <span className="flex-1 truncate text-sm font-semibold">{activeLabel}</span>
+                    <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  </div>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56">
+                <DropdownMenuLabel className="text-xs">Switch workspace</DropdownMenuLabel>
+                <DropdownMenuItem onSelect={() => pickWorkspace(null)} className="flex items-center gap-2">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  <span className="flex-1">Personal</span>
+                  {!activeClass && <Check className="h-4 w-4 text-primary" />}
+                </DropdownMenuItem>
+                {classes.length > 0 && <DropdownMenuSeparator />}
+                {classes.map((c) => (
+                  <DropdownMenuItem
+                    key={c.id}
+                    onSelect={() => pickWorkspace(c.id)}
+                    className="flex items-center gap-2"
+                  >
+                    <GraduationCap className="h-4 w-4 text-primary" />
+                    <span className="flex-1 truncate">{c.courseCode ?? c.name}</span>
+                    {activeWorkspaceId === c.id && <Check className="h-4 w-4 text-primary" />}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
+        {!collapsed && (
           <Link to="/participant/extension" className="px-2">
             <Button size="sm" className="w-full justify-start gap-2">
               <Plus className="h-4 w-4" /> Log AI Session
