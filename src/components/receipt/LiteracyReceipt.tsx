@@ -148,33 +148,14 @@ export function LiteracyReceipt({ receipt, audit, runMeta, turns, tools, recomme
         <CardHeader className="space-y-3">
           <div className="space-y-1">
             <CardTitle className="text-lg flex items-center gap-2 min-w-0">
-              <ProvenanceVial variant={getProvenance(receipt as any)} verified={isVerifiedLab(receipt as any)} size="lg" />
               <EditableReceiptTitle receipt={receipt as any} readOnly={adminView} />
             </CardTitle>
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline" className="font-medium">
-                {PROVENANCE_LABELS[getProvenance(receipt as any)]}
-                {isVerifiedLab(receipt as any) && <span className="ml-1 text-emerald-700">· verified</span>}
-              </Badge>
-              <Badge variant="secondary" className="bg-orange-100 text-orange-900 border-orange-200" title="Primary output type — drives analysis & recommendations">
-                ★ {getWorkflowTypeLabel(receipt as any)}
-              </Badge>
-              {getWorkflowTypeExtras(receipt as any).map((t) => (
-                <Badge key={t} variant="outline" className="text-orange-700 border-orange-300" title="Secondary output tag">
-                  {WORKFLOW_TYPE_LABELS[t]}
-                </Badge>
-              ))}
               <Badge className={toolBadgeClass(receipt.tool_used)}>{receipt.tool_used}</Badge>
               <span className="text-xs text-muted-foreground">{format(new Date(receipt.created_at), "PPP 'at' p")}</span>
               {band && <Badge variant="outline" className={`border ${band.className}`}>Overall: <span className="font-bold ml-1">{band.label}</span></Badge>}
-              {getProvenanceSource(receipt as any) && (
-                <span className="text-[11px] text-muted-foreground">
-                  ({PROVENANCE_SOURCE_LABELS[getProvenanceSource(receipt as any)!]})
-                </span>
-              )}
             </div>
           </div>
-          <WorkflowStack tools={stack} />
         </CardHeader>
         {audit?.summary && (
           <CardContent className="pt-0"><p className="text-sm leading-relaxed">{audit.summary}</p></CardContent>
