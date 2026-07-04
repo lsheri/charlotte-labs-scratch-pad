@@ -2,12 +2,11 @@ import { createFileRoute, redirect, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import {
-  Building2, Users, MessageSquare, Receipt as ReceiptIcon, ArrowLeft,
+  Building2, Users, MessageSquare, ArrowLeft,
   AlertTriangle, Sparkles, ChevronsUpDown, GraduationCap, Wrench, ShieldCheck,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { listDepartments, getDepartmentDashboard } from "@/serverfn/admin-overview";
-import { anonymousLabel } from "@/lib/displayNames";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
