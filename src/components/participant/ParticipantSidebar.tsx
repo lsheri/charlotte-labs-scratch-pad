@@ -92,29 +92,7 @@ export function ParticipantSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
         ))}
-        {(hasRole("admin") || hasRole("researcher")) && (
-          <SidebarGroup>
-            {!collapsed && <SidebarGroupLabel>Role</SidebarGroupLabel>}
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {hasRole("researcher") && (
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
-                      <Link to="/researcher">{collapsed ? "P" : "Proctor"}</Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )}
-                {hasRole("admin") && (
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
-                      <Link to="/admin">{collapsed ? "A" : "Admin"}</Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
+        {/* admin/researcher role links removed in student-app fork */}
       </SidebarContent>
       <SidebarFooter>
         <div className="flex items-center gap-2 px-2 py-2">
