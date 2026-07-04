@@ -12,12 +12,8 @@ import { LiteracyReceipt } from "@/components/receipt/LiteracyReceipt";
 import { ReceiptBuildingState } from "@/components/receipt/ReceiptBuildingState";
 import { TemplatePicker } from "@/components/receipt/TemplatePicker";
 import { TemplateTabs } from "@/components/receipt/TemplateTabs";
-import { StillYoursTemplate } from "@/components/receipt/templates/StillYoursTemplate";
-import { ThinkingMapTemplate } from "@/components/receipt/templates/ThinkingMapTemplate";
-import { ProofCardTemplate } from "@/components/receipt/templates/ProofCardTemplate";
-import { ShieldTemplate } from "@/components/receipt/templates/ShieldTemplate";
-import { ImpactStatementTemplate } from "@/components/receipt/templates/ImpactStatementTemplate";
-import { ImpactProofTemplate } from "@/components/receipt/templates/ImpactProofTemplate";
+// Non-kept templates deleted in fork prune. Verification & Study Gaps templates
+// will replace them in Phase 4/5.
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
