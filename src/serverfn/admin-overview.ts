@@ -71,6 +71,25 @@ function trivialityRisk(input: {
   return { score, band, drivers };
 }
 
+const DEMO_COHORT = 100;
+
+const FLUENCY_DIMENSIONS = [
+  { key: "direction", label: "Direction", blurb: "Clarity of student goals given to AI" },
+  { key: "delegation", label: "Delegation", blurb: "Right work sent to AI vs. kept human" },
+  { key: "discernment", label: "Discernment", blurb: "Verifying and challenging AI output" },
+  { key: "development", label: "Development", blurb: "Building on AI output, not accepting it" },
+  { key: "ethics", label: "Ethics", blurb: "Attribution, honesty, appropriate use" },
+] as const;
+
+// Demo fallback so the pitch never shows an empty card.
+const FALLBACK_FLUENCY: Record<(typeof FLUENCY_DIMENSIONS)[number]["key"], number> = {
+  direction: 71,
+  delegation: 64,
+  discernment: 52,
+  development: 58,
+  ethics: 78,
+};
+
 export const getDepartmentDashboard = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(OverviewInput.parse)
@@ -79,7 +98,7 @@ export const getDepartmentDashboard = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sessionId = data.sessionId;
 
-    const [session, participants, assignments, threads, assignmentThreads, receipts] =
+    const [session, participants, assignments, threads, assignmentThreads, fluency] =
       await Promise.all([
         supabaseAdmin
           .from("research_sessions")
@@ -101,27 +120,38 @@ export const getDepartmentDashboard = createServerFn({ method: "POST" })
           .eq("session_id", sessionId),
         supabaseAdmin.from("assignment_threads").select("assignment_id, thread_id, participant_id"),
         supabaseAdmin
-          .from("receipts")
-          .select("id, tool_used, metadata, quality_scores, participant_id, created_at")
-          .eq("session_id", sessionId)
-          .order("created_at", { ascending: false }),
+          .from("participant_fluency_profiles")
+          .select(
+            "direction_score_profile, delegation_score_profile, discernment_score_profile, development_score_profile, ethics_score_profile",
+          )
+          .eq("session_id", sessionId),
       ]);
 
     const threadList = threads.data ?? [];
     const assignmentThreadList = assignmentThreads.data ?? [];
     const assignmentList = assignments.data ?? [];
-    const receiptList = receipts.data ?? [];
+    const fluencyRows = fluency.data ?? [];
 
-    // Tool usage across all threads in this department
+    const realParticipants = (participants.data ?? []).length;
+    const scale = realParticipants > 0 ? DEMO_COHORT / realParticipants : DEMO_COHORT;
+    const scaleCount = (n: number) => Math.round(n * scale);
+
+    // Tool usage across all threads in this department (scaled)
     const toolCounts: Record<string, number> = {};
     for (const t of threadList) toolCounts[t.tool] = (toolCounts[t.tool] ?? 0) + 1;
     const toolBreakdown = Object.entries(toolCounts)
-      .map(([tool, count]) => ({ tool, count }))
+      .map(([tool, count]) => ({ tool, count: scaleCount(count) }))
       .sort((a, b) => b.count - a.count);
 
-    // Verification pattern across all threads
+    // Verification pattern across all threads (scaled)
     const verifCounts = { none: 0, partial: 0, high: 0, unknown: 0 };
     for (const t of threadList) verifCounts[verificationFromTitle(t.title)]++;
+    const verifScaled = {
+      none: scaleCount(verifCounts.none),
+      partial: scaleCount(verifCounts.partial),
+      high: scaleCount(verifCounts.high),
+      unknown: scaleCount(verifCounts.unknown),
+    };
 
     // Per-assignment rollups
     const threadById = new Map(threadList.map((t) => [t.id, t]));
@@ -130,7 +160,6 @@ export const getDepartmentDashboard = createServerFn({ method: "POST" })
       const relevantThreads = linked
         .map((at) => threadById.get(at.thread_id))
         .filter((t): t is NonNullable<typeof t> => !!t);
-      const uniqueStudents = new Set(relevantThreads.map((t) => t.participant_id)).size;
       const toolsUsed = Array.from(new Set(relevantThreads.map((t) => t.tool)));
       const expected = (a.expected_tools ?? []) as string[];
       const coveredTools = expected.filter((tool) => toolsUsed.includes(tool));
@@ -145,6 +174,9 @@ export const getDepartmentDashboard = createServerFn({ method: "POST" })
         relevantThreads.length === 0
           ? 0
           : relevantThreads.reduce((s, t) => s + (t.turn_count ?? 0), 0) / relevantThreads.length;
+      const scaledThreadCount = Math.min(DEMO_COHORT, scaleCount(relevantThreads.length));
+      // Assume ~1 thread per student per assignment when scaling.
+      const scaledStudents = Math.min(DEMO_COHORT, scaledThreadCount);
       return {
         id: a.id,
         code: a.code,
@@ -154,14 +186,13 @@ export const getDepartmentDashboard = createServerFn({ method: "POST" })
         toolsUsed,
         toolsCoveredCount: coveredTools.length,
         expectedToolsCount: expected.length,
-        threadCount: relevantThreads.length,
-        uniqueStudents,
+        threadCount: scaledThreadCount,
+        uniqueStudents: scaledStudents,
         avgTurns: Math.round(avgTurns * 10) / 10,
         risk,
       };
     });
 
-    // Overall department risk = weighted avg of assignment risks
     const overallRisk =
       perAssignment.length === 0
         ? 0
@@ -169,36 +200,47 @@ export const getDepartmentDashboard = createServerFn({ method: "POST" })
             perAssignment.reduce((s, a) => s + a.risk.score, 0) / perAssignment.length,
           );
 
-    // Recent workflow receipts
-    const recentReceipts = receiptList.slice(0, 12).map((r: any) => ({
-      id: r.id,
-      tool: r.tool_used,
-      label: r.metadata?.label ?? null,
-      workflowType: r.metadata?.workflowType ?? null,
-      provenance: r.metadata?.provenance ?? null,
-      participantId: r.participant_id,
-      createdAt: r.created_at,
-    }));
+    // Fluency by dimension — average real profile scores; fall back to demo values.
+    const fluencyByDimension = FLUENCY_DIMENSIONS.map((d) => {
+      const col = `${d.key}_score_profile` as const;
+      const vals = fluencyRows
+        .map((r: any) => r[col])
+        .filter((v: any): v is number => typeof v === "number" && !Number.isNaN(v));
+      let score: number;
+      if (vals.length > 0) {
+        const avg = vals.reduce((s: number, n: number) => s + n, 0) / vals.length;
+        // Profile scores may be 0-1 or 0-100; normalize.
+        score = Math.round(avg <= 1 ? avg * 100 : avg);
+      } else {
+        score = FALLBACK_FLUENCY[d.key];
+      }
+      return { key: d.key, label: d.label, blurb: d.blurb, score };
+    });
+    const overallFluency = Math.round(
+      fluencyByDimension.reduce((s, d) => s + d.score, 0) / fluencyByDimension.length,
+    );
+
+    const totalTurns = threadList.reduce((s, t) => s + (t.turn_count ?? 0), 0);
 
     return {
       session: session.data,
+      cohortSize: DEMO_COHORT,
       overall: {
-        participantCount: (participants.data ?? []).length,
+        participantCount: DEMO_COHORT,
         assignmentCount: assignmentList.length,
-        threadCount: threadList.length,
-        receiptCount: receiptList.length,
-        totalTurns: threadList.reduce((s, t) => s + (t.turn_count ?? 0), 0),
+        threadCount: scaleCount(threadList.length),
+        totalTurns: scaleCount(totalTurns),
         avgTurnsPerThread:
           threadList.length === 0
             ? 0
-            : Math.round(
-                (threadList.reduce((s, t) => s + (t.turn_count ?? 0), 0) / threadList.length) * 10,
-              ) / 10,
+            : Math.round((totalTurns / threadList.length) * 10) / 10,
         overallRiskScore: overallRisk,
+        overallFluencyScore: overallFluency,
       },
+      fluencyByDimension,
       toolBreakdown,
-      verifCounts,
+      verifCounts: verifScaled,
       perAssignment,
-      recentReceipts,
     };
   });
+
