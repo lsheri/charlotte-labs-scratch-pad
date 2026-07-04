@@ -224,33 +224,15 @@ function ReceiptPage() {
       )}
 
       {showReceipt && (() => {
-        const jobCompleted = job?.status === "completed";
-        const pickerActive = Boolean(templatePickerEnabled) &&
-          (jobCompleted || (!job && Boolean(run)));
-        const showPicker = pickerActive && !activeTemplate;
-        const showTabs = pickerActive && Boolean(activeTemplate);
-        const showClassic =
-          !pickerActive || activeTemplate === "classic_fluency" || !activeTemplate;
-
-        if (showPicker) {
-          return (
-            <TemplatePicker
-              receiptId={receiptId}
-              existingRenderings={existingRenderings}
-            />
-          );
-        }
-
+        const currentTab = activeTemplate ?? "classic_fluency";
         return (
           <div className="space-y-4">
-            {showTabs && (
-              <TemplateTabs
-                receiptId={receiptId}
-                activeKey={activeTemplate!}
-                templateKeys={tabKeys}
-              />
-            )}
-            {showClassic ? (
+            <TemplateTabs
+              receiptId={receiptId}
+              activeKey={currentTab}
+              templateKeys={tabKeys}
+            />
+            {currentTab === "classic_fluency" && (
               <LiteracyReceipt
                 receipt={receipt as any}
                 audit={audit}
@@ -261,10 +243,12 @@ function ReceiptPage() {
                 recommendationsLoading={recsQuery.isLoading}
                 profile={profileQuery.data?.profile ?? null}
               />
-            ) : (
-              <div className="rounded-xl border bg-card p-8 text-center text-sm text-muted-foreground">
-                The "{activeTemplate}" tab isn't wired up yet in this fork. Switch back to Academic Fluency from the tabs above.
-              </div>
+            )}
+            {currentTab === "verification_risk" && (
+              <VerificationRiskTemplate receiptId={receiptId} />
+            )}
+            {currentTab === "study_gaps" && (
+              <StudyGapTemplate receiptId={receiptId} />
             )}
           </div>
         );
