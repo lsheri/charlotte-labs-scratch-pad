@@ -227,7 +227,7 @@ export function ThreadsInbox({ classId }: { classId?: string } = {}) {
     catch (e: any) { toast.error(e.message); }
   };
 
-  const hasClasses = classes.length > 0;
+  const hasClasses = visibleClasses.length > 0;
   const focused = focusedAssignment ? assignmentById.get(focusedAssignment) : null;
   const focusedMappedIds = focused ? (mappedThreadIdsByAssignment.get(focused.id) ?? []) : [];
 
