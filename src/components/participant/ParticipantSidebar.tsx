@@ -232,7 +232,21 @@ export function ParticipantSidebar() {
         )}
 
         {renderGroup(toolsGroup)}
+
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton onClick={() => setDeckOpen(true)}>
+                  <Presentation className="h-4 w-4 shrink-0" />
+                  {!collapsed && <span className="flex-1">Deck</span>}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
+      {deckOpen && <PitchDeck onClose={() => setDeckOpen(false)} />}
       <SidebarFooter>
         <div className="flex items-center gap-2 px-2 py-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-xs font-semibold">
