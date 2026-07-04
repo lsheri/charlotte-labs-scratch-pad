@@ -488,7 +488,7 @@ export function ThreadsInbox({ classId }: { classId?: string } = {}) {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-64">
-                          {classes.map((c) => (
+                          {visibleClasses.map((c) => (
                             <div key={c.id}>
                               <DropdownMenuLabel className="text-xs">
                                 {c.courseCode ?? c.name}
