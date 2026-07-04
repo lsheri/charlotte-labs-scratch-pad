@@ -42,7 +42,7 @@ export function ParticipantSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const path = useRouterState({ select: (r) => r.location.pathname });
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
   const fetchHealth = useServerFn(getExtensionHealth);
   const fetchClasses = useServerFn(listClassSidebar);
