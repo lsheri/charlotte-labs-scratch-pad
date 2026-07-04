@@ -297,8 +297,17 @@ function ReceiptPage() {
 
       {showReceipt && (() => {
         const currentTab = activeTemplate ?? "classic_fluency";
+        const tp = templateProgress;
         return (
           <div className="space-y-4">
+            {tp.current && (
+              <div className="flex items-center gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-xs text-primary">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <span>
+                  Running {templateLabels[tp.current] ?? tp.current}… ({tp.done + 1}/{tp.total})
+                </span>
+              </div>
+            )}
             <TemplateTabs
               receiptId={receiptId}
               activeKey={currentTab}
