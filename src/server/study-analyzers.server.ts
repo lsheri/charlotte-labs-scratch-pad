@@ -343,7 +343,7 @@ async function runOne(
   const result = await chatCompletion({
     label: `study-analysis:${templateKey}`,
     receiptId: ctx.receiptId,
-    timeoutMs: 90_000,
+    timeoutMs: 120_000,
     body: {
       model: SCORING_MODEL,
       messages: [
