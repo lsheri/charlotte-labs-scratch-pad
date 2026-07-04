@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/lib/auth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -224,6 +224,48 @@ function ThreadsInbox() {
   const focused = focusedAssignment ? assignmentById.get(focusedAssignment) : null;
   const focusedMappedIds = focused ? (mappedThreadIdsByAssignment.get(focused.id) ?? []) : [];
 
+  // Refs + geometry for the dashed navy connection lines
+  const gridRef = useRef<HTMLDivElement | null>(null);
+  const assignmentRefs = useRef<Map<string, HTMLElement>>(new Map());
+  const threadRefs = useRef<Map<string, HTMLElement>>(new Map());
+  const [lines, setLines] = useState<{ id: string; d: string }[]>([]);
+
+  useLayoutEffect(() => {
+    const compute = () => {
+      const grid = gridRef.current;
+      if (!grid) return;
+      const gb = grid.getBoundingClientRect();
+      const next: { id: string; d: string }[] = [];
+      for (const m of mappings) {
+        const aEl = assignmentRefs.current.get(m.assignment_id);
+        const tEl = threadRefs.current.get(m.thread_id);
+        if (!aEl || !tEl) continue;
+        const ab = aEl.getBoundingClientRect();
+        const tb = tEl.getBoundingClientRect();
+        const x1 = ab.right - gb.left;
+        const y1 = ab.top + ab.height / 2 - gb.top;
+        const x2 = tb.left - gb.left;
+        const y2 = tb.top + tb.height / 2 - gb.top;
+        const cx = (x1 + x2) / 2;
+        next.push({
+          id: `${m.assignment_id}:${m.thread_id}`,
+          d: `M ${x1} ${y1} C ${cx} ${y1}, ${cx} ${y2}, ${x2} ${y2}`,
+        });
+      }
+      setLines(next);
+    };
+    compute();
+    const ro = new ResizeObserver(compute);
+    if (gridRef.current) ro.observe(gridRef.current);
+    window.addEventListener("resize", compute);
+    window.addEventListener("scroll", compute, true);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", compute);
+      window.removeEventListener("scroll", compute, true);
+    };
+  }, [mappings, threads, classes, focusedAssignment]);
+
   return (
     <div className="space-y-6 relative">
       <div className="flex items-end justify-between gap-4">
@@ -262,9 +304,31 @@ function ThreadsInbox() {
           </CardContent>
         </Card>
       ) : hasClasses ? (
-        <div className="grid gap-8 lg:gap-12 lg:grid-cols-[280px_minmax(220px,1fr)_minmax(0,2fr)]">
+        <div
+          ref={gridRef}
+          className="relative grid gap-6 lg:grid-cols-[220px_minmax(320px,1fr)_minmax(0,3fr)]"
+        >
+          {/* SVG overlay for dashed navy connection lines */}
+          <svg
+            className="pointer-events-none absolute inset-0 h-full w-full"
+            style={{ zIndex: 1 }}
+            aria-hidden
+          >
+            {lines.map((l) => (
+              <path
+                key={l.id}
+                d={l.d}
+                fill="none"
+                stroke="#1e3a8a"
+                strokeWidth={3}
+                strokeDasharray="8 6"
+                strokeLinecap="round"
+              />
+            ))}
+          </svg>
+
           {/* Left column: Assignments */}
-          <aside className="space-y-3">
+          <aside className="relative space-y-3" style={{ zIndex: 2 }}>
             <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Assignments
             </h2>
@@ -281,8 +345,12 @@ function ThreadsInbox() {
                     return (
                       <button
                         key={a.id}
+                        ref={(el) => {
+                          if (el) assignmentRefs.current.set(a.id, el);
+                          else assignmentRefs.current.delete(a.id);
+                        }}
                         onClick={() => setFocusedAssignment(active ? null : a.id)}
-                        className={`w-full text-left rounded-md border px-3 py-2 text-sm transition ${
+                        className={`w-full text-left rounded-md border bg-background px-3 py-2 text-sm transition ${
                           active ? "border-primary bg-primary/5" : "hover:bg-accent"
                         }`}
                       >
@@ -309,7 +377,7 @@ function ThreadsInbox() {
           </aside>
 
           {/* Center column: focused-assignment action */}
-          <div className="hidden lg:flex flex-col items-center justify-center gap-2 py-2">
+          <div className="relative hidden lg:flex flex-col items-center justify-center gap-2 py-2" style={{ zIndex: 2 }}>
             {focused ? (
               <>
                 <div className="text-center text-xs text-muted-foreground">
@@ -338,7 +406,7 @@ function ThreadsInbox() {
           </div>
 
           {/* Right column: Threads */}
-          <div className="space-y-2">
+          <div className="relative space-y-2" style={{ zIndex: 2 }}>
             {threads.length === 0 ? (
               <Card>
                 <CardContent className="py-10 text-center text-sm text-muted-foreground">
@@ -355,7 +423,11 @@ function ThreadsInbox() {
                 return (
                   <Card
                     key={th.id}
-                    className={`${selected.has(th.id) ? "border-primary" : ""} ${
+                    ref={(el) => {
+                      if (el) threadRefs.current.set(th.id, el as unknown as HTMLElement);
+                      else threadRefs.current.delete(th.id);
+                    }}
+                    className={`bg-background ${selected.has(th.id) ? "border-primary" : ""} ${
                       isMappedToFocused ? "ring-1 ring-primary/40" : ""
                     }`}
                   >
