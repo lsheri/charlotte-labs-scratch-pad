@@ -101,10 +101,12 @@ export function ParticipantSidebar() {
     : "bg-muted-foreground/40";
 
   const pickWorkspace = (id: string | null) => {
+    try { window.localStorage.setItem("charlotte:workspaceChosen", "1"); } catch {}
     setActiveWorkspaceId(id);
     if (id) navigate({ to: `/participant/department/${id}` as any });
     else navigate({ to: "/participant" });
   };
+
 
   const renderGroup = (g: typeof workspaceGroup) => (
     <SidebarGroup key={g.label}>
