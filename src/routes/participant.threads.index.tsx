@@ -31,14 +31,16 @@ import {
 import charlotteMascot from "@/assets/charlotte-mascot.png";
 import { setPendingReceiptJob } from "@/lib/pendingReceiptJob";
 
-export const Route = createFileRoute("/participant/threads/")({ component: ThreadsInbox });
+export const Route = createFileRoute("/participant/threads/")({
+  component: () => <ThreadsInbox />,
+});
 
 type SidebarClass = {
   id: string; name: string; courseCode: string | null;
   assignments: { id: string; code: string; title: string; dueAt: string | null }[];
 };
 
-function ThreadsInbox() {
+export function ThreadsInbox({ classId }: { classId?: string } = {}) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const listFn = useServerFn(listMyThreads);
@@ -84,9 +86,14 @@ function ThreadsInbox() {
     usageFn().then((r: any) => setUsage({ used: r.used ?? 0, limit: r.limit ?? 7, exempt: !!r.exempt })).catch(() => {});
   }, [user, dialogOpen]);
 
+  const visibleClasses = useMemo(
+    () => (classId ? classes.filter((c) => c.id === classId) : classes),
+    [classes, classId],
+  );
+  const scopedClass = classId ? visibleClasses[0] ?? null : null;
   const allAssignments = useMemo(
-    () => classes.flatMap((c) => c.assignments.map((a) => ({ ...a, classId: c.id, className: c.courseCode ?? c.name }))),
-    [classes],
+    () => visibleClasses.flatMap((c) => c.assignments.map((a) => ({ ...a, classId: c.id, className: c.courseCode ?? c.name }))),
+    [visibleClasses],
   );
   const assignmentById = useMemo(
     () => new Map(allAssignments.map((a) => [a.id, a])),
@@ -220,7 +227,7 @@ function ThreadsInbox() {
     catch (e: any) { toast.error(e.message); }
   };
 
-  const hasClasses = classes.length > 0;
+  const hasClasses = visibleClasses.length > 0;
   const focused = focusedAssignment ? assignmentById.get(focusedAssignment) : null;
   const focusedMappedIds = focused ? (mappedThreadIdsByAssignment.get(focused.id) ?? []) : [];
 
@@ -274,7 +281,9 @@ function ThreadsInbox() {
             <MessageSquare className="h-6 w-6" /> Threads
           </h1>
           <p className="text-sm text-muted-foreground">
-            Captured AI conversations. Map them to assignments, or select and generate a standalone receipt.
+            {scopedClass
+              ? `${scopedClass.courseCode ?? scopedClass.name} · Captured AI conversations for this class. Map them to assignments, or generate a receipt.`
+              : "Captured AI conversations. Map them to assignments, or select and generate a standalone receipt."}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -306,7 +315,7 @@ function ThreadsInbox() {
       ) : hasClasses ? (
         <div
           ref={gridRef}
-          className="relative grid gap-6 lg:grid-cols-[360px_minmax(320px,1fr)_minmax(0,3fr)]"
+          className="relative grid gap-6 lg:grid-cols-[440px_minmax(280px,1fr)_minmax(0,3fr)]"
         >
           {/* SVG overlay for dashed navy connection lines */}
           <svg
@@ -328,21 +337,25 @@ function ThreadsInbox() {
           </svg>
 
           {/* Left column: Assignments */}
-          <aside className="relative space-y-3" style={{ zIndex: 2 }}>
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Assignments
-            </h2>
-            {classes.map((c) => (
-              <div key={c.id} className="space-y-1">
-                <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+          <aside className="relative space-y-4" style={{ zIndex: 2 }}>
+            {!scopedClass && (
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Assignments
+              </h2>
+            )}
+            {visibleClasses.map((c) => (
+              <div key={c.id} className="space-y-2">
+                <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                   <GraduationCap className="h-3.5 w-3.5" />
-                  {c.courseCode ?? c.name}
+                  <span>{c.courseCode ?? c.name}</span>
+                  <span className="text-muted-foreground/60">· Assignments</span>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-2">
                   {c.assignments.map((a) => {
                     const mappedIds = mappedThreadIdsByAssignment.get(a.id) ?? [];
                     const mappedCount = mappedIds.length;
                     const active = focusedAssignment === a.id;
+                    const cleanTitle = a.title.replace(/^.*—\s*/, "");
                     return (
                       <div key={a.id} className="flex items-stretch gap-2">
                         <Button
@@ -350,10 +363,10 @@ function ThreadsInbox() {
                           variant="default"
                           disabled={!mappedCount || busy}
                           onClick={() => openDialog({ assignmentId: a.id, threadIds: mappedIds })}
-                          className="h-auto shrink-0 gap-1 px-2 py-1 text-[11px]"
+                          className="h-auto shrink-0 flex-col gap-1 px-2 py-2 text-[10px] font-semibold uppercase tracking-wide"
                           title={mappedCount ? "Generate receipt from mapped threads" : "Map threads first"}
                         >
-                          <Sparkles className="h-3 w-3" />
+                          <Sparkles className="h-3.5 w-3.5" />
                           Receipt
                         </Button>
                         <button
@@ -362,21 +375,23 @@ function ThreadsInbox() {
                             else assignmentRefs.current.delete(a.id);
                           }}
                           onClick={() => setFocusedAssignment(active ? null : a.id)}
-                          className={`flex-1 min-w-0 text-left rounded-md border bg-background px-3 py-2 text-sm transition ${
+                          className={`flex-1 min-w-0 text-left rounded-lg border bg-background p-4 transition min-h-[92px] ${
                             active ? "border-primary bg-primary/5" : "hover:bg-accent"
                           }`}
                         >
                           <div className="flex items-center justify-between gap-2">
-                            <span className="font-medium truncate">{a.code}</span>
+                            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                              {a.code}
+                            </span>
                             <Badge variant={mappedCount > 0 ? "default" : "outline"} className="text-[10px]">
-                              {mappedCount}
+                              {mappedCount} mapped
                             </Badge>
                           </div>
-                          <div className="text-xs text-muted-foreground truncate">
-                            {a.title.replace(/^.*—\s*/, "")}
+                          <div className="mt-1 text-[17px] font-semibold leading-snug text-foreground line-clamp-2">
+                            {cleanTitle}
                           </div>
                           {a.dueAt && (
-                            <div className="mt-0.5 text-[10px] text-muted-foreground">
+                            <div className="mt-1.5 text-xs text-muted-foreground">
                               Due {format(new Date(a.dueAt), "MMM d")}
                             </div>
                           )}
@@ -473,7 +488,7 @@ function ThreadsInbox() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-64">
-                          {classes.map((c) => (
+                          {visibleClasses.map((c) => (
                             <div key={c.id}>
                               <DropdownMenuLabel className="text-xs">
                                 {c.courseCode ?? c.name}
