@@ -306,7 +306,7 @@ function ThreadsInbox() {
       ) : hasClasses ? (
         <div
           ref={gridRef}
-          className="relative grid gap-6 lg:grid-cols-[220px_minmax(320px,1fr)_minmax(0,3fr)]"
+          className="relative grid gap-6 lg:grid-cols-[360px_minmax(320px,1fr)_minmax(0,3fr)]"
         >
           {/* SVG overlay for dashed navy connection lines */}
           <svg
@@ -340,35 +340,48 @@ function ThreadsInbox() {
                 </div>
                 <div className="space-y-1">
                   {c.assignments.map((a) => {
-                    const mappedCount = mappedThreadIdsByAssignment.get(a.id)?.length ?? 0;
+                    const mappedIds = mappedThreadIdsByAssignment.get(a.id) ?? [];
+                    const mappedCount = mappedIds.length;
                     const active = focusedAssignment === a.id;
                     return (
-                      <button
-                        key={a.id}
-                        ref={(el) => {
-                          if (el) assignmentRefs.current.set(a.id, el);
-                          else assignmentRefs.current.delete(a.id);
-                        }}
-                        onClick={() => setFocusedAssignment(active ? null : a.id)}
-                        className={`w-full text-left rounded-md border bg-background px-3 py-2 text-sm transition ${
-                          active ? "border-primary bg-primary/5" : "hover:bg-accent"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="font-medium truncate">{a.code}</span>
-                          <Badge variant={mappedCount > 0 ? "default" : "outline"} className="text-[10px]">
-                            {mappedCount}
-                          </Badge>
-                        </div>
-                        <div className="text-xs text-muted-foreground truncate">
-                          {a.title.replace(/^.*—\s*/, "")}
-                        </div>
-                        {a.dueAt && (
-                          <div className="mt-0.5 text-[10px] text-muted-foreground">
-                            Due {format(new Date(a.dueAt), "MMM d")}
+                      <div key={a.id} className="flex items-stretch gap-2">
+                        <Button
+                          size="sm"
+                          variant="default"
+                          disabled={!mappedCount || busy}
+                          onClick={() => openDialog({ assignmentId: a.id, threadIds: mappedIds })}
+                          className="h-auto shrink-0 gap-1 px-2 py-1 text-[11px]"
+                          title={mappedCount ? "Generate receipt from mapped threads" : "Map threads first"}
+                        >
+                          <Sparkles className="h-3 w-3" />
+                          Receipt
+                        </Button>
+                        <button
+                          ref={(el) => {
+                            if (el) assignmentRefs.current.set(a.id, el);
+                            else assignmentRefs.current.delete(a.id);
+                          }}
+                          onClick={() => setFocusedAssignment(active ? null : a.id)}
+                          className={`flex-1 min-w-0 text-left rounded-md border bg-background px-3 py-2 text-sm transition ${
+                            active ? "border-primary bg-primary/5" : "hover:bg-accent"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-medium truncate">{a.code}</span>
+                            <Badge variant={mappedCount > 0 ? "default" : "outline"} className="text-[10px]">
+                              {mappedCount}
+                            </Badge>
                           </div>
-                        )}
-                      </button>
+                          <div className="text-xs text-muted-foreground truncate">
+                            {a.title.replace(/^.*—\s*/, "")}
+                          </div>
+                          {a.dueAt && (
+                            <div className="mt-0.5 text-[10px] text-muted-foreground">
+                              Due {format(new Date(a.dueAt), "MMM d")}
+                            </div>
+                          )}
+                        </button>
+                      </div>
                     );
                   })}
                 </div>
@@ -376,34 +389,8 @@ function ThreadsInbox() {
             ))}
           </aside>
 
-          {/* Center column: focused-assignment action */}
-          <div className="relative hidden lg:flex flex-col items-center justify-center gap-2 py-2" style={{ zIndex: 2 }}>
-            {focused ? (
-              <>
-                <div className="text-center text-xs text-muted-foreground">
-                  <div className="font-medium text-foreground">{focused.code}</div>
-                  <div>{focusedMappedIds.length} mapped</div>
-                </div>
-                <Button
-                  size="sm"
-                  disabled={!focusedMappedIds.length || busy}
-                  onClick={() => openDialog({ assignmentId: focused.id, threadIds: focusedMappedIds })}
-                  className="gap-1"
-                >
-                  <Sparkles className="h-3.5 w-3.5" /> Generate Receipt
-                </Button>
-                {!focusedMappedIds.length && (
-                  <p className="text-[10px] text-muted-foreground text-center max-w-[120px]">
-                    Assign threads on the right to enable
-                  </p>
-                )}
-              </>
-            ) : (
-              <p className="text-[11px] text-muted-foreground text-center max-w-[120px]">
-                Select an assignment to focus mapped threads and generate its receipt
-              </p>
-            )}
-          </div>
+          {/* Center column: empty spacer for connection lines */}
+          <div className="hidden lg:block" aria-hidden />
 
           {/* Right column: Threads */}
           <div className="relative space-y-2" style={{ zIndex: 2 }}>
