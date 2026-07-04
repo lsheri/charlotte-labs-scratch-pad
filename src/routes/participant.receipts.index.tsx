@@ -13,10 +13,16 @@ import { ProvenanceVial } from "@/components/provenance/ProvenanceVial";
 import { PendingReceiptJobCard } from "@/components/receipt/PendingReceiptJobCard";
 import { IncompleteJobsPanel } from "@/components/receipt/IncompleteJobsPanel";
 import { EditableReceiptTitle } from "@/components/receipt/EditableReceiptTitle";
+import { useActiveWorkspaceId } from "@/lib/activeWorkspace";
 
 export const Route = createFileRoute("/participant/receipts/")({
-  component: () => <ReceiptsList />,
+  component: ReceiptsRoute,
 });
+
+function ReceiptsRoute() {
+  const [activeWorkspaceId] = useActiveWorkspaceId();
+  return <ReceiptsList classId={activeWorkspaceId ?? undefined} />;
+}
 
 interface R { id: string; tool_used: string; prompt_preview: string | null; created_at: string; metadata: any; }
 
@@ -109,7 +115,11 @@ export function ReceiptsList({ classId }: { classId?: string } = {}) {
         <h1 className="text-2xl font-semibold flex items-center gap-2">
           <ReceiptIcon className="h-6 w-6" /> Receipts
         </h1>
-        <p className="text-sm text-muted-foreground">Analyzed AI fluency receipts you've generated from your threads.</p>
+        <p className="text-sm text-muted-foreground">
+          {classId
+            ? "Scoped to your current workspace — only receipts submitted to this class's assignments."
+            : "Analyzed AI fluency receipts you've generated from your threads."}
+        </p>
       </div>
       <DirectionalNote />
       <IncompleteJobsPanel onChange={refresh} />

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   Home, MessageSquare, Receipt, Plug, Fingerprint, LogOut, Plus,
-  Briefcase, GraduationCap, ChevronRight, FileText,
+  Briefcase, GraduationCap, ChevronRight, FileText, Check, ChevronsUpDown, User,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { CharlotteLogo } from "@/components/CharlotteLogo";
@@ -10,24 +10,19 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { getExtensionHealth } from "@/serverfn/extension";
 import { listClassSidebar } from "@/serverfn/assignments";
+import { useActiveWorkspaceId } from "@/lib/activeWorkspace";
 import {
   Collapsible, CollapsibleContent, CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
+  DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubItem,
   SidebarMenuSubButton, SidebarHeader, SidebarFooter, useSidebar,
 } from "@/components/ui/sidebar";
-
-const workspaceGroup = {
-  label: "Workspace",
-  items: [
-    { title: "Home", url: "/participant", icon: Home, exact: true },
-    { title: "Workspaces", url: "/participant/workspaces", icon: Briefcase },
-    { title: "All Threads", url: "/participant/threads", icon: MessageSquare },
-    { title: "All Receipts", url: "/participant/receipts", icon: Receipt },
-  ],
-};
 
 const toolsGroup = {
   label: "Tools",
@@ -49,15 +44,40 @@ export function ParticipantSidebar() {
   const collapsed = state === "collapsed";
   const path = useRouterState({ select: (r) => r.location.pathname });
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const fetchHealth = useServerFn(getExtensionHealth);
   const fetchClasses = useServerFn(listClassSidebar);
   const [healthStatus, setHealthStatus] = useState<"green" | "amber" | "red" | "unknown" | null>(null);
   const [classes, setClasses] = useState<SidebarClass[]>([]);
+  const [activeWorkspaceId, setActiveWorkspaceId] = useActiveWorkspaceId();
 
   useEffect(() => {
     fetchHealth().then((h) => setHealthStatus(h.status)).catch(() => {});
     fetchClasses().then((r) => setClasses((r.classes ?? []) as any)).catch(() => {});
   }, [fetchHealth, fetchClasses]);
+
+  useEffect(() => {
+    const m = path.match(/^\/participant\/department\/([^/]+)/);
+    if (m && m[1] !== activeWorkspaceId) setActiveWorkspaceId(m[1]);
+  }, [path, activeWorkspaceId, setActiveWorkspaceId]);
+
+  const activeClass = activeWorkspaceId
+    ? classes.find((c) => c.id === activeWorkspaceId) ?? null
+    : null;
+  const activeLabel = activeClass ? (activeClass.courseCode ?? activeClass.name) : "Personal";
+  const threadsUrl = activeClass ? `/participant/department/${activeClass.id}/threads` : "/participant/threads";
+  const receiptsUrl = activeClass ? `/participant/department/${activeClass.id}/receipts` : "/participant/receipts";
+  const homeUrl = activeClass ? `/participant/department/${activeClass.id}` : "/participant";
+
+  const workspaceGroup = {
+    label: "Workspace",
+    items: [
+      { title: "Home", url: homeUrl, icon: Home, exact: !activeClass },
+      { title: "Workspaces", url: "/participant/workspaces", icon: Briefcase },
+      { title: activeClass ? "Threads" : "All Threads", url: threadsUrl, icon: MessageSquare },
+      { title: activeClass ? "Receipts" : "All Receipts", url: receiptsUrl, icon: Receipt },
+    ],
+  };
 
   const isActive = (url: string, exact?: boolean) =>
     exact ? path === url : path === url || path.startsWith(url + "/");
@@ -67,6 +87,12 @@ export function ParticipantSidebar() {
     : s === "amber" ? "bg-amber-500"
     : s === "red" ? "bg-destructive"
     : "bg-muted-foreground/40";
+
+  const pickWorkspace = (id: string | null) => {
+    setActiveWorkspaceId(id);
+    if (id) navigate({ to: `/participant/department/${id}` as any });
+    else navigate({ to: "/participant" });
+  };
 
   const renderGroup = (g: typeof workspaceGroup) => (
     <SidebarGroup key={g.label}>
@@ -101,6 +127,51 @@ export function ParticipantSidebar() {
           <CharlotteLogo className="h-7 w-7 shrink-0" />
           {!collapsed && <span className="font-semibold tracking-tight">Charlotte Labs</span>}
         </Link>
+        {!collapsed && (
+          <div className="px-2 pb-1">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="w-full rounded-md border bg-background px-2.5 py-2 text-left transition hover:bg-accent"
+                  aria-label="Switch workspace"
+                >
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Working in
+                  </div>
+                  <div className="mt-0.5 flex items-center gap-2">
+                    {activeClass ? (
+                      <GraduationCap className="h-4 w-4 shrink-0 text-primary" />
+                    ) : (
+                      <User className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    )}
+                    <span className="flex-1 truncate text-sm font-semibold">{activeLabel}</span>
+                    <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  </div>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56">
+                <DropdownMenuLabel className="text-xs">Switch workspace</DropdownMenuLabel>
+                <DropdownMenuItem onSelect={() => pickWorkspace(null)} className="flex items-center gap-2">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  <span className="flex-1">Personal</span>
+                  {!activeClass && <Check className="h-4 w-4 text-primary" />}
+                </DropdownMenuItem>
+                {classes.length > 0 && <DropdownMenuSeparator />}
+                {classes.map((c) => (
+                  <DropdownMenuItem
+                    key={c.id}
+                    onSelect={() => pickWorkspace(c.id)}
+                    className="flex items-center gap-2"
+                  >
+                    <GraduationCap className="h-4 w-4 text-primary" />
+                    <span className="flex-1 truncate">{c.courseCode ?? c.name}</span>
+                    {activeWorkspaceId === c.id && <Check className="h-4 w-4 text-primary" />}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
         {!collapsed && (
           <Link to="/participant/extension" className="px-2">
             <Button size="sm" className="w-full justify-start gap-2">

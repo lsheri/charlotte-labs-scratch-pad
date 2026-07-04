@@ -30,10 +30,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import charlotteMascot from "@/assets/charlotte-mascot.png";
 import { setPendingReceiptJob } from "@/lib/pendingReceiptJob";
+import { useActiveWorkspaceId } from "@/lib/activeWorkspace";
 
 export const Route = createFileRoute("/participant/threads/")({
-  component: () => <ThreadsInbox />,
+  component: ThreadsRoute,
 });
+
+function ThreadsRoute() {
+  const [activeWorkspaceId] = useActiveWorkspaceId();
+  return <ThreadsInbox classId={activeWorkspaceId ?? undefined} />;
+}
 
 type SidebarClass = {
   id: string; name: string; courseCode: string | null;
