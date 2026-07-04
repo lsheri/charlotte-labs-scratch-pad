@@ -1,0 +1,1 @@
+UPDATE public.receipt_jobs SET status='queued', stage='queued', attempts=0, error=NULL, updated_at=now() - interval '10 minutes' WHERE id IN ('62d89060-9cbe-499c-b6f4-eb36150cb8e8','562e61d2-be37-4f93-8b5b-a53505228f72');
