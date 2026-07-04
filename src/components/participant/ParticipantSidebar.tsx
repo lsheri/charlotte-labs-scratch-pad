@@ -200,6 +200,22 @@ function ClassEntry({
                 <Link to={overviewUrl}>Overview</Link>
               </SidebarMenuSubButton>
             </SidebarMenuSubItem>
+            <SidebarMenuSubItem>
+              <SidebarMenuSubButton asChild isActive={isActive(`${overviewUrl}/threads`)}>
+                <Link to={`${overviewUrl}/threads` as any} className="flex items-center gap-2">
+                  <MessageSquare className="h-3 w-3 shrink-0 opacity-60" />
+                  <span>Threads</span>
+                </Link>
+              </SidebarMenuSubButton>
+            </SidebarMenuSubItem>
+            <SidebarMenuSubItem>
+              <SidebarMenuSubButton asChild isActive={isActive(`${overviewUrl}/receipts`)}>
+                <Link to={`${overviewUrl}/receipts` as any} className="flex items-center gap-2">
+                  <Receipt className="h-3 w-3 shrink-0 opacity-60" />
+                  <span>Receipts</span>
+                </Link>
+              </SidebarMenuSubButton>
+            </SidebarMenuSubItem>
             {c.assignments.length > 0 && (
               <div className="mt-1 px-2 pt-1 text-[10px] uppercase tracking-wide text-muted-foreground/70">
                 Assignments
