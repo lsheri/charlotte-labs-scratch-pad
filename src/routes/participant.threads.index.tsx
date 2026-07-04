@@ -345,8 +345,12 @@ function ThreadsInbox() {
                     return (
                       <button
                         key={a.id}
+                        ref={(el) => {
+                          if (el) assignmentRefs.current.set(a.id, el);
+                          else assignmentRefs.current.delete(a.id);
+                        }}
                         onClick={() => setFocusedAssignment(active ? null : a.id)}
-                        className={`w-full text-left rounded-md border px-3 py-2 text-sm transition ${
+                        className={`w-full text-left rounded-md border bg-background px-3 py-2 text-sm transition ${
                           active ? "border-primary bg-primary/5" : "hover:bg-accent"
                         }`}
                       >
