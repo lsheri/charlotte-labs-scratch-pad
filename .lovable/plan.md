@@ -1,91 +1,96 @@
-## Goal
+## 1. Add Problem Set 3
 
-Treat a "class" as a regular workspace (a `research_sessions` row), seed **Principles of Microeconomics — ECON201**, add an **Assignments** concept, and give every member a **Department** view showing class-wide tools, fluency, and assignments at risk of AI trivialness. Instructor and student see the same view (matches your answer).
+Insert PS3 ("Market Power, Strategic Behavior & Market Failure") into `class_assignments` for ECON201, matching the same rubric shape as PS1/PS2 (parts A/B/C, per-question points, weights 40/30/20/10). Due start of Week 13.
 
-## 1. Seed workspace + membership
+## 2. Sidebar: workspace → assignments dropdown
 
-Insert one row into `research_sessions`:
-- `name`: "Principles of Microeconomics — ECON201"
-- `description`: "ECON201 class workspace"
-- `kind`: `research` (we're reusing the existing kind — no enum change)
-- `status`: `active`
-- `join_code`: `ECON201`
-- `researcher_id`: liam@charlotte-labs.com's user id
-- `consent_text`: class-appropriate copy
+Today the sidebar has flat entries: `Workspaces`, `Threads`, `Receipts`, and (if the user is in a class) a `Department` link.
 
-Insert `session_participants` row auto-consenting liam as both owner + member so he sees it in his workspace list.
+Change: replace the single `Department` link with a **per-class collapsible group** below the Workspace section. Each open/active class shows:
 
-Tag class workspaces via a new `metadata` jsonb column on `research_sessions` (added in step 2) with `{ "kind": "class", "course_code": "ECON201", "term": "Spring 2026" }` — avoids touching the `kind` enum while keeping room for future class fields (roster caps, term dates).
+```text
+▾ ECON 201 · Principles of Microeconomics
+    Overview          (→ /participant/department/$classId)
+    ── Assignments ──
+    PS1  Problem Set 1                (→ .../assignments/$id)
+    PRES1 Presentation                (→ .../assignments/$id)
+    PS2  Problem Set 2
+    PS3  Problem Set 3
+```
 
-## 2. Assignments schema
+Uses shadcn `Collapsible` inside `SidebarGroup`. Default open when the current route is inside that class. Assignments are fetched once via a new lightweight `listClassSidebar()` server fn (id, name, assignments: `[{id, code, title}]`), cached per class in component state.
 
-New tables (migration, with GRANTs + RLS):
+New route stub: `/participant/department/$classId/assignments/$assignmentId` renders a simple assignment detail page (title, description, rubric parts, due date, list of the student's own submissions/mapped threads). Full detail page can grow later.
 
-- `class_assignments`
-  - `session_id` fk → research_sessions
-  - `code` (e.g. `PS-01`), `title`, `description`, `due_at`
-  - `expected_tools text[]` (e.g. `['chatgpt','claude']`) — optional
-  - `rubric jsonb` (free-form for now)
-- `assignment_submissions`
-  - `assignment_id` fk
-  - `participant_id` fk → auth.users
-  - `receipt_id` fk → receipts (nullable — students attach a receipt)
-  - `submitted_at`, `notes`
-  - unique(`assignment_id`,`participant_id`)
-- Add `metadata jsonb default '{}'::jsonb` to `research_sessions` for the class tag above.
+## 3. Threads page: map threads to assignments
 
-**RLS:**
-- Members of the session can `SELECT` assignments/submissions in their session.
-- Members can `INSERT/UPDATE` their own submission rows.
-- Session owner (researcher_id) can `INSERT/UPDATE/DELETE` assignments.
+Rework `/participant/threads` into a two-column layout when the student belongs to at least one class. If they belong to none, the current single list is preserved.
 
-**AI trivialness risk** is derived, not stored — computed from the submission's linked receipt:
-- Low tool count + short prompts + high "single-shot copy" pattern → **high risk**
-- Multi-turn + revisions + multiple tools + explicit critique turns → **low risk**
-- Formula lives in `src/lib/trivialnessRisk.ts` so it's easy to tune later.
+```text
+┌───────────────────────┬──────────────┬────────────────────────────┐
+│  Assignments (left)   │   center     │  Threads (right)           │
+│                       │              │                            │
+│  ECON201 ▾            │              │  [thread card]  Map ▸      │
+│   • PS1   (2 mapped)  │  ┌────────┐  │  [thread card]  Map ▸      │
+│     └ Generate Receipt│  │        │  │  [thread card]  Map ▸      │
+│   • PRES1 (0)         │  └────────┘  │  ...                       │
+│   • PS2   (1 mapped)  │              │                            │
+│   • PS3   (0)         │              │                            │
+│  Unassigned  (5)      │              │                            │
+└───────────────────────┴──────────────┴────────────────────────────┘
+```
 
-## 3. Server functions
+Interaction:
+- Left: a list of the student's classes → assignments. Selecting an assignment "focuses" it (highlights the row and filters the right side to show the mapped threads first, then the rest as "Available to map").
+- Right: each thread card gets an `Assign ▸` menu listing the student's assignments. Choosing one maps it. A mapped thread shows a small chip like `PS1 ×` (click × to unmap).
+- Center strip: when an assignment is focused AND has ≥1 mapped thread, a prominent `Generate Receipt` button appears there. It opens the existing `NewReceiptDialog` prefilled with the mapped threads, defaults the workflow name to the assignment code+title, and after the receipt is created writes the resulting `receipt_id` into `assignment_submissions` (one row per assignment/participant, upsert).
 
-New file `src/serverfn/department.ts`:
-- `listMyClasses()` — workspaces where `metadata->>'kind' = 'class'` that the user belongs to.
-- `getDepartmentOverview({ classId })` — returns:
-  - class meta (code, title, join code)
-  - member count
-  - **tool usage**: aggregate `receipts.tool_used` counts across all members in that session
-  - **class fluency**: average of members' latest `participant_fluency_profiles` scores per dimension (already scoped by session in existing tables)
-  - **assignments** with per-assignment stats: submitted count, avg risk, list of at-risk submissions (top N)
-- `listClassAssignments({ classId })`, `getAssignmentDetail({ assignmentId })` — for later mock-data drill-downs.
+The existing "Select threads → Generate Receipt (N)" flow remains, so students can still generate a receipt that isn't tied to an assignment.
 
-All use `requireSupabaseAuth` and check membership via `session_participants`.
+## 4. Schema
 
-## 4. Department view (route + UI)
+Add a mapping table so a thread can be tied to an assignment before any receipt exists (current `assignment_submissions` only holds `receipt_id`).
 
-New routes:
-- `src/routes/participant.department.tsx` — index. If user belongs to exactly one class, redirect to its detail; otherwise list class workspaces.
-- `src/routes/participant.department.$classId.tsx` — the actual dashboard.
+```sql
+create table public.assignment_threads (
+  id uuid primary key default gen_random_uuid(),
+  assignment_id uuid not null references public.class_assignments(id) on delete cascade,
+  thread_id uuid not null references public.chat_threads(id) on delete cascade,
+  participant_id uuid not null references auth.users(id) on delete cascade,
+  mapped_at timestamptz not null default now(),
+  unique (assignment_id, thread_id)
+);
+```
 
-Dashboard sections (same for everyone):
-1. **Header** — course code + title, member count, join code chip.
-2. **Class tools** — reuse `ToolLogo` in a horizontal bar with usage counts (bar chart via existing `chart.tsx`).
-3. **Class fluency** — reuse `FluencyRadarChart` (already exists) fed by the aggregated dimension scores.
-4. **Assignments** — table: code, title, due date, submitted / total, "at risk" count badge. Rows expand to show at-risk submissions (participant anon label + receipt link).
-5. Empty states everywhere so it renders cleanly before you upload mock data.
+- `GRANT` to authenticated + service_role
+- RLS: participant can `select/insert/delete` where `participant_id = auth.uid()` AND is a member of the assignment's class session; instructor of the class can `select`
+- No update policy (map or unmap only)
 
-## 5. Sidebar entry
+`assignment_submissions` is still written when a receipt is generated for an assignment (existing shape), so the Department view keeps working.
 
-Edit `src/components/participant/ParticipantSidebar.tsx`:
-- Add a "Department" item (icon: `GraduationCap` from lucide) linking to `/participant/department`.
-- Show it only when `listMyClasses()` returns ≥ 1 (small `useQuery` in the sidebar), so it stays hidden for users without a class.
+## 5. Server functions
 
-## 6. Out of scope this pass
+New file `src/serverfn/assignments.ts` (auth-scoped, uses `requireSupabaseAuth`):
+- `listClassSidebar()` → for each of the student's classes: `{ id, name, courseCode, assignments: [{id, code, title, dueAt}] }`
+- `mapThreadToAssignment({ threadId, assignmentId })`
+- `unmapThreadFromAssignment({ threadId, assignmentId })`
+- `listAssignmentMappings({ classId? })` → for the current student: array of `{ assignmentId, threadIds: [] }`
+- `getAssignmentDetail({ assignmentId })` → assignment + this student's mapped threads + latest submission receipt
 
-- Creating mock student accounts and mock receipts — you'll do that next; the schema + views will accept them as-is.
-- Instructor-only controls (create assignment UI, roster management). Assignments will be seeded via the insert tool when you're ready with mock data, or we add an "Add assignment" dialog in a follow-up.
-- Per-student drill-down beyond the anonymized at-risk list (you said same view for both).
+Reuses existing `createReceiptFromThreads` from `serverfn/threads`; the threads page adds a post-success `upsert` into `assignment_submissions` when the receipt was generated in the "assignment-focused" flow.
 
-## Technical notes
+## 6. Files touched
 
-- No enum changes: `kind` stays `research`; class-ness lives in `research_sessions.metadata`.
-- Trivialness risk is a pure function over a receipt row — cached per-receipt in memory during the overview query, no new column.
-- Existing `anonymousLabel(userId)` from `src/lib/displayNames.ts` will label at-risk students in the class view too (consistent with admin views).
-- All new tables get `GRANT SELECT/INSERT/UPDATE/DELETE ... TO authenticated` + `GRANT ALL ... TO service_role` in the same migration.
+- `supabase/migrations/*` — PS3 insert + `assignment_threads` table with GRANT/RLS
+- `src/components/participant/ParticipantSidebar.tsx` — replace flat Department link with per-class collapsible group
+- `src/serverfn/assignments.ts` — new
+- `src/serverfn/department.ts` — extend `listMyClasses` (or new sidebar fn) to include assignments
+- `src/routes/participant.threads.index.tsx` — two-column layout, assignment focus, per-thread `Assign ▸` menu, center Generate-Receipt button, hooks into new server fns
+- `src/routes/participant.department.$classId.assignments.$assignmentId.tsx` — new assignment detail route (basic)
+- `src/routeTree.gen.ts` — auto-regenerated
+
+## 7. Out of scope this pass
+
+- Drag-and-drop with animated sankey lines (the screenshot is inspiration; we ship a clean click-to-map interaction first — dragging can be layered on later).
+- Instructor-side assignment authoring UI (assignments will keep being seeded via SQL for the demo).
+- Grading / scoring on submissions.
