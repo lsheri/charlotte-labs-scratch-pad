@@ -40,6 +40,7 @@ import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/em
 import { Route as ApiPublicHooksProcessThreadJobsRouteImport } from './routes/api/public/hooks/process-thread-jobs'
 import { Route as ApiPublicHooksProcessReceiptJobsRouteImport } from './routes/api/public/hooks/process-receipt-jobs'
 import { Route as ApiPublicCronResearcherDigestRouteImport } from './routes/api/public/cron/researcher-digest'
+import { Route as ParticipantDepartmentClassIdAssignmentsAssignmentIdRouteImport } from './routes/participant.department.$classId.assignments.$assignmentId'
 
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
   id: '/unsubscribe',
@@ -209,6 +210,12 @@ const ApiPublicCronResearcherDigestRoute =
     path: '/api/public/cron/researcher-digest',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ParticipantDepartmentClassIdAssignmentsAssignmentIdRoute =
+  ParticipantDepartmentClassIdAssignmentsAssignmentIdRouteImport.update({
+    id: '/assignments/$assignmentId',
+    path: '/assignments/$assignmentId',
+    getParentRoute: () => ParticipantDepartmentClassIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -227,7 +234,7 @@ export interface FileRoutesByFullPath {
   '/api/public/extension-status': typeof ApiPublicExtensionStatusRoute
   '/api/public/team-outreach': typeof ApiPublicTeamOutreachRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
-  '/participant/department/$classId': typeof ParticipantDepartmentClassIdRoute
+  '/participant/department/$classId': typeof ParticipantDepartmentClassIdRouteWithChildren
   '/participant/receipts/$receiptId': typeof ParticipantReceiptsReceiptIdRoute
   '/participant/threads/$threadId': typeof ParticipantThreadsThreadIdRoute
   '/participant/threads/new': typeof ParticipantThreadsNewRoute
@@ -242,6 +249,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/participant/department/$classId/assignments/$assignmentId': typeof ParticipantDepartmentClassIdAssignmentsAssignmentIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -259,7 +267,7 @@ export interface FileRoutesByTo {
   '/api/public/extension-status': typeof ApiPublicExtensionStatusRoute
   '/api/public/team-outreach': typeof ApiPublicTeamOutreachRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
-  '/participant/department/$classId': typeof ParticipantDepartmentClassIdRoute
+  '/participant/department/$classId': typeof ParticipantDepartmentClassIdRouteWithChildren
   '/participant/receipts/$receiptId': typeof ParticipantReceiptsReceiptIdRoute
   '/participant/threads/$threadId': typeof ParticipantThreadsThreadIdRoute
   '/participant/threads/new': typeof ParticipantThreadsNewRoute
@@ -274,6 +282,7 @@ export interface FileRoutesByTo {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/participant/department/$classId/assignments/$assignmentId': typeof ParticipantDepartmentClassIdAssignmentsAssignmentIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -293,7 +302,7 @@ export interface FileRoutesById {
   '/api/public/extension-status': typeof ApiPublicExtensionStatusRoute
   '/api/public/team-outreach': typeof ApiPublicTeamOutreachRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
-  '/participant/department/$classId': typeof ParticipantDepartmentClassIdRoute
+  '/participant/department/$classId': typeof ParticipantDepartmentClassIdRouteWithChildren
   '/participant/receipts/$receiptId': typeof ParticipantReceiptsReceiptIdRoute
   '/participant/threads/$threadId': typeof ParticipantThreadsThreadIdRoute
   '/participant/threads/new': typeof ParticipantThreadsNewRoute
@@ -308,6 +317,7 @@ export interface FileRoutesById {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/participant/department/$classId/assignments/$assignmentId': typeof ParticipantDepartmentClassIdAssignmentsAssignmentIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -343,6 +353,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/participant/department/$classId/assignments/$assignmentId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -375,6 +386,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/participant/department/$classId/assignments/$assignmentId'
   id:
     | '__root__'
     | '/'
@@ -408,6 +420,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/participant/department/$classId/assignments/$assignmentId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -651,15 +664,38 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronResearcherDigestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/participant/department/$classId/assignments/$assignmentId': {
+      id: '/participant/department/$classId/assignments/$assignmentId'
+      path: '/assignments/$assignmentId'
+      fullPath: '/participant/department/$classId/assignments/$assignmentId'
+      preLoaderRoute: typeof ParticipantDepartmentClassIdAssignmentsAssignmentIdRouteImport
+      parentRoute: typeof ParticipantDepartmentClassIdRoute
+    }
   }
 }
 
+interface ParticipantDepartmentClassIdRouteChildren {
+  ParticipantDepartmentClassIdAssignmentsAssignmentIdRoute: typeof ParticipantDepartmentClassIdAssignmentsAssignmentIdRoute
+}
+
+const ParticipantDepartmentClassIdRouteChildren: ParticipantDepartmentClassIdRouteChildren =
+  {
+    ParticipantDepartmentClassIdAssignmentsAssignmentIdRoute:
+      ParticipantDepartmentClassIdAssignmentsAssignmentIdRoute,
+  }
+
+const ParticipantDepartmentClassIdRouteWithChildren =
+  ParticipantDepartmentClassIdRoute._addFileChildren(
+    ParticipantDepartmentClassIdRouteChildren,
+  )
+
 interface ParticipantDepartmentRouteChildren {
-  ParticipantDepartmentClassIdRoute: typeof ParticipantDepartmentClassIdRoute
+  ParticipantDepartmentClassIdRoute: typeof ParticipantDepartmentClassIdRouteWithChildren
 }
 
 const ParticipantDepartmentRouteChildren: ParticipantDepartmentRouteChildren = {
-  ParticipantDepartmentClassIdRoute: ParticipantDepartmentClassIdRoute,
+  ParticipantDepartmentClassIdRoute:
+    ParticipantDepartmentClassIdRouteWithChildren,
 }
 
 const ParticipantDepartmentRouteWithChildren =
