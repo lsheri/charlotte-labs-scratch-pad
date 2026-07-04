@@ -34,7 +34,7 @@ function looksLikeAIResponse(text: string, medianLength?: number): number {
 }
 
 const USER_LABELS = /^(user|me|you|human|student|turn\s*\d+\s*\n?\s*user)[^:]*:/i;
-const AI_LABELS = /^(assistant|ai|chatgpt|claude|gemini|copilot|perplexity|grok|deepseek|lovable|bolt|model|a)[^:]*:/i;
+const AI_LABELS = /^(assistant|ai|chatgpt|claude|gemini|copilot|perplexity|grok|deepseek|lovable|bolt|a)[^:]*:/i;
 
 function tryLabelParsing(text: string): ConversationTurn[] | null {
   const turns: ConversationTurn[] = [];
