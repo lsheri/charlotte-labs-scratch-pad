@@ -51,6 +51,7 @@ export function ParticipantSidebar() {
   const [classes, setClasses] = useState<SidebarClass[]>([]);
   const [personalSessionId, setPersonalSessionId] = useState<string | null>(null);
   const [activeWorkspaceId, setActiveWorkspaceId] = useActiveWorkspaceId();
+  const [deckOpen, setDeckOpen] = useState(false);
 
   useEffect(() => {
     fetchHealth().then((h) => setHealthStatus(h.status)).catch(() => {});
