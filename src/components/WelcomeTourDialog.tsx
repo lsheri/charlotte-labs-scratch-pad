@@ -49,7 +49,7 @@ export function WelcomeTourDialog({ userId }: { userId: string | null | undefine
         </div>
 
         <div className="rounded-md border-l-4 border-brand-mint bg-brand-mint/10 p-3 text-xs text-foreground">
-          You're a <strong>co-researcher</strong>, not a test subject. You're anonymous-by-default in admin views.
+          Charlotte is your <strong>study coach</strong> for AI-assisted work. Your data stays private to you.
         </div>
 
         <DialogFooter className="gap-2 sm:gap-0">
