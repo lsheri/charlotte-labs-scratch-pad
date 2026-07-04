@@ -13,6 +13,7 @@ import { ReceiptBuildingState } from "@/components/receipt/ReceiptBuildingState"
 import { TemplateTabs } from "@/components/receipt/TemplateTabs";
 import { StudyGapTemplate } from "@/components/receipt/templates/StudyGapTemplate";
 import { VerificationRiskTemplate } from "@/components/receipt/templates/VerificationRiskTemplate";
+import { runStudyTemplate } from "@/serverfn/study-analyses";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
