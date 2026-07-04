@@ -406,7 +406,7 @@ function ThreadsInbox() {
           </div>
 
           {/* Right column: Threads */}
-          <div className="space-y-2">
+          <div className="relative space-y-2" style={{ zIndex: 2 }}>
             {threads.length === 0 ? (
               <Card>
                 <CardContent className="py-10 text-center text-sm text-muted-foreground">
@@ -423,7 +423,11 @@ function ThreadsInbox() {
                 return (
                   <Card
                     key={th.id}
-                    className={`${selected.has(th.id) ? "border-primary" : ""} ${
+                    ref={(el) => {
+                      if (el) threadRefs.current.set(th.id, el as unknown as HTMLElement);
+                      else threadRefs.current.delete(th.id);
+                    }}
+                    className={`bg-background ${selected.has(th.id) ? "border-primary" : ""} ${
                       isMappedToFocused ? "ring-1 ring-primary/40" : ""
                     }`}
                   >
