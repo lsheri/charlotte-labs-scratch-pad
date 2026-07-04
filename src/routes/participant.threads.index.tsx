@@ -262,7 +262,7 @@ function ThreadsInbox() {
           </CardContent>
         </Card>
       ) : hasClasses ? (
-        <div className="grid gap-4 lg:grid-cols-[300px_140px_minmax(0,1fr)]">
+        <div className="grid gap-8 lg:gap-12 lg:grid-cols-[280px_minmax(220px,1fr)_minmax(0,2fr)]">
           {/* Left column: Assignments */}
           <aside className="space-y-3">
             <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
