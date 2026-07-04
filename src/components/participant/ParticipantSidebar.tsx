@@ -24,8 +24,8 @@ const workspaceGroup = {
   items: [
     { title: "Home", url: "/participant", icon: Home, exact: true },
     { title: "Workspaces", url: "/participant/workspaces", icon: Briefcase },
-    { title: "Threads", url: "/participant/threads", icon: MessageSquare },
-    { title: "Receipts", url: "/participant/receipts", icon: Receipt },
+    { title: "All Threads", url: "/participant/threads", icon: MessageSquare },
+    { title: "All Receipts", url: "/participant/receipts", icon: Receipt },
   ],
 };
 
