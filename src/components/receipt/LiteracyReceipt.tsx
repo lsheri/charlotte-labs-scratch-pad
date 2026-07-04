@@ -68,14 +68,14 @@ function getProfileScore(profile: ProfileData, canonicalName: string): number {
 
 export function LiteracyReceipt({ receipt, audit, runMeta, turns, tools, recommendations, recommendationsLoading = false, profile, showTranscript = false, adminView = false }: Props) {
   const band = audit ? overallBand(audit.overall_level) : null;
-  const receiptDims = audit?.dimensions?.map(d => ({ label: d.display_name, value: d.score ?? 0 })) ?? [];
+  const receiptDims = audit?.dimensions?.map((d: any) => ({ label: d.display_name, value: d.score ?? 0 })) ?? [];
   const profileReceiptCount = profile?.receipt_count_total ?? 0;
   const profileReady = !!profile && profileReceiptCount >= 3;
   const radarSeries: RadarSeries[] | undefined = (() => {
     if (!profileReady || !audit?.dimensions?.length) return undefined;
-    const dims = audit.dimensions.filter(d => d.canonical_name !== 'capital_stewardship');
-    const profileDims = dims.map(d => ({ label: d.display_name, value: getProfileScore(profile!, d.canonical_name) }));
-    const receiptOverlay = dims.map(d => ({ label: d.display_name, value: d.score ?? 0 }));
+    const dims = audit.dimensions.filter((d: any) => d.canonical_name !== 'capital_stewardship');
+    const profileDims = dims.map((d: any) => ({ label: d.display_name, value: getProfileScore(profile!, d.canonical_name) }));
+    const receiptOverlay = dims.map((d: any) => ({ label: d.display_name, value: d.score ?? 0 }));
     return [
       { label: 'Your profile', dimensions: profileDims },
       { label: 'This receipt', dimensions: receiptOverlay, color: '#D94F88' },
