@@ -86,9 +86,14 @@ export function ThreadsInbox({ classId }: { classId?: string } = {}) {
     usageFn().then((r: any) => setUsage({ used: r.used ?? 0, limit: r.limit ?? 7, exempt: !!r.exempt })).catch(() => {});
   }, [user, dialogOpen]);
 
+  const visibleClasses = useMemo(
+    () => (classId ? classes.filter((c) => c.id === classId) : classes),
+    [classes, classId],
+  );
+  const scopedClass = classId ? visibleClasses[0] ?? null : null;
   const allAssignments = useMemo(
-    () => classes.flatMap((c) => c.assignments.map((a) => ({ ...a, classId: c.id, className: c.courseCode ?? c.name }))),
-    [classes],
+    () => visibleClasses.flatMap((c) => c.assignments.map((a) => ({ ...a, classId: c.id, className: c.courseCode ?? c.name }))),
+    [visibleClasses],
   );
   const assignmentById = useMemo(
     () => new Map(allAssignments.map((a) => [a.id, a])),
