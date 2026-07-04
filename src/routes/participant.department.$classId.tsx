@@ -122,6 +122,57 @@ function ClassDashboard() {
         </Card>
       </section>
 
+      {trends && (
+        <section className="space-y-3">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <TrendingUp className="h-4 w-4" /> Trends (last 12 weeks)
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardHeader className="pb-2"><CardTitle className="text-xs font-medium text-muted-foreground">Tool mix over time</CardTitle></CardHeader>
+              <CardContent>
+                <MiniSeries
+                  emptyLabel="No tool activity yet."
+                  weeks={trends.tools.weeks}
+                  series={trends.tools.series.slice(0, 4).map((s: any) => ({
+                    label: s.tool,
+                    values: s.points.map((p: any) => p.count),
+                  }))}
+                />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2"><CardTitle className="text-xs font-medium text-muted-foreground">Fluency dimensions</CardTitle></CardHeader>
+              <CardContent>
+                <MiniSeries
+                  emptyLabel="No fluency history yet."
+                  weeks={trends.fluency.weeks}
+                  max={10}
+                  series={trends.fluency.series.map((s: any) => ({
+                    label: s.label,
+                    values: s.points.map((p: any) => p.value ?? 0),
+                  }))}
+                />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2"><CardTitle className="text-xs font-medium text-muted-foreground">Assignment risk</CardTitle></CardHeader>
+              <CardContent>
+                <MiniSeries
+                  emptyLabel="No submissions yet."
+                  weeks={Array.from(new Set(trends.assignments.flatMap((a: any) => a.points.map((p: any) => p.week)))).sort() as string[]}
+                  max={100}
+                  series={trends.assignments.slice(0, 4).map((a: any) => ({
+                    label: a.code || a.title,
+                    values: a.points.map((p: any) => p.avgRisk),
+                  }))}
+                />
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+      )}
+
       <section className="space-y-3">
         <h2 className="text-sm font-medium">Assignments</h2>
         {assignments.length === 0 ? (
