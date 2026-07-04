@@ -11,33 +11,18 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as ResearcherRouteImport } from './routes/researcher'
 import { Route as ParticipantRouteImport } from './routes/participant'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ResearcherIndexRouteImport } from './routes/researcher.index'
 import { Route as ParticipantIndexRouteImport } from './routes/participant.index'
-import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as ParticipantWorkspacesRouteImport } from './routes/participant.workspaces'
-import { Route as ParticipantWorkflowsRouteImport } from './routes/participant.workflows'
-import { Route as ParticipantHowItWorksRouteImport } from './routes/participant.how-it-works'
 import { Route as ParticipantFingerprintRouteImport } from './routes/participant.fingerprint'
 import { Route as ParticipantExtensionRouteImport } from './routes/participant.extension'
-import { Route as ParticipantDemoRouteImport } from './routes/participant.demo'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
-import { Route as AdminTeamOutreachRouteImport } from './routes/admin.team-outreach'
-import { Route as AdminSessionsRouteImport } from './routes/admin.sessions'
-import { Route as AdminReceiptRunsRouteImport } from './routes/admin.receipt-runs'
-import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
-import { Route as AdminConversationsRouteImport } from './routes/admin.conversations'
 import { Route as ParticipantThreadsIndexRouteImport } from './routes/participant.threads.index'
 import { Route as ParticipantReceiptsIndexRouteImport } from './routes/participant.receipts.index'
-import { Route as AdminUsersIndexRouteImport } from './routes/admin.users.index'
 import { Route as ShareProofReceiptIdRouteImport } from './routes/share.proof.$receiptId'
-import { Route as ResearcherSessionsSessionIdRouteImport } from './routes/researcher.sessions.$sessionId'
-import { Route as ResearcherConversationsConvIdRouteImport } from './routes/researcher.conversations.$convId'
 import { Route as ParticipantWorkspacesWorkspaceIdRouteImport } from './routes/participant.workspaces.$workspaceId'
 import { Route as ParticipantThreadsNewRouteImport } from './routes/participant.threads.new'
 import { Route as ParticipantThreadsThreadIdRouteImport } from './routes/participant.threads.$threadId'
@@ -46,10 +31,6 @@ import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/em
 import { Route as ApiPublicTeamOutreachRouteImport } from './routes/api/public/team-outreach'
 import { Route as ApiPublicExtensionStatusRouteImport } from './routes/api/public/extension-status'
 import { Route as ApiPublicCaptureConversationRouteImport } from './routes/api/public/capture-conversation'
-import { Route as AdminUsersUserIdRouteImport } from './routes/admin.users.$userId'
-import { Route as AdminThreadsThreadIdRouteImport } from './routes/admin.threads.$threadId'
-import { Route as AdminSessionsSessionIdRouteImport } from './routes/admin.sessions.$sessionId'
-import { Route as AdminReceiptsReceiptIdRouteImport } from './routes/admin.receipts.$receiptId'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -69,11 +50,6 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ResearcherRoute = ResearcherRouteImport.update({
-  id: '/researcher',
-  path: '/researcher',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ParticipantRoute = ParticipantRouteImport.update({
   id: '/participant',
   path: '/participant',
@@ -89,44 +65,19 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any)
-const ResearcherIndexRoute = ResearcherIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => ResearcherRoute,
 } as any)
 const ParticipantIndexRoute = ParticipantIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => ParticipantRoute,
 } as any)
-const AdminIndexRoute = AdminIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AdminRoute,
-} as any)
 const ParticipantWorkspacesRoute = ParticipantWorkspacesRouteImport.update({
   id: '/workspaces',
   path: '/workspaces',
-  getParentRoute: () => ParticipantRoute,
-} as any)
-const ParticipantWorkflowsRoute = ParticipantWorkflowsRouteImport.update({
-  id: '/workflows',
-  path: '/workflows',
-  getParentRoute: () => ParticipantRoute,
-} as any)
-const ParticipantHowItWorksRoute = ParticipantHowItWorksRouteImport.update({
-  id: '/how-it-works',
-  path: '/how-it-works',
   getParentRoute: () => ParticipantRoute,
 } as any)
 const ParticipantFingerprintRoute = ParticipantFingerprintRouteImport.update({
@@ -139,40 +90,10 @@ const ParticipantExtensionRoute = ParticipantExtensionRouteImport.update({
   path: '/extension',
   getParentRoute: () => ParticipantRoute,
 } as any)
-const ParticipantDemoRoute = ParticipantDemoRouteImport.update({
-  id: '/demo',
-  path: '/demo',
-  getParentRoute: () => ParticipantRoute,
-} as any)
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   id: '/email/unsubscribe',
   path: '/email/unsubscribe',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AdminTeamOutreachRoute = AdminTeamOutreachRouteImport.update({
-  id: '/team-outreach',
-  path: '/team-outreach',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminSessionsRoute = AdminSessionsRouteImport.update({
-  id: '/sessions',
-  path: '/sessions',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminReceiptRunsRoute = AdminReceiptRunsRouteImport.update({
-  id: '/receipt-runs',
-  path: '/receipt-runs',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminEmailsRoute = AdminEmailsRouteImport.update({
-  id: '/emails',
-  path: '/emails',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminConversationsRoute = AdminConversationsRouteImport.update({
-  id: '/conversations',
-  path: '/conversations',
-  getParentRoute: () => AdminRoute,
 } as any)
 const ParticipantThreadsIndexRoute = ParticipantThreadsIndexRouteImport.update({
   id: '/threads/',
@@ -185,28 +106,11 @@ const ParticipantReceiptsIndexRoute =
     path: '/receipts/',
     getParentRoute: () => ParticipantRoute,
   } as any)
-const AdminUsersIndexRoute = AdminUsersIndexRouteImport.update({
-  id: '/users/',
-  path: '/users/',
-  getParentRoute: () => AdminRoute,
-} as any)
 const ShareProofReceiptIdRoute = ShareProofReceiptIdRouteImport.update({
   id: '/share/proof/$receiptId',
   path: '/share/proof/$receiptId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ResearcherSessionsSessionIdRoute =
-  ResearcherSessionsSessionIdRouteImport.update({
-    id: '/sessions/$sessionId',
-    path: '/sessions/$sessionId',
-    getParentRoute: () => ResearcherRoute,
-  } as any)
-const ResearcherConversationsConvIdRoute =
-  ResearcherConversationsConvIdRouteImport.update({
-    id: '/conversations/$convId',
-    path: '/conversations/$convId',
-    getParentRoute: () => ResearcherRoute,
-  } as any)
 const ParticipantWorkspacesWorkspaceIdRoute =
   ParticipantWorkspacesWorkspaceIdRouteImport.update({
     id: '/$workspaceId',
@@ -252,26 +156,6 @@ const ApiPublicCaptureConversationRoute =
     path: '/api/public/capture-conversation',
     getParentRoute: () => rootRouteImport,
   } as any)
-const AdminUsersUserIdRoute = AdminUsersUserIdRouteImport.update({
-  id: '/users/$userId',
-  path: '/users/$userId',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminThreadsThreadIdRoute = AdminThreadsThreadIdRouteImport.update({
-  id: '/threads/$threadId',
-  path: '/threads/$threadId',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminSessionsSessionIdRoute = AdminSessionsSessionIdRouteImport.update({
-  id: '/$sessionId',
-  path: '/$sessionId',
-  getParentRoute: () => AdminSessionsRoute,
-} as any)
-const AdminReceiptsReceiptIdRoute = AdminReceiptsReceiptIdRouteImport.update({
-  id: '/receipts/$receiptId',
-  path: '/receipts/$receiptId',
-  getParentRoute: () => AdminRoute,
-} as any)
 const LovableEmailTransactionalSendRoute =
   LovableEmailTransactionalSendRouteImport.update({
     id: '/lovable/email/transactional/send',
@@ -321,32 +205,16 @@ const ApiPublicCronResearcherDigestRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/participant': typeof ParticipantRouteWithChildren
-  '/researcher': typeof ResearcherRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
   '/unsubscribe': typeof UnsubscribeRoute
-  '/admin/conversations': typeof AdminConversationsRoute
-  '/admin/emails': typeof AdminEmailsRoute
-  '/admin/receipt-runs': typeof AdminReceiptRunsRoute
-  '/admin/sessions': typeof AdminSessionsRouteWithChildren
-  '/admin/team-outreach': typeof AdminTeamOutreachRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
-  '/participant/demo': typeof ParticipantDemoRoute
   '/participant/extension': typeof ParticipantExtensionRoute
   '/participant/fingerprint': typeof ParticipantFingerprintRoute
-  '/participant/how-it-works': typeof ParticipantHowItWorksRoute
-  '/participant/workflows': typeof ParticipantWorkflowsRoute
   '/participant/workspaces': typeof ParticipantWorkspacesRouteWithChildren
-  '/admin/': typeof AdminIndexRoute
   '/participant/': typeof ParticipantIndexRoute
-  '/researcher/': typeof ResearcherIndexRoute
-  '/admin/receipts/$receiptId': typeof AdminReceiptsReceiptIdRoute
-  '/admin/sessions/$sessionId': typeof AdminSessionsSessionIdRoute
-  '/admin/threads/$threadId': typeof AdminThreadsThreadIdRoute
-  '/admin/users/$userId': typeof AdminUsersUserIdRoute
   '/api/public/capture-conversation': typeof ApiPublicCaptureConversationRoute
   '/api/public/extension-status': typeof ApiPublicExtensionStatusRoute
   '/api/public/team-outreach': typeof ApiPublicTeamOutreachRoute
@@ -355,10 +223,7 @@ export interface FileRoutesByFullPath {
   '/participant/threads/$threadId': typeof ParticipantThreadsThreadIdRoute
   '/participant/threads/new': typeof ParticipantThreadsNewRoute
   '/participant/workspaces/$workspaceId': typeof ParticipantWorkspacesWorkspaceIdRoute
-  '/researcher/conversations/$convId': typeof ResearcherConversationsConvIdRoute
-  '/researcher/sessions/$sessionId': typeof ResearcherSessionsSessionIdRoute
   '/share/proof/$receiptId': typeof ShareProofReceiptIdRoute
-  '/admin/users/': typeof AdminUsersIndexRoute
   '/participant/receipts/': typeof ParticipantReceiptsIndexRoute
   '/participant/threads/': typeof ParticipantThreadsIndexRoute
   '/api/public/cron/researcher-digest': typeof ApiPublicCronResearcherDigestRoute
@@ -376,25 +241,11 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/unsubscribe': typeof UnsubscribeRoute
-  '/admin/conversations': typeof AdminConversationsRoute
-  '/admin/emails': typeof AdminEmailsRoute
-  '/admin/receipt-runs': typeof AdminReceiptRunsRoute
-  '/admin/sessions': typeof AdminSessionsRouteWithChildren
-  '/admin/team-outreach': typeof AdminTeamOutreachRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
-  '/participant/demo': typeof ParticipantDemoRoute
   '/participant/extension': typeof ParticipantExtensionRoute
   '/participant/fingerprint': typeof ParticipantFingerprintRoute
-  '/participant/how-it-works': typeof ParticipantHowItWorksRoute
-  '/participant/workflows': typeof ParticipantWorkflowsRoute
   '/participant/workspaces': typeof ParticipantWorkspacesRouteWithChildren
-  '/admin': typeof AdminIndexRoute
   '/participant': typeof ParticipantIndexRoute
-  '/researcher': typeof ResearcherIndexRoute
-  '/admin/receipts/$receiptId': typeof AdminReceiptsReceiptIdRoute
-  '/admin/sessions/$sessionId': typeof AdminSessionsSessionIdRoute
-  '/admin/threads/$threadId': typeof AdminThreadsThreadIdRoute
-  '/admin/users/$userId': typeof AdminUsersUserIdRoute
   '/api/public/capture-conversation': typeof ApiPublicCaptureConversationRoute
   '/api/public/extension-status': typeof ApiPublicExtensionStatusRoute
   '/api/public/team-outreach': typeof ApiPublicTeamOutreachRoute
@@ -403,10 +254,7 @@ export interface FileRoutesByTo {
   '/participant/threads/$threadId': typeof ParticipantThreadsThreadIdRoute
   '/participant/threads/new': typeof ParticipantThreadsNewRoute
   '/participant/workspaces/$workspaceId': typeof ParticipantWorkspacesWorkspaceIdRoute
-  '/researcher/conversations/$convId': typeof ResearcherConversationsConvIdRoute
-  '/researcher/sessions/$sessionId': typeof ResearcherSessionsSessionIdRoute
   '/share/proof/$receiptId': typeof ShareProofReceiptIdRoute
-  '/admin/users': typeof AdminUsersIndexRoute
   '/participant/receipts': typeof ParticipantReceiptsIndexRoute
   '/participant/threads': typeof ParticipantThreadsIndexRoute
   '/api/public/cron/researcher-digest': typeof ApiPublicCronResearcherDigestRoute
@@ -421,32 +269,16 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/participant': typeof ParticipantRouteWithChildren
-  '/researcher': typeof ResearcherRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
   '/unsubscribe': typeof UnsubscribeRoute
-  '/admin/conversations': typeof AdminConversationsRoute
-  '/admin/emails': typeof AdminEmailsRoute
-  '/admin/receipt-runs': typeof AdminReceiptRunsRoute
-  '/admin/sessions': typeof AdminSessionsRouteWithChildren
-  '/admin/team-outreach': typeof AdminTeamOutreachRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
-  '/participant/demo': typeof ParticipantDemoRoute
   '/participant/extension': typeof ParticipantExtensionRoute
   '/participant/fingerprint': typeof ParticipantFingerprintRoute
-  '/participant/how-it-works': typeof ParticipantHowItWorksRoute
-  '/participant/workflows': typeof ParticipantWorkflowsRoute
   '/participant/workspaces': typeof ParticipantWorkspacesRouteWithChildren
-  '/admin/': typeof AdminIndexRoute
   '/participant/': typeof ParticipantIndexRoute
-  '/researcher/': typeof ResearcherIndexRoute
-  '/admin/receipts/$receiptId': typeof AdminReceiptsReceiptIdRoute
-  '/admin/sessions/$sessionId': typeof AdminSessionsSessionIdRoute
-  '/admin/threads/$threadId': typeof AdminThreadsThreadIdRoute
-  '/admin/users/$userId': typeof AdminUsersUserIdRoute
   '/api/public/capture-conversation': typeof ApiPublicCaptureConversationRoute
   '/api/public/extension-status': typeof ApiPublicExtensionStatusRoute
   '/api/public/team-outreach': typeof ApiPublicTeamOutreachRoute
@@ -455,10 +287,7 @@ export interface FileRoutesById {
   '/participant/threads/$threadId': typeof ParticipantThreadsThreadIdRoute
   '/participant/threads/new': typeof ParticipantThreadsNewRoute
   '/participant/workspaces/$workspaceId': typeof ParticipantWorkspacesWorkspaceIdRoute
-  '/researcher/conversations/$convId': typeof ResearcherConversationsConvIdRoute
-  '/researcher/sessions/$sessionId': typeof ResearcherSessionsSessionIdRoute
   '/share/proof/$receiptId': typeof ShareProofReceiptIdRoute
-  '/admin/users/': typeof AdminUsersIndexRoute
   '/participant/receipts/': typeof ParticipantReceiptsIndexRoute
   '/participant/threads/': typeof ParticipantThreadsIndexRoute
   '/api/public/cron/researcher-digest': typeof ApiPublicCronResearcherDigestRoute
@@ -474,32 +303,16 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/admin'
     | '/auth'
     | '/onboarding'
     | '/participant'
-    | '/researcher'
     | '/reset-password'
     | '/unsubscribe'
-    | '/admin/conversations'
-    | '/admin/emails'
-    | '/admin/receipt-runs'
-    | '/admin/sessions'
-    | '/admin/team-outreach'
     | '/email/unsubscribe'
-    | '/participant/demo'
     | '/participant/extension'
     | '/participant/fingerprint'
-    | '/participant/how-it-works'
-    | '/participant/workflows'
     | '/participant/workspaces'
-    | '/admin/'
     | '/participant/'
-    | '/researcher/'
-    | '/admin/receipts/$receiptId'
-    | '/admin/sessions/$sessionId'
-    | '/admin/threads/$threadId'
-    | '/admin/users/$userId'
     | '/api/public/capture-conversation'
     | '/api/public/extension-status'
     | '/api/public/team-outreach'
@@ -508,10 +321,7 @@ export interface FileRouteTypes {
     | '/participant/threads/$threadId'
     | '/participant/threads/new'
     | '/participant/workspaces/$workspaceId'
-    | '/researcher/conversations/$convId'
-    | '/researcher/sessions/$sessionId'
     | '/share/proof/$receiptId'
-    | '/admin/users/'
     | '/participant/receipts/'
     | '/participant/threads/'
     | '/api/public/cron/researcher-digest'
@@ -529,25 +339,11 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/reset-password'
     | '/unsubscribe'
-    | '/admin/conversations'
-    | '/admin/emails'
-    | '/admin/receipt-runs'
-    | '/admin/sessions'
-    | '/admin/team-outreach'
     | '/email/unsubscribe'
-    | '/participant/demo'
     | '/participant/extension'
     | '/participant/fingerprint'
-    | '/participant/how-it-works'
-    | '/participant/workflows'
     | '/participant/workspaces'
-    | '/admin'
     | '/participant'
-    | '/researcher'
-    | '/admin/receipts/$receiptId'
-    | '/admin/sessions/$sessionId'
-    | '/admin/threads/$threadId'
-    | '/admin/users/$userId'
     | '/api/public/capture-conversation'
     | '/api/public/extension-status'
     | '/api/public/team-outreach'
@@ -556,10 +352,7 @@ export interface FileRouteTypes {
     | '/participant/threads/$threadId'
     | '/participant/threads/new'
     | '/participant/workspaces/$workspaceId'
-    | '/researcher/conversations/$convId'
-    | '/researcher/sessions/$sessionId'
     | '/share/proof/$receiptId'
-    | '/admin/users'
     | '/participant/receipts'
     | '/participant/threads'
     | '/api/public/cron/researcher-digest'
@@ -573,32 +366,16 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/admin'
     | '/auth'
     | '/onboarding'
     | '/participant'
-    | '/researcher'
     | '/reset-password'
     | '/unsubscribe'
-    | '/admin/conversations'
-    | '/admin/emails'
-    | '/admin/receipt-runs'
-    | '/admin/sessions'
-    | '/admin/team-outreach'
     | '/email/unsubscribe'
-    | '/participant/demo'
     | '/participant/extension'
     | '/participant/fingerprint'
-    | '/participant/how-it-works'
-    | '/participant/workflows'
     | '/participant/workspaces'
-    | '/admin/'
     | '/participant/'
-    | '/researcher/'
-    | '/admin/receipts/$receiptId'
-    | '/admin/sessions/$sessionId'
-    | '/admin/threads/$threadId'
-    | '/admin/users/$userId'
     | '/api/public/capture-conversation'
     | '/api/public/extension-status'
     | '/api/public/team-outreach'
@@ -607,10 +384,7 @@ export interface FileRouteTypes {
     | '/participant/threads/$threadId'
     | '/participant/threads/new'
     | '/participant/workspaces/$workspaceId'
-    | '/researcher/conversations/$convId'
-    | '/researcher/sessions/$sessionId'
     | '/share/proof/$receiptId'
-    | '/admin/users/'
     | '/participant/receipts/'
     | '/participant/threads/'
     | '/api/public/cron/researcher-digest'
@@ -625,11 +399,9 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   OnboardingRoute: typeof OnboardingRoute
   ParticipantRoute: typeof ParticipantRouteWithChildren
-  ResearcherRoute: typeof ResearcherRouteWithChildren
   ResetPasswordRoute: typeof ResetPasswordRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
@@ -664,13 +436,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/researcher': {
-      id: '/researcher'
-      path: '/researcher'
-      fullPath: '/researcher'
-      preLoaderRoute: typeof ResearcherRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/participant': {
       id: '/participant'
       path: '/participant'
@@ -692,26 +457,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/researcher/': {
-      id: '/researcher/'
-      path: '/'
-      fullPath: '/researcher/'
-      preLoaderRoute: typeof ResearcherIndexRouteImport
-      parentRoute: typeof ResearcherRoute
     }
     '/participant/': {
       id: '/participant/'
@@ -720,32 +471,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ParticipantIndexRouteImport
       parentRoute: typeof ParticipantRoute
     }
-    '/admin/': {
-      id: '/admin/'
-      path: '/'
-      fullPath: '/admin/'
-      preLoaderRoute: typeof AdminIndexRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/participant/workspaces': {
       id: '/participant/workspaces'
       path: '/workspaces'
       fullPath: '/participant/workspaces'
       preLoaderRoute: typeof ParticipantWorkspacesRouteImport
-      parentRoute: typeof ParticipantRoute
-    }
-    '/participant/workflows': {
-      id: '/participant/workflows'
-      path: '/workflows'
-      fullPath: '/participant/workflows'
-      preLoaderRoute: typeof ParticipantWorkflowsRouteImport
-      parentRoute: typeof ParticipantRoute
-    }
-    '/participant/how-it-works': {
-      id: '/participant/how-it-works'
-      path: '/how-it-works'
-      fullPath: '/participant/how-it-works'
-      preLoaderRoute: typeof ParticipantHowItWorksRouteImport
       parentRoute: typeof ParticipantRoute
     }
     '/participant/fingerprint': {
@@ -762,54 +492,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ParticipantExtensionRouteImport
       parentRoute: typeof ParticipantRoute
     }
-    '/participant/demo': {
-      id: '/participant/demo'
-      path: '/demo'
-      fullPath: '/participant/demo'
-      preLoaderRoute: typeof ParticipantDemoRouteImport
-      parentRoute: typeof ParticipantRoute
-    }
     '/email/unsubscribe': {
       id: '/email/unsubscribe'
       path: '/email/unsubscribe'
       fullPath: '/email/unsubscribe'
       preLoaderRoute: typeof EmailUnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/admin/team-outreach': {
-      id: '/admin/team-outreach'
-      path: '/team-outreach'
-      fullPath: '/admin/team-outreach'
-      preLoaderRoute: typeof AdminTeamOutreachRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/sessions': {
-      id: '/admin/sessions'
-      path: '/sessions'
-      fullPath: '/admin/sessions'
-      preLoaderRoute: typeof AdminSessionsRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/receipt-runs': {
-      id: '/admin/receipt-runs'
-      path: '/receipt-runs'
-      fullPath: '/admin/receipt-runs'
-      preLoaderRoute: typeof AdminReceiptRunsRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/emails': {
-      id: '/admin/emails'
-      path: '/emails'
-      fullPath: '/admin/emails'
-      preLoaderRoute: typeof AdminEmailsRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/conversations': {
-      id: '/admin/conversations'
-      path: '/conversations'
-      fullPath: '/admin/conversations'
-      preLoaderRoute: typeof AdminConversationsRouteImport
-      parentRoute: typeof AdminRoute
     }
     '/participant/threads/': {
       id: '/participant/threads/'
@@ -825,33 +513,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ParticipantReceiptsIndexRouteImport
       parentRoute: typeof ParticipantRoute
     }
-    '/admin/users/': {
-      id: '/admin/users/'
-      path: '/users'
-      fullPath: '/admin/users/'
-      preLoaderRoute: typeof AdminUsersIndexRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/share/proof/$receiptId': {
       id: '/share/proof/$receiptId'
       path: '/share/proof/$receiptId'
       fullPath: '/share/proof/$receiptId'
       preLoaderRoute: typeof ShareProofReceiptIdRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/researcher/sessions/$sessionId': {
-      id: '/researcher/sessions/$sessionId'
-      path: '/sessions/$sessionId'
-      fullPath: '/researcher/sessions/$sessionId'
-      preLoaderRoute: typeof ResearcherSessionsSessionIdRouteImport
-      parentRoute: typeof ResearcherRoute
-    }
-    '/researcher/conversations/$convId': {
-      id: '/researcher/conversations/$convId'
-      path: '/conversations/$convId'
-      fullPath: '/researcher/conversations/$convId'
-      preLoaderRoute: typeof ResearcherConversationsConvIdRouteImport
-      parentRoute: typeof ResearcherRoute
     }
     '/participant/workspaces/$workspaceId': {
       id: '/participant/workspaces/$workspaceId'
@@ -908,34 +575,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/capture-conversation'
       preLoaderRoute: typeof ApiPublicCaptureConversationRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/admin/users/$userId': {
-      id: '/admin/users/$userId'
-      path: '/users/$userId'
-      fullPath: '/admin/users/$userId'
-      preLoaderRoute: typeof AdminUsersUserIdRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/threads/$threadId': {
-      id: '/admin/threads/$threadId'
-      path: '/threads/$threadId'
-      fullPath: '/admin/threads/$threadId'
-      preLoaderRoute: typeof AdminThreadsThreadIdRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/sessions/$sessionId': {
-      id: '/admin/sessions/$sessionId'
-      path: '/$sessionId'
-      fullPath: '/admin/sessions/$sessionId'
-      preLoaderRoute: typeof AdminSessionsSessionIdRouteImport
-      parentRoute: typeof AdminSessionsRoute
-    }
-    '/admin/receipts/$receiptId': {
-      id: '/admin/receipts/$receiptId'
-      path: '/receipts/$receiptId'
-      fullPath: '/admin/receipts/$receiptId'
-      preLoaderRoute: typeof AdminReceiptsReceiptIdRouteImport
-      parentRoute: typeof AdminRoute
     }
     '/lovable/email/transactional/send': {
       id: '/lovable/email/transactional/send'
@@ -996,46 +635,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AdminSessionsRouteChildren {
-  AdminSessionsSessionIdRoute: typeof AdminSessionsSessionIdRoute
-}
-
-const AdminSessionsRouteChildren: AdminSessionsRouteChildren = {
-  AdminSessionsSessionIdRoute: AdminSessionsSessionIdRoute,
-}
-
-const AdminSessionsRouteWithChildren = AdminSessionsRoute._addFileChildren(
-  AdminSessionsRouteChildren,
-)
-
-interface AdminRouteChildren {
-  AdminConversationsRoute: typeof AdminConversationsRoute
-  AdminEmailsRoute: typeof AdminEmailsRoute
-  AdminReceiptRunsRoute: typeof AdminReceiptRunsRoute
-  AdminSessionsRoute: typeof AdminSessionsRouteWithChildren
-  AdminTeamOutreachRoute: typeof AdminTeamOutreachRoute
-  AdminIndexRoute: typeof AdminIndexRoute
-  AdminReceiptsReceiptIdRoute: typeof AdminReceiptsReceiptIdRoute
-  AdminThreadsThreadIdRoute: typeof AdminThreadsThreadIdRoute
-  AdminUsersUserIdRoute: typeof AdminUsersUserIdRoute
-  AdminUsersIndexRoute: typeof AdminUsersIndexRoute
-}
-
-const AdminRouteChildren: AdminRouteChildren = {
-  AdminConversationsRoute: AdminConversationsRoute,
-  AdminEmailsRoute: AdminEmailsRoute,
-  AdminReceiptRunsRoute: AdminReceiptRunsRoute,
-  AdminSessionsRoute: AdminSessionsRouteWithChildren,
-  AdminTeamOutreachRoute: AdminTeamOutreachRoute,
-  AdminIndexRoute: AdminIndexRoute,
-  AdminReceiptsReceiptIdRoute: AdminReceiptsReceiptIdRoute,
-  AdminThreadsThreadIdRoute: AdminThreadsThreadIdRoute,
-  AdminUsersUserIdRoute: AdminUsersUserIdRoute,
-  AdminUsersIndexRoute: AdminUsersIndexRoute,
-}
-
-const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
-
 interface ParticipantWorkspacesRouteChildren {
   ParticipantWorkspacesWorkspaceIdRoute: typeof ParticipantWorkspacesWorkspaceIdRoute
 }
@@ -1050,11 +649,8 @@ const ParticipantWorkspacesRouteWithChildren =
   )
 
 interface ParticipantRouteChildren {
-  ParticipantDemoRoute: typeof ParticipantDemoRoute
   ParticipantExtensionRoute: typeof ParticipantExtensionRoute
   ParticipantFingerprintRoute: typeof ParticipantFingerprintRoute
-  ParticipantHowItWorksRoute: typeof ParticipantHowItWorksRoute
-  ParticipantWorkflowsRoute: typeof ParticipantWorkflowsRoute
   ParticipantWorkspacesRoute: typeof ParticipantWorkspacesRouteWithChildren
   ParticipantIndexRoute: typeof ParticipantIndexRoute
   ParticipantReceiptsReceiptIdRoute: typeof ParticipantReceiptsReceiptIdRoute
@@ -1065,11 +661,8 @@ interface ParticipantRouteChildren {
 }
 
 const ParticipantRouteChildren: ParticipantRouteChildren = {
-  ParticipantDemoRoute: ParticipantDemoRoute,
   ParticipantExtensionRoute: ParticipantExtensionRoute,
   ParticipantFingerprintRoute: ParticipantFingerprintRoute,
-  ParticipantHowItWorksRoute: ParticipantHowItWorksRoute,
-  ParticipantWorkflowsRoute: ParticipantWorkflowsRoute,
   ParticipantWorkspacesRoute: ParticipantWorkspacesRouteWithChildren,
   ParticipantIndexRoute: ParticipantIndexRoute,
   ParticipantReceiptsReceiptIdRoute: ParticipantReceiptsReceiptIdRoute,
@@ -1083,29 +676,11 @@ const ParticipantRouteWithChildren = ParticipantRoute._addFileChildren(
   ParticipantRouteChildren,
 )
 
-interface ResearcherRouteChildren {
-  ResearcherIndexRoute: typeof ResearcherIndexRoute
-  ResearcherConversationsConvIdRoute: typeof ResearcherConversationsConvIdRoute
-  ResearcherSessionsSessionIdRoute: typeof ResearcherSessionsSessionIdRoute
-}
-
-const ResearcherRouteChildren: ResearcherRouteChildren = {
-  ResearcherIndexRoute: ResearcherIndexRoute,
-  ResearcherConversationsConvIdRoute: ResearcherConversationsConvIdRoute,
-  ResearcherSessionsSessionIdRoute: ResearcherSessionsSessionIdRoute,
-}
-
-const ResearcherRouteWithChildren = ResearcherRoute._addFileChildren(
-  ResearcherRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   OnboardingRoute: OnboardingRoute,
   ParticipantRoute: ParticipantRouteWithChildren,
-  ResearcherRoute: ResearcherRouteWithChildren,
   ResetPasswordRoute: ResetPasswordRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
@@ -1126,13 +701,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
