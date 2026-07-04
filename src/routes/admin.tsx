@@ -129,17 +129,24 @@ function AdminDashboard() {
 }
 
 function DashboardBody({ data }: { data: Dashboard }) {
-  const { overall, toolBreakdown, verifCounts, perAssignment, recentReceipts, session } = data;
+  const { overall, toolBreakdown, verifCounts, perAssignment, fluencyByDimension, session, cohortSize } = data;
   const totalTools = toolBreakdown.reduce((s, t) => s + t.count, 0);
   const totalVerif = Object.values(verifCounts).reduce((s, n) => s + n, 0);
 
   return (
     <>
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <Badge variant="outline" className="border-primary/40 text-primary">
+          Demo cohort · {cohortSize} students
+        </Badge>
+        <span>Counts projected from live pilot data</span>
+      </div>
+
       <section className="grid grid-cols-2 gap-4 md:grid-cols-5">
         <Kpi icon={<Users className="h-4 w-4" />} label="Students" value={overall.participantCount} />
         <Kpi icon={<GraduationCap className="h-4 w-4" />} label="Assignments" value={overall.assignmentCount} />
-        <Kpi icon={<MessageSquare className="h-4 w-4" />} label="AI threads" value={overall.threadCount} sub={`${overall.totalTurns} turns`} />
-        <Kpi icon={<ReceiptIcon className="h-4 w-4" />} label="Workflows logged" value={overall.receiptCount} />
+        <Kpi icon={<MessageSquare className="h-4 w-4" />} label="AI threads" value={overall.threadCount} sub={`${overall.totalTurns.toLocaleString()} turns`} />
+        <FluencyKpi score={overall.overallFluencyScore} />
         <RiskKpi score={overall.overallRiskScore} />
       </section>
 
@@ -161,6 +168,35 @@ function DashboardBody({ data }: { data: Dashboard }) {
         </Card>
 
         <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <Sparkles className="h-4 w-4 text-primary" /> AI Fluency by dimension
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {fluencyByDimension.map((d) => (
+                <div key={d.key}>
+                  <div className="mb-1 flex items-center justify-between text-xs">
+                    <span className="font-medium">{d.label}</span>
+                    <span className="text-muted-foreground">{d.score}</span>
+                  </div>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                    <div
+                      className={
+                        d.score >= 70 ? "h-full bg-emerald-500"
+                        : d.score >= 50 ? "h-full bg-yellow-500"
+                        : "h-full bg-destructive"
+                      }
+                      style={{ width: `${d.score}%` }}
+                    />
+                  </div>
+                  <p className="mt-1 text-[11px] text-muted-foreground">{d.blurb}</p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-sm">
@@ -196,53 +232,35 @@ function DashboardBody({ data }: { data: Dashboard }) {
         </div>
       </section>
 
-      <section>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <Sparkles className="h-4 w-4 text-primary" /> Recent AI collaboration workflows
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            {recentReceipts.length === 0 && (
-              <div className="text-muted-foreground">No workflows logged yet.</div>
-            )}
-            {recentReceipts.map((r) => (
-              <div key={r.id} className="flex items-center justify-between gap-3 border-b py-2 last:border-0">
-                <div className="min-w-0 flex-1">
-                  <div className="truncate font-medium">{r.label ?? "Untitled workflow"}</div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>{anonymousLabel(r.participantId)}</span>
-                    <span>·</span>
-                    <span className="capitalize">{r.tool}</span>
-                    {r.workflowType && (
-                      <>
-                        <span>·</span>
-                        <span className="capitalize">{r.workflowType}</span>
-                      </>
-                    )}
-                  </div>
-                </div>
-                {r.provenance && (
-                  <Badge variant={r.provenance === "lab" ? "default" : "outline"} className="capitalize">
-                    {r.provenance}
-                  </Badge>
-                )}
-                <div className="w-20 text-right text-xs text-muted-foreground">
-                  {new Date(r.createdAt).toLocaleDateString()}
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        <p className="mt-4 text-xs text-muted-foreground">
-          Identities are anonymized (Participant-XXXX). Reveal is admin-gated and audited.
-        </p>
-      </section>
+      <p className="text-xs text-muted-foreground">
+        Identities are anonymized. Reveal is admin-gated and audited.
+      </p>
     </>
   );
 }
+
+function FluencyKpi({ score }: { score: number }) {
+  const band = score >= 70 ? "Strong" : score >= 50 ? "Developing" : "At risk";
+  const tone =
+    score >= 70 ? "text-emerald-600 bg-emerald-500/10"
+    : score >= 50 ? "text-yellow-600 bg-yellow-500/10"
+    : "text-destructive bg-destructive/10";
+  return (
+    <Card>
+      <CardContent className="flex items-center gap-3 p-4">
+        <div className={`rounded-md p-2 ${tone}`}>
+          <Sparkles className="h-4 w-4" />
+        </div>
+        <div>
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">AI Fluency</div>
+          <div className="text-2xl font-semibold leading-tight">{score}</div>
+          <div className="text-xs text-muted-foreground">{band}</div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 
 function Kpi({ icon, label, value, sub }: { icon: React.ReactNode; label: string; value: number; sub?: string }) {
   return (
