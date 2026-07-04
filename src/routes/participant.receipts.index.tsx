@@ -68,20 +68,38 @@ function DirectionalNote() {
   );
 }
 
-function ReceiptsList() {
+export function ReceiptsList({ classId }: { classId?: string } = {}) {
   const { user } = useAuth();
   const [receipts, setReceipts] = useState<R[]>([]);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase.from("receipts")
+    let receiptIdFilter: string[] | null = null;
+    if (classId) {
+      const { data: subs } = await supabase
+        .from("assignment_submissions")
+        .select("receipt_id, assignments!inner(class_id)")
+        .eq("participant_id", user.id)
+        .eq("assignments.class_id", classId);
+      receiptIdFilter = Array.from(
+        new Set(((subs ?? []) as any[]).map((s) => s.receipt_id).filter(Boolean)),
+      );
+      if (receiptIdFilter.length === 0) {
+        setReceipts([]);
+        setLoading(false);
+        return;
+      }
+    }
+    let q = supabase.from("receipts")
       .select("id, tool_used, prompt_preview, created_at, metadata")
       .eq("participant_id", user.id)
       .order("created_at", { ascending: false }).limit(200);
+    if (receiptIdFilter) q = q.in("id", receiptIdFilter);
+    const { data } = await q;
     setReceipts((data ?? []) as R[]);
     setLoading(false);
-  }, [user]);
+  }, [user, classId]);
 
   useEffect(() => { refresh(); }, [refresh]);
 
