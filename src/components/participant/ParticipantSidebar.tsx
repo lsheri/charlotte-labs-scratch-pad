@@ -53,13 +53,25 @@ export function ParticipantSidebar() {
 
   useEffect(() => {
     fetchHealth().then((h) => setHealthStatus(h.status)).catch(() => {});
-    fetchClasses().then((r) => setClasses((r.classes ?? []) as any)).catch(() => {});
+    fetchClasses().then((r) => {
+      const list = (r.classes ?? []) as SidebarClass[];
+      setClasses(list);
+      // Default to first class workspace if user hasn't explicitly chosen one
+      try {
+        const chosen = window.localStorage.getItem("charlotte:workspaceChosen");
+        if (!chosen && list.length > 0 && !activeWorkspaceId) {
+          setActiveWorkspaceId(list[0].id);
+        }
+      } catch {}
+    }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchHealth, fetchClasses]);
 
   useEffect(() => {
     const m = path.match(/^\/participant\/department\/([^/]+)/);
     if (m && m[1] !== activeWorkspaceId) setActiveWorkspaceId(m[1]);
   }, [path, activeWorkspaceId, setActiveWorkspaceId]);
+
 
   const activeClass = activeWorkspaceId
     ? classes.find((c) => c.id === activeWorkspaceId) ?? null
