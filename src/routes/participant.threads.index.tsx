@@ -315,7 +315,7 @@ export function ThreadsInbox({ classId }: { classId?: string } = {}) {
       ) : hasClasses ? (
         <div
           ref={gridRef}
-          className="relative grid gap-6 lg:grid-cols-[360px_minmax(320px,1fr)_minmax(0,3fr)]"
+          className="relative grid gap-6 lg:grid-cols-[440px_minmax(280px,1fr)_minmax(0,3fr)]"
         >
           {/* SVG overlay for dashed navy connection lines */}
           <svg
