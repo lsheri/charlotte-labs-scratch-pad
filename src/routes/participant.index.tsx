@@ -39,7 +39,7 @@ function ParticipantHome() {
   const { user } = useAuth();
   const deleteFn = useServerFn(deleteMyData);
   const enrollFn = useServerFn(sendEnrollmentConfirmation);
-  const withdrawFn = useServerFn(withdrawFromStudy);
+  
   const personalFn = useServerFn(createPersonalSession);
   const targetFn = useServerFn(getCaptureTarget);
   const listThreadsFn = useServerFn(listMyThreads);
