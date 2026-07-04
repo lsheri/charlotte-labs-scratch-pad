@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import charlotteMascot from "@/assets/charlotte-mascot.png";
 import { setPendingReceiptJob } from "@/lib/pendingReceiptJob";
+import { useActiveWorkspaceId } from "@/lib/activeWorkspace";
 
 export const Route = createFileRoute("/participant/threads/")({
   component: ThreadsRoute,
