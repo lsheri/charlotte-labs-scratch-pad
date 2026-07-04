@@ -284,7 +284,6 @@ export function LiteracyReceipt({ receipt, audit, runMeta, turns, tools, recomme
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-sm">Skill Evidence</CardTitle>
-              <AnalysisAuditTrail auditData={audit} runMeta={runMeta} />
             </CardHeader>
             <CardContent className="space-y-2.5">
               {visibleDims.map(d => {
