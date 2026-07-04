@@ -19,8 +19,6 @@ const groups = [
       { title: "Workspaces", url: "/participant/workspaces", icon: Briefcase },
       { title: "Threads", url: "/participant/threads", icon: MessageSquare },
       { title: "Receipts", url: "/participant/receipts", icon: Receipt },
-      { title: "Workflows", url: "/participant/workflows", icon: Workflow },
-      { title: "Demo", url: "/participant/demo", icon: Sparkles },
     ],
   },
   {
