@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, MessageSquare, Receipt, Plug, Fingerprint, LogOut, Plus, Workflow, Briefcase, Sparkles } from "lucide-react";
+import { Home, MessageSquare, Receipt, Plug, Fingerprint, LogOut, Plus, Briefcase } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { CharlotteLogo } from "@/components/CharlotteLogo";
 import { Button } from "@/components/ui/button";
