@@ -1325,6 +1325,50 @@ export type Database = {
           },
         ]
       }
+      receipt_checklist_items: {
+        Row: {
+          created_at: string
+          id: string
+          item_key: string
+          note: string | null
+          receipt_id: string
+          resolved_at: string | null
+          status: Database["public"]["Enums"]["checklist_item_status"]
+          template_key: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_key: string
+          note?: string | null
+          receipt_id: string
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["checklist_item_status"]
+          template_key: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_key?: string
+          note?: string | null
+          receipt_id?: string
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["checklist_item_status"]
+          template_key?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receipt_checklist_items_receipt_id_fkey"
+            columns: ["receipt_id"]
+            isOneToOne: false
+            referencedRelation: "receipts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       receipt_checkup_cache: {
         Row: {
           created_at: string
@@ -2299,6 +2343,7 @@ export type Database = {
     }
     Enums: {
       app_role: "researcher" | "participant" | "admin"
+      checklist_item_status: "open" | "verified" | "dismissed"
       dimension_category_enum:
         | "anthropic_4d"
         | "unesco_students"
@@ -2477,6 +2522,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["researcher", "participant", "admin"],
+      checklist_item_status: ["open", "verified", "dismissed"],
       dimension_category_enum: [
         "anthropic_4d",
         "unesco_students",
