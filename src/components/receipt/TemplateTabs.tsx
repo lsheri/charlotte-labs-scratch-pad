@@ -11,19 +11,9 @@ interface Props {
 }
 
 const PRETTY: Record<string, string> = {
-  classic_fluency: "Classic Fluency",
-  still_yours: "Still Yours",
-  thinking_map: "Thinking Map",
-  proof_card: "Proof Card",
-  class_pulse: "Class Pulse",
-  shield: "Shield",
-  impact_statement: "Impact Statement",
-  impact_proof: "Impact Proof",
-  context_map: "Context Map",
-
-  defense_board: "Defense Board",
-  distiller: "Distiller",
-  decision_trail: "Decision Trail",
+  classic_fluency: "Academic Fluency",
+  verification_risk: "Verification & Risk",
+  study_gaps: "Study Gaps",
 };
 
 export function TemplateTabs({ receiptId, activeKey, templateKeys, labelFor }: Props) {
