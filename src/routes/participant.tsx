@@ -23,6 +23,8 @@ function ParticipantLayout() {
             <SidebarTrigger />
             <div className="ml-auto">
               {/* "How it works" link removed with participant.how-it-works route */}
+            </div>
+          </header>
           <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-6">
             <Outlet />
           </main>
