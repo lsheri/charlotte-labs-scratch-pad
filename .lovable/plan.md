@@ -1,85 +1,91 @@
-# Fork Charlotte into a Student Study App
+## Goal
 
-## Recommendation on how to fork
+Treat a "class" as a regular workspace (a `research_sessions` row), seed **Principles of Microeconomics — ECON201**, add an **Assignments** concept, and give every member a **Department** view showing class-wide tools, fluency, and assignments at risk of AI trivialness. Instructor and student see the same view (matches your answer).
 
-**Remix this project in Lovable + fresh Cloud backend.** Rationale:
+## 1. Seed workspace + membership
 
-- Remix gives you a full 1:1 copy of the codebase, settings, and secrets scaffolding in seconds, and leaves this Charlotte research project untouched.
-- You keep the live preview, Cloud, AI Gateway, and one-click publish — cloning to Claude/local loses all of that and forces you to run your own hosting.
-- Fresh backend keeps the research project's participant data isolated from the student product (different users, different RLS scope, safe to break schema).
-- After remix, we strip the workflows/receipts-generation surface down to the three templates you want. You can still edit the fork locally later by connecting GitHub — Remix doesn't lock you in.
+Insert one row into `research_sessions`:
+- `name`: "Principles of Microeconomics — ECON201"
+- `description`: "ECON201 class workspace"
+- `kind`: `research` (we're reusing the existing kind — no enum change)
+- `status`: `active`
+- `join_code`: `ECON201`
+- `researcher_id`: liam@charlotte-labs.com's user id
+- `consent_text`: class-appropriate copy
 
-**How to remix:** in the sidebar, right-click this project → Remix. Then open the new project and paste this plan into the first message.
+Insert `session_participants` row auto-consenting liam as both owner + member so he sees it in his workspace list.
 
----
+Tag class workspaces via a new `metadata` jsonb column on `research_sessions` (added in step 2) with `{ "kind": "class", "course_code": "ECON201", "term": "Spring 2026" }` — avoids touching the `kind` enum while keeping room for future class fields (roster caps, term dates).
 
-## Scope of the fork (what the new app IS)
+## 2. Assignments schema
 
-A student-facing app where every captured AI thread produces one **Receipt** that renders exactly three views in tabs:
+New tables (migration, with GRANTs + RLS):
 
-1. **Academic Fluency** (adapted from Classic Fluency template)
-2. **Verification & Informational Risk** (new — checklist of unverified claims / risky AI outputs)
-3. **Study Gaps** (existing StudyGapTemplate, wired to real analysis instead of mock)
+- `class_assignments`
+  - `session_id` fk → research_sessions
+  - `code` (e.g. `PS-01`), `title`, `description`, `due_at`
+  - `expected_tools text[]` (e.g. `['chatgpt','claude']`) — optional
+  - `rubric jsonb` (free-form for now)
+- `assignment_submissions`
+  - `assignment_id` fk
+  - `participant_id` fk → auth.users
+  - `receipt_id` fk → receipts (nullable — students attach a receipt)
+  - `submitted_at`, `notes`
+  - unique(`assignment_id`,`participant_id`)
+- Add `metadata jsonb default '{}'::jsonb` to `research_sessions` for the class tag above.
 
-User picks which of the three to run per receipt (checkboxes on the create dialog). At least one required.
+**RLS:**
+- Members of the session can `SELECT` assignments/submissions in their session.
+- Members can `INSERT/UPDATE` their own submission rows.
+- Session owner (researcher_id) can `INSERT/UPDATE/DELETE` assignments.
 
-## What to KEEP from Charlotte
-- Auth, profiles, user_roles
-- Fingerprint (`/participant/fingerprint`)
-- Threads (`/participant/threads`, thread capture, extension, thread_jobs)
-- Workspaces (`/participant/workspaces`)
-- Receipts infrastructure (receipts table, receipt_jobs, template_analyses, receipt-jobs worker)
-- Chrome extension + capture pipeline
-- Home shell + participant sidebar
+**AI trivialness risk** is derived, not stored — computed from the submission's linked receipt:
+- Low tool count + short prompts + high "single-shot copy" pattern → **high risk**
+- Multi-turn + revisions + multiple tools + explicit critique turns → **low risk**
+- Formula lives in `src/lib/trivialnessRisk.ts` so it's easy to tune later.
 
-## What to REMOVE / hide
-- Workflow gating, workflow_templates, `/participant/workflows`, WorkflowStack, workflow tags/purpose UI
-- All receipt templates except the three above: delete ContextMap, ThinkingMap, ImpactProof, ImpactStatement, ProofCard, Shield, StillYours from the picker and switch-case
-- Researcher role surfaces (`/researcher/*`) — keep tables but hide routes; you can re-enable later
-- Demo carousel on `/participant/demo` (or repurpose as onboarding)
-- Provenance vial (lab vs personal) — student context makes this irrelevant
+## 3. Server functions
 
-## New Home page (`/participant`)
-Four stacked cards, in this order:
+New file `src/serverfn/department.ts`:
+- `listMyClasses()` — workspaces where `metadata->>'kind' = 'class'` that the user belongs to.
+- `getDepartmentOverview({ classId })` — returns:
+  - class meta (code, title, join code)
+  - member count
+  - **tool usage**: aggregate `receipts.tool_used` counts across all members in that session
+  - **class fluency**: average of members' latest `participant_fluency_profiles` scores per dimension (already scoped by session in existing tables)
+  - **assignments** with per-assignment stats: submitted count, avg risk, list of at-risk submissions (top N)
+- `listClassAssignments({ classId })`, `getAssignmentDetail({ assignmentId })` — for later mock-data drill-downs.
 
-1. **Open Verification & Risk items** — aggregated across recent receipts, unchecked items only, click to resolve
-2. **Study Gaps summary** — top high/medium-high gaps across last N receipts, "Start self-check" CTA
-3. **Academic Fluency snapshot** — current overall score + 30-day sparkline
-4. **Recent threads** — last 5 captured threads with status chip (analyzed / pending)
+All use `requireSupabaseAuth` and check membership via `session_participants`.
 
-## New template: Verification & Informational Risk
-Charlotte scans the thread and returns:
-- **Unverified claims** — factual statements the student took from AI without checking (title, quote, suggested source to verify)
-- **Informational risk items** — hallucination-prone patterns (fake citations, invented stats, unsupported causal claims), each with severity
-- **Checklist state** — each item is `open | verified | dismissed`, persisted per receipt so Home can aggregate open ones
+## 4. Department view (route + UI)
 
-## Template selection UX
-`NewReceiptDialog` becomes three checkboxes ("What should Charlotte generate?") — Academic Fluency, Verification & Risk, Study Gaps. Backend runs only the selected analyzers. `TemplateTabs` shows only tabs for templates that were run.
+New routes:
+- `src/routes/participant.department.tsx` — index. If user belongs to exactly one class, redirect to its detail; otherwise list class workspaces.
+- `src/routes/participant.department.$classId.tsx` — the actual dashboard.
 
----
+Dashboard sections (same for everyone):
+1. **Header** — course code + title, member count, join code chip.
+2. **Class tools** — reuse `ToolLogo` in a horizontal bar with usage counts (bar chart via existing `chart.tsx`).
+3. **Class fluency** — reuse `FluencyRadarChart` (already exists) fed by the aggregated dimension scores.
+4. **Assignments** — table: code, title, due date, submitted / total, "at risk" count badge. Rows expand to show at-risk submissions (participant anon label + receipt link).
+5. Empty states everywhere so it renders cleanly before you upload mock data.
 
-## Build order
+## 5. Sidebar entry
 
-1. **Remix + fresh Cloud** — user action, then confirm new project is live.
-2. **Prune** — delete workflow routes/components, remove non-kept templates from picker + switch-case + `TEMPLATE_METADATA`, drop demo carousel.
-3. **Verification & Risk template** — new `VerificationRiskTemplate.tsx`, new analyzer in `template-analyses.server.ts`, new types, checklist state table.
-4. **Wire Study Gaps to real analysis** — replace mock in StudyGapTemplate with schema + analyzer (parallel to Verification analyzer).
-5. **Adapt Academic Fluency** — rename Classic Fluency → Academic Fluency, retune prompt for academic context (syllabus/assignment aware).
-6. **Rewrite NewReceiptDialog** — three checkboxes, drop workflow-type/tags/purpose/provenance fields.
-7. **Rewrite Home** — four cards above, fed by new server fns aggregating across the user's receipts.
-8. **Copy pass** — rename all "workflow" language to "receipt" / "study session", drop researcher wording.
+Edit `src/components/participant/ParticipantSidebar.tsx`:
+- Add a "Department" item (icon: `GraduationCap` from lucide) linking to `/participant/department`.
+- Show it only when `listMyClasses()` returns ≥ 1 (small `useQuery` in the sidebar), so it stays hidden for users without a class.
+
+## 6. Out of scope this pass
+
+- Creating mock student accounts and mock receipts — you'll do that next; the schema + views will accept them as-is.
+- Instructor-only controls (create assignment UI, roster management). Assignments will be seeded via the insert tool when you're ready with mock data, or we add an "Add assignment" dialog in a follow-up.
+- Per-student drill-down beyond the anonymized at-risk list (you said same view for both).
 
 ## Technical notes
 
-- **New tables** (fresh Cloud): `receipt_checklist_items(receipt_id, template_key, item_key, status, resolved_at, note)` for Verification & Risk state. RLS scoped to `auth.uid()` via receipt ownership. Include GRANTs per project rules.
-- **`receipts.metadata` shape**: keep `workflowType` NOT NULL trigger for now by defaulting to `'study'`, OR drop the trigger in a migration. Cleaner to drop the trigger + `provenance` requirement since those concepts are gone.
-- **Analyzer chunking**: reuse the same `mergeThinkingMapChunks`-style pattern for the two new analyzers; each returns a `nodes[]` or `items[]` array that stitches deterministically. Cap `max_completion_tokens` at 16000 (learned from the context_map bug).
-- **Extension**: no changes — capture pipeline is thread-level and template-agnostic.
-- **Removed routes**: delete files under `src/routes/researcher.*`, `src/routes/participant.workflows.tsx`, `src/routes/participant.demo.tsx`, and researcher-only admin views. Delete `WorkflowStack`, `workflow_templates` seed, workflow-tag helpers in `displayNames.ts`.
-
-## Not in this plan (ask if you want them)
-- Migrating any existing data from this project to the fork (fresh backend = empty)
-- Custom domain for the new app
-- Parent/teacher-facing views
-- Grade integration (Canvas, Blackboard)
-
+- No enum changes: `kind` stays `research`; class-ness lives in `research_sessions.metadata`.
+- Trivialness risk is a pure function over a receipt row — cached per-receipt in memory during the overview query, no new column.
+- Existing `anonymousLabel(userId)` from `src/lib/displayNames.ts` will label at-risk students in the class view too (consistent with admin views).
+- All new tables get `GRANT SELECT/INSERT/UPDATE/DELETE ... TO authenticated` + `GRANT ALL ... TO service_role` in the same migration.
