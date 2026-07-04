@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +14,7 @@ import { toast } from "sonner";
 import { posthog } from "@/lib/posthog";
 
 export const Route = createFileRoute("/auth")({ component: AuthPage });
+
 
 const MISSION_RADAR_DIMS = [
   { label: "Your", value: 0.92 },
