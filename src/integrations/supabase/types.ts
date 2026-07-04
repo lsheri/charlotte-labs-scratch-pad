@@ -225,6 +225,54 @@ export type Database = {
           },
         ]
       }
+      assignment_submissions: {
+        Row: {
+          assignment_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          participant_id: string
+          receipt_id: string | null
+          submitted_at: string
+          updated_at: string
+        }
+        Insert: {
+          assignment_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          participant_id: string
+          receipt_id?: string | null
+          submitted_at?: string
+          updated_at?: string
+        }
+        Update: {
+          assignment_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          participant_id?: string
+          receipt_id?: string | null
+          submitted_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignment_submissions_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "class_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignment_submissions_receipt_id_fkey"
+            columns: ["receipt_id"]
+            isOneToOne: false
+            referencedRelation: "receipts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       behavior_library: {
         Row: {
           active: boolean
@@ -359,6 +407,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      class_assignments: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          due_at: string | null
+          expected_tools: string[]
+          id: string
+          rubric: Json
+          session_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          due_at?: string | null
+          expected_tools?: string[]
+          id?: string
+          rubric?: Json
+          session_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          due_at?: string | null
+          expected_tools?: string[]
+          id?: string
+          rubric?: Json
+          session_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_assignments_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "research_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       conversation_turns: {
         Row: {
@@ -1814,6 +1909,7 @@ export type Database = {
           id: string
           join_code: string
           kind: string
+          metadata: Json
           name: string
           researcher_id: string
           starts_at: string | null
@@ -1828,6 +1924,7 @@ export type Database = {
           id?: string
           join_code: string
           kind?: string
+          metadata?: Json
           name: string
           researcher_id: string
           starts_at?: string | null
@@ -1842,6 +1939,7 @@ export type Database = {
           id?: string
           join_code?: string
           kind?: string
+          metadata?: Json
           name?: string
           researcher_id?: string
           starts_at?: string | null

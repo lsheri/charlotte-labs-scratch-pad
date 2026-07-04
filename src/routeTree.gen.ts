@@ -19,6 +19,7 @@ import { Route as ParticipantIndexRouteImport } from './routes/participant.index
 import { Route as ParticipantWorkspacesRouteImport } from './routes/participant.workspaces'
 import { Route as ParticipantFingerprintRouteImport } from './routes/participant.fingerprint'
 import { Route as ParticipantExtensionRouteImport } from './routes/participant.extension'
+import { Route as ParticipantDepartmentRouteImport } from './routes/participant.department'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as ParticipantThreadsIndexRouteImport } from './routes/participant.threads.index'
 import { Route as ParticipantReceiptsIndexRouteImport } from './routes/participant.receipts.index'
@@ -26,6 +27,7 @@ import { Route as ParticipantWorkspacesWorkspaceIdRouteImport } from './routes/p
 import { Route as ParticipantThreadsNewRouteImport } from './routes/participant.threads.new'
 import { Route as ParticipantThreadsThreadIdRouteImport } from './routes/participant.threads.$threadId'
 import { Route as ParticipantReceiptsReceiptIdRouteImport } from './routes/participant.receipts.$receiptId'
+import { Route as ParticipantDepartmentClassIdRouteImport } from './routes/participant.department.$classId'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicTeamOutreachRouteImport } from './routes/api/public/team-outreach'
 import { Route as ApiPublicExtensionStatusRouteImport } from './routes/api/public/extension-status'
@@ -89,6 +91,11 @@ const ParticipantExtensionRoute = ParticipantExtensionRouteImport.update({
   path: '/extension',
   getParentRoute: () => ParticipantRoute,
 } as any)
+const ParticipantDepartmentRoute = ParticipantDepartmentRouteImport.update({
+  id: '/department',
+  path: '/department',
+  getParentRoute: () => ParticipantRoute,
+} as any)
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   id: '/email/unsubscribe',
   path: '/email/unsubscribe',
@@ -127,6 +134,12 @@ const ParticipantReceiptsReceiptIdRoute =
     id: '/receipts/$receiptId',
     path: '/receipts/$receiptId',
     getParentRoute: () => ParticipantRoute,
+  } as any)
+const ParticipantDepartmentClassIdRoute =
+  ParticipantDepartmentClassIdRouteImport.update({
+    id: '/$classId',
+    path: '/$classId',
+    getParentRoute: () => ParticipantDepartmentRoute,
   } as any)
 const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   id: '/lovable/email/suppression',
@@ -205,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/participant/department': typeof ParticipantDepartmentRouteWithChildren
   '/participant/extension': typeof ParticipantExtensionRoute
   '/participant/fingerprint': typeof ParticipantFingerprintRoute
   '/participant/workspaces': typeof ParticipantWorkspacesRouteWithChildren
@@ -213,6 +227,7 @@ export interface FileRoutesByFullPath {
   '/api/public/extension-status': typeof ApiPublicExtensionStatusRoute
   '/api/public/team-outreach': typeof ApiPublicTeamOutreachRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/participant/department/$classId': typeof ParticipantDepartmentClassIdRoute
   '/participant/receipts/$receiptId': typeof ParticipantReceiptsReceiptIdRoute
   '/participant/threads/$threadId': typeof ParticipantThreadsThreadIdRoute
   '/participant/threads/new': typeof ParticipantThreadsNewRoute
@@ -235,6 +250,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/participant/department': typeof ParticipantDepartmentRouteWithChildren
   '/participant/extension': typeof ParticipantExtensionRoute
   '/participant/fingerprint': typeof ParticipantFingerprintRoute
   '/participant/workspaces': typeof ParticipantWorkspacesRouteWithChildren
@@ -243,6 +259,7 @@ export interface FileRoutesByTo {
   '/api/public/extension-status': typeof ApiPublicExtensionStatusRoute
   '/api/public/team-outreach': typeof ApiPublicTeamOutreachRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/participant/department/$classId': typeof ParticipantDepartmentClassIdRoute
   '/participant/receipts/$receiptId': typeof ParticipantReceiptsReceiptIdRoute
   '/participant/threads/$threadId': typeof ParticipantThreadsThreadIdRoute
   '/participant/threads/new': typeof ParticipantThreadsNewRoute
@@ -267,6 +284,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/participant/department': typeof ParticipantDepartmentRouteWithChildren
   '/participant/extension': typeof ParticipantExtensionRoute
   '/participant/fingerprint': typeof ParticipantFingerprintRoute
   '/participant/workspaces': typeof ParticipantWorkspacesRouteWithChildren
@@ -275,6 +293,7 @@ export interface FileRoutesById {
   '/api/public/extension-status': typeof ApiPublicExtensionStatusRoute
   '/api/public/team-outreach': typeof ApiPublicTeamOutreachRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/participant/department/$classId': typeof ParticipantDepartmentClassIdRoute
   '/participant/receipts/$receiptId': typeof ParticipantReceiptsReceiptIdRoute
   '/participant/threads/$threadId': typeof ParticipantThreadsThreadIdRoute
   '/participant/threads/new': typeof ParticipantThreadsNewRoute
@@ -300,6 +319,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/unsubscribe'
     | '/email/unsubscribe'
+    | '/participant/department'
     | '/participant/extension'
     | '/participant/fingerprint'
     | '/participant/workspaces'
@@ -308,6 +328,7 @@ export interface FileRouteTypes {
     | '/api/public/extension-status'
     | '/api/public/team-outreach'
     | '/lovable/email/suppression'
+    | '/participant/department/$classId'
     | '/participant/receipts/$receiptId'
     | '/participant/threads/$threadId'
     | '/participant/threads/new'
@@ -330,6 +351,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/unsubscribe'
     | '/email/unsubscribe'
+    | '/participant/department'
     | '/participant/extension'
     | '/participant/fingerprint'
     | '/participant/workspaces'
@@ -338,6 +360,7 @@ export interface FileRouteTypes {
     | '/api/public/extension-status'
     | '/api/public/team-outreach'
     | '/lovable/email/suppression'
+    | '/participant/department/$classId'
     | '/participant/receipts/$receiptId'
     | '/participant/threads/$threadId'
     | '/participant/threads/new'
@@ -361,6 +384,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/unsubscribe'
     | '/email/unsubscribe'
+    | '/participant/department'
     | '/participant/extension'
     | '/participant/fingerprint'
     | '/participant/workspaces'
@@ -369,6 +393,7 @@ export interface FileRouteTypes {
     | '/api/public/extension-status'
     | '/api/public/team-outreach'
     | '/lovable/email/suppression'
+    | '/participant/department/$classId'
     | '/participant/receipts/$receiptId'
     | '/participant/threads/$threadId'
     | '/participant/threads/new'
@@ -479,6 +504,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ParticipantExtensionRouteImport
       parentRoute: typeof ParticipantRoute
     }
+    '/participant/department': {
+      id: '/participant/department'
+      path: '/department'
+      fullPath: '/participant/department'
+      preLoaderRoute: typeof ParticipantDepartmentRouteImport
+      parentRoute: typeof ParticipantRoute
+    }
     '/email/unsubscribe': {
       id: '/email/unsubscribe'
       path: '/email/unsubscribe'
@@ -527,6 +559,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/participant/receipts/$receiptId'
       preLoaderRoute: typeof ParticipantReceiptsReceiptIdRouteImport
       parentRoute: typeof ParticipantRoute
+    }
+    '/participant/department/$classId': {
+      id: '/participant/department/$classId'
+      path: '/$classId'
+      fullPath: '/participant/department/$classId'
+      preLoaderRoute: typeof ParticipantDepartmentClassIdRouteImport
+      parentRoute: typeof ParticipantDepartmentRoute
     }
     '/lovable/email/suppression': {
       id: '/lovable/email/suppression'
@@ -615,6 +654,19 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface ParticipantDepartmentRouteChildren {
+  ParticipantDepartmentClassIdRoute: typeof ParticipantDepartmentClassIdRoute
+}
+
+const ParticipantDepartmentRouteChildren: ParticipantDepartmentRouteChildren = {
+  ParticipantDepartmentClassIdRoute: ParticipantDepartmentClassIdRoute,
+}
+
+const ParticipantDepartmentRouteWithChildren =
+  ParticipantDepartmentRoute._addFileChildren(
+    ParticipantDepartmentRouteChildren,
+  )
+
 interface ParticipantWorkspacesRouteChildren {
   ParticipantWorkspacesWorkspaceIdRoute: typeof ParticipantWorkspacesWorkspaceIdRoute
 }
@@ -629,6 +681,7 @@ const ParticipantWorkspacesRouteWithChildren =
   )
 
 interface ParticipantRouteChildren {
+  ParticipantDepartmentRoute: typeof ParticipantDepartmentRouteWithChildren
   ParticipantExtensionRoute: typeof ParticipantExtensionRoute
   ParticipantFingerprintRoute: typeof ParticipantFingerprintRoute
   ParticipantWorkspacesRoute: typeof ParticipantWorkspacesRouteWithChildren
@@ -641,6 +694,7 @@ interface ParticipantRouteChildren {
 }
 
 const ParticipantRouteChildren: ParticipantRouteChildren = {
+  ParticipantDepartmentRoute: ParticipantDepartmentRouteWithChildren,
   ParticipantExtensionRoute: ParticipantExtensionRoute,
   ParticipantFingerprintRoute: ParticipantFingerprintRoute,
   ParticipantWorkspacesRoute: ParticipantWorkspacesRouteWithChildren,
