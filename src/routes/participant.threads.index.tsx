@@ -19,7 +19,7 @@ import {
 } from "@/serverfn/threads";
 import {
   listClassSidebar, listMyAssignmentMappings, mapThreadToAssignment,
-  unmapThreadFromAssignment, attachReceiptToAssignment,
+  unmapThreadFromAssignment,
 } from "@/serverfn/assignments";
 import {
   NewReceiptDialog, type NewReceiptDialogValue,
