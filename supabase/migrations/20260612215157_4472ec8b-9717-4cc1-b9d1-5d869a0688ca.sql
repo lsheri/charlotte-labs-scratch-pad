@@ -1,0 +1,1 @@
+GRANT SELECT (id, shared_proof) ON public.receipts TO anon;

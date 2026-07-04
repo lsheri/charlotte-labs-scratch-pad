@@ -1,0 +1,1 @@
+ALTER TABLE public.receipt_jobs ADD COLUMN IF NOT EXISTS recommendations_status text NOT NULL DEFAULT 'pending';

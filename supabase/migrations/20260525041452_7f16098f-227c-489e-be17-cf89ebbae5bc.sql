@@ -1,0 +1,1 @@
+UPDATE public.receipt_jobs SET status='queued', error=NULL, attempts=0, retry_after=NULL, progress_label='Re-queued after OPENAI_API_KEY refresh' WHERE status='completed' AND error='All analysis chunks failed';
