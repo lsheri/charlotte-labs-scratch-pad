@@ -6,12 +6,13 @@ import { CharlotteLogo } from "@/components/CharlotteLogo";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { getExtensionHealth } from "@/serverfn/extension";
+import { listMyClasses } from "@/serverfn/department";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar,
 } from "@/components/ui/sidebar";
 
-const groups = [
+const baseGroups = [
   {
     label: "Workspace",
     items: [
