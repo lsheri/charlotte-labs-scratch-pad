@@ -171,30 +171,28 @@ function ThreadsInbox() {
     });
     try {
       const targetAssignmentId = assignmentSubmitTarget;
+      const targetAssignmentCode = targetAssignmentId ? assignmentById.get(targetAssignmentId)?.code : null;
       const r = await createFn({
         data: {
           threadIds: Array.from(selected),
-          label: v.name || undefined,
+          label: v.name || (targetAssignmentCode ? `${targetAssignmentCode} — ${v.name ?? ""}`.trim() : undefined),
           goal: v.goal || undefined,
           workflowType: "study",
         },
       });
       const jobId = (r as any).jobId as string;
       const jobIds = ((r as any).jobIds ?? [jobId]) as string[];
-      const receiptIds = ((r as any).receiptIds ?? []) as string[];
       const splitCount = (r as any).splitCount as number | undefined;
       try {
         for (const id of jobIds) {
           localStorage.setItem(`receipt-templates:${id}`, JSON.stringify(v.templates));
+          if (targetAssignmentId) {
+            localStorage.setItem(`assignment-attach:${id}`, targetAssignmentId);
+          }
         }
       } catch {}
-      // If this was an assignment-scoped generation, attach each new receipt.
-      if (targetAssignmentId && receiptIds.length) {
-        await Promise.all(
-          receiptIds.map((rid) =>
-            attachFn({ data: { receiptId: rid, assignmentId: targetAssignmentId } }).catch(() => {}),
-          ),
-        );
+      if (targetAssignmentCode) {
+        toast.success(`Receipt queued for ${targetAssignmentCode} — it'll attach once ready.`);
       }
       setSelected(new Set());
       setAssignmentSubmitTarget(null);
