@@ -224,6 +224,48 @@ function ThreadsInbox() {
   const focused = focusedAssignment ? assignmentById.get(focusedAssignment) : null;
   const focusedMappedIds = focused ? (mappedThreadIdsByAssignment.get(focused.id) ?? []) : [];
 
+  // Refs + geometry for the dashed navy connection lines
+  const gridRef = useRef<HTMLDivElement | null>(null);
+  const assignmentRefs = useRef<Map<string, HTMLElement>>(new Map());
+  const threadRefs = useRef<Map<string, HTMLElement>>(new Map());
+  const [lines, setLines] = useState<{ id: string; d: string }[]>([]);
+
+  useLayoutEffect(() => {
+    const compute = () => {
+      const grid = gridRef.current;
+      if (!grid) return;
+      const gb = grid.getBoundingClientRect();
+      const next: { id: string; d: string }[] = [];
+      for (const m of mappings) {
+        const aEl = assignmentRefs.current.get(m.assignment_id);
+        const tEl = threadRefs.current.get(m.thread_id);
+        if (!aEl || !tEl) continue;
+        const ab = aEl.getBoundingClientRect();
+        const tb = tEl.getBoundingClientRect();
+        const x1 = ab.right - gb.left;
+        const y1 = ab.top + ab.height / 2 - gb.top;
+        const x2 = tb.left - gb.left;
+        const y2 = tb.top + tb.height / 2 - gb.top;
+        const cx = (x1 + x2) / 2;
+        next.push({
+          id: `${m.assignment_id}:${m.thread_id}`,
+          d: `M ${x1} ${y1} C ${cx} ${y1}, ${cx} ${y2}, ${x2} ${y2}`,
+        });
+      }
+      setLines(next);
+    };
+    compute();
+    const ro = new ResizeObserver(compute);
+    if (gridRef.current) ro.observe(gridRef.current);
+    window.addEventListener("resize", compute);
+    window.addEventListener("scroll", compute, true);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", compute);
+      window.removeEventListener("scroll", compute, true);
+    };
+  }, [mappings, threads, classes, focusedAssignment, orderedThreads]);
+
   return (
     <div className="space-y-6 relative">
       <div className="flex items-end justify-between gap-4">
