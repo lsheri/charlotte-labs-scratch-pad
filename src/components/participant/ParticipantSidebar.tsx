@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   Home, MessageSquare, Receipt, Plug, Fingerprint, LogOut, Plus,
-  Briefcase, GraduationCap, ChevronRight, FileText,
+  Briefcase, GraduationCap, ChevronRight, FileText, Check, ChevronsUpDown, User,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { CharlotteLogo } from "@/components/CharlotteLogo";
@@ -10,24 +10,19 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { getExtensionHealth } from "@/serverfn/extension";
 import { listClassSidebar } from "@/serverfn/assignments";
+import { useActiveWorkspaceId } from "@/lib/activeWorkspace";
 import {
   Collapsible, CollapsibleContent, CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
+  DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubItem,
   SidebarMenuSubButton, SidebarHeader, SidebarFooter, useSidebar,
 } from "@/components/ui/sidebar";
-
-const workspaceGroup = {
-  label: "Workspace",
-  items: [
-    { title: "Home", url: "/participant", icon: Home, exact: true },
-    { title: "Workspaces", url: "/participant/workspaces", icon: Briefcase },
-    { title: "All Threads", url: "/participant/threads", icon: MessageSquare },
-    { title: "All Receipts", url: "/participant/receipts", icon: Receipt },
-  ],
-};
 
 const toolsGroup = {
   label: "Tools",
@@ -35,6 +30,13 @@ const toolsGroup = {
     { title: "Extension", url: "/participant/extension", icon: Plug, hasHealthDot: true },
     { title: "Fingerprint", url: "/participant/fingerprint", icon: Fingerprint },
   ],
+};
+
+type SidebarClass = {
+  id: string;
+  name: string;
+  courseCode: string | null;
+  assignments: { id: string; code: string; title: string; dueAt: string | null }[];
 };
 
 type SidebarClass = {
