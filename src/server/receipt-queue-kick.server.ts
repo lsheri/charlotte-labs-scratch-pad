@@ -7,7 +7,7 @@
 //
 // Cron is a pure safety net (every 30 min) that catches the rare case where
 // waitUntil itself is unavailable (e.g. dev server) or the kick HTTP call fails.
-const URL = 'https://project--587b3636-dac3-4081-bfb6-e7028ae194bd.lovable.app/api/public/hooks/process-receipt-jobs';
+const URL = 'https://project--992dda35-bf38-49fe-ae5a-117a3bd97346-dev.lovable.app/api/public/hooks/process-receipt-jobs';
 
 export function kickReceiptQueue(): void {
   const key = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY;
