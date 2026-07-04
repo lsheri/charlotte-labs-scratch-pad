@@ -82,9 +82,7 @@ function Slide2() {
       </p>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <StatCallout value="$13M / yr" label="CSU's renewed OpenAI contract, 3 years, signed mid-budget-crisis" />
-        <StatCallout value="52%" label="CSU faculty say AI has hurt their teaching (systemwide survey, 94,000+ respondents)" />
         <StatCallout value="67%" label="CSU students say professors don't teach effective AI use (same survey)" />
-        <StatCallout value="~3%" label="Of 4,339 real workplace AI prompts involved any fact-checking or validation (HBS 26-021)" />
         <StatCallout value="56%" label="Wage premium for AI-skilled workers (PwC)" />
       </div>
       <p className="max-w-3xl text-sm leading-relaxed text-foreground/80">
