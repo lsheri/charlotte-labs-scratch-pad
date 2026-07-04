@@ -57,7 +57,7 @@ export const runStudyTemplate = createServerFn({ method: "POST" })
     return {
       templateKey: result.templateKey,
       ok: result.ok,
-      analysis: (result.analysis ?? null) as Record<string, unknown> | null,
+      analysis: (result.analysis ?? null) as Json,
       error: result.error ?? null,
       latencyMs: result.latencyMs,
     };
