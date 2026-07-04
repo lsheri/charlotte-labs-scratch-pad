@@ -18,7 +18,7 @@ import { Trash2, ShieldAlert, Target, MessageSquare, GraduationCap, ChevronRight
 import { ToolLogo } from "@/components/ToolLogo";
 import { deleteMyData, createPersonalSession, getCaptureTarget } from "@/serverfn/participant";
 import { listMyThreads } from "@/serverfn/threads";
-import { sendEnrollmentConfirmation, withdrawFromStudy } from "@/serverfn/study-lifecycle";
+import { sendEnrollmentConfirmation } from "@/serverfn/study-lifecycle";
 import { getOpenVerificationItems, getRecentStudyGaps } from "@/serverfn/study-analyses";
 import { OverallFluencyCard } from "@/components/participant/OverallFluencyCard";
 import { WelcomeTourDialog } from "@/components/WelcomeTourDialog";
