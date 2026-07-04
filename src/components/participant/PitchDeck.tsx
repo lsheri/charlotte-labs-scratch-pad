@@ -73,7 +73,7 @@ function Slide2() {
           Slide 2
         </div>
         <h1 className="mt-2 text-4xl font-semibold tracking-tight text-foreground">
-          AI has disrupted the bet, and nobody has measured the damage
+          AI Is being invested in but not measured
         </h1>
       </div>
       <p className="max-w-3xl text-base leading-relaxed text-muted-foreground">
