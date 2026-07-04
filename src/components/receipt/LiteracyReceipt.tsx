@@ -286,7 +286,7 @@ export function LiteracyReceipt({ receipt, audit, runMeta, turns, tools, recomme
               <CardTitle className="text-sm">Skill Evidence</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2.5">
-              {visibleDims.map(d => {
+              {visibleDims.map((d: any) => {
                 const state = dimensionEvidenceState(d.score);
                 return (
                   <div key={d.canonical_name} className="flex items-center gap-3">
