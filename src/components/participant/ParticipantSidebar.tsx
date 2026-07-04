@@ -54,7 +54,10 @@ export function ParticipantSidebar() {
   useEffect(() => {
     fetchHealth().then((h) => setHealthStatus(h.status)).catch(() => {});
     fetchClasses().then((r) => setClasses((r.classes ?? []) as any)).catch(() => {});
-  }, [fetchHealth, fetchClasses]);
+  useEffect(() => {
+    const m = path.match(/^\/participant\/department\/([^/]+)/);
+    if (m && m[1] !== activeWorkspaceId) setActiveWorkspaceId(m[1]);
+  }, [path, activeWorkspaceId, setActiveWorkspaceId]);
 
   const activeClass = activeWorkspaceId
     ? classes.find((c) => c.id === activeWorkspaceId) ?? null
