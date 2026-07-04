@@ -230,6 +230,7 @@ export type Database = {
           assignment_id: string
           created_at: string
           id: string
+          metadata: Json
           notes: string | null
           participant_id: string
           receipt_id: string | null
@@ -240,6 +241,7 @@ export type Database = {
           assignment_id: string
           created_at?: string
           id?: string
+          metadata?: Json
           notes?: string | null
           participant_id: string
           receipt_id?: string | null
@@ -250,6 +252,7 @@ export type Database = {
           assignment_id?: string
           created_at?: string
           id?: string
+          metadata?: Json
           notes?: string | null
           participant_id?: string
           receipt_id?: string | null

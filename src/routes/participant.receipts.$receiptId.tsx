@@ -177,10 +177,17 @@ function ReceiptPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [Boolean(run)]);
 
-  // Auto-run study templates the user selected on the create dialog.
+  // Auto-run study templates the user selected on the create dialog —
+  // SEQUENTIALLY, one at a time, so each template gets full Gemini bandwidth
+  // and we surface per-step progress instead of firing everything in parallel.
   const runStudyFn = useServerFn(runStudyTemplate);
   const attachAssignmentFn = useServerFn(attachReceiptToAssignment);
   const jobId = job?.id;
+  const [templateProgress, setTemplateProgress] = useState<{
+    current: string | null;
+    done: number;
+    total: number;
+  }>({ current: null, done: 0, total: 0 });
   useEffect(() => {
     if (!run || !receiptId) return;
     const keys = [jobId, receiptId].filter(Boolean) as string[];
@@ -194,11 +201,29 @@ function ReceiptPage() {
         }
       } catch {}
     }
-    for (const t of templates) {
-      if (t === "verification_risk" || t === "study_gaps") {
-        runStudyFn({ data: { receiptId, templateKey: t as any } }).catch(() => {});
+
+    // Fixed run order — classic_fluency is already handled by the pipeline,
+    // so only sequence the two study templates here.
+    const ORDER = ["verification_risk", "study_gaps"] as const;
+    const toRun = ORDER.filter((k) => templates.includes(k));
+
+    let cancelled = false;
+    (async () => {
+      if (toRun.length === 0) return;
+      setTemplateProgress({ current: toRun[0], done: 0, total: toRun.length });
+      for (let i = 0; i < toRun.length; i++) {
+        if (cancelled) return;
+        const t = toRun[i];
+        setTemplateProgress({ current: t, done: i, total: toRun.length });
+        try {
+          await runStudyFn({ data: { receiptId, templateKey: t as any } });
+        } catch (e) {
+          console.error(`[receipt] template ${t} failed`, e);
+        }
       }
-    }
+      if (!cancelled) setTemplateProgress({ current: null, done: toRun.length, total: toRun.length });
+    })();
+
     // Attach to assignment if the create dialog flagged one for this job.
     for (const k of keys) {
       try {
@@ -212,8 +237,14 @@ function ReceiptPage() {
     for (const k of keys) {
       try { localStorage.removeItem(`receipt-templates:${k}`); } catch {}
     }
+    return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [Boolean(run), receiptId, jobId]);
+
+  const templateLabels: Record<string, string> = {
+    verification_risk: "Verification & Risk",
+    study_gaps: "Study Gaps",
+  };
 
 
   const retryAt = job?.retry_after ? new Date(job.retry_after) : null;
@@ -266,8 +297,17 @@ function ReceiptPage() {
 
       {showReceipt && (() => {
         const currentTab = activeTemplate ?? "classic_fluency";
+        const tp = templateProgress;
         return (
           <div className="space-y-4">
+            {tp.current && (
+              <div className="flex items-center gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-xs text-primary">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <span>
+                  Running {templateLabels[tp.current] ?? tp.current}… ({tp.done + 1}/{tp.total})
+                </span>
+              </div>
+            )}
             <TemplateTabs
               receiptId={receiptId}
               activeKey={currentTab}

@@ -97,19 +97,30 @@ export const unmapThreadFromAssignment = createServerFn({ method: "POST" })
 /** Record that a receipt was generated as a submission for an assignment. */
 export const attachReceiptToAssignment = createServerFn({ method: "POST" })
   .inputValidator(
-    z.object({ receiptId: z.string().uuid(), assignmentId: z.string().uuid() }).parse
+    z.object({
+      receiptId: z.string().uuid(),
+      assignmentId: z.string().uuid(),
+      /** Templates the student chose to include in the submission. Persisted
+       *  in submission metadata so professors can later filter which views
+       *  they see. Defaults to "all templates that ran" downstream. */
+      templateKeys: z.array(z.string().min(1).max(48)).max(10).optional(),
+    }).parse
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    const row: Record<string, any> = {
+      assignment_id: data.assignmentId,
+      participant_id: userId,
+      receipt_id: data.receiptId,
+      submitted_at: new Date().toISOString(),
+    };
+    if (data.templateKeys?.length) {
+      row.metadata = { templateKeys: data.templateKeys };
+    }
     const { error } = await supabase
       .from("assignment_submissions")
-      .insert({
-        assignment_id: data.assignmentId,
-        participant_id: userId,
-        receipt_id: data.receiptId,
-        submitted_at: new Date().toISOString(),
-      });
+      .insert(row as any);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
