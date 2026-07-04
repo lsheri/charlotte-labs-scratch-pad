@@ -273,6 +273,45 @@ export type Database = {
           },
         ]
       }
+      assignment_threads: {
+        Row: {
+          assignment_id: string
+          id: string
+          mapped_at: string
+          participant_id: string
+          thread_id: string
+        }
+        Insert: {
+          assignment_id: string
+          id?: string
+          mapped_at?: string
+          participant_id: string
+          thread_id: string
+        }
+        Update: {
+          assignment_id?: string
+          id?: string
+          mapped_at?: string
+          participant_id?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignment_threads_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "class_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignment_threads_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "chat_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       behavior_library: {
         Row: {
           active: boolean

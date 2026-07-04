@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/lib/auth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,25 +7,36 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { formatDistanceToNow } from "date-fns";
-import { Trash2, FileText, MessageSquare, Upload } from "lucide-react";
+import { formatDistanceToNow, format } from "date-fns";
+import {
+  Trash2, FileText, MessageSquare, Upload, GraduationCap, ChevronDown,
+  Plus, X, Sparkles,
+} from "lucide-react";
 import { ToolLogo } from "@/components/ToolLogo";
 import { ThreadSummaryChip } from "@/components/conversation/ThreadSummaryChip";
-import { format } from "date-fns";
 import {
-  listMyThreads,
-  deleteThread,
-  createReceiptFromThreads,
-  getDailyWorkflowUsage,
+  listMyThreads, deleteThread, createReceiptFromThreads, getDailyWorkflowUsage,
 } from "@/serverfn/threads";
 import {
-  NewReceiptDialog,
-  type NewReceiptDialogValue,
+  listClassSidebar, listMyAssignmentMappings, mapThreadToAssignment,
+  unmapThreadFromAssignment,
+} from "@/serverfn/assignments";
+import {
+  NewReceiptDialog, type NewReceiptDialogValue,
 } from "@/components/receipt/NewReceiptDialog";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
+  DropdownMenuLabel, DropdownMenuItem, DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import charlotteMascot from "@/assets/charlotte-mascot.png";
 import { setPendingReceiptJob } from "@/lib/pendingReceiptJob";
 
 export const Route = createFileRoute("/participant/threads/")({ component: ThreadsInbox });
+
+type SidebarClass = {
+  id: string; name: string; courseCode: string | null;
+  assignments: { id: string; code: string; title: string; dueAt: string | null }[];
+};
 
 function ThreadsInbox() {
   const { user } = useAuth();
@@ -34,49 +45,111 @@ function ThreadsInbox() {
   const delFn = useServerFn(deleteThread);
   const createFn = useServerFn(createReceiptFromThreads);
   const usageFn = useServerFn(getDailyWorkflowUsage);
+  const classesFn = useServerFn(listClassSidebar);
+  const mappingsFn = useServerFn(listMyAssignmentMappings);
+  const mapFn = useServerFn(mapThreadToAssignment);
+  const unmapFn = useServerFn(unmapThreadFromAssignment);
+  
+
   const [threads, setThreads] = useState<any[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [splash, setSplash] = useState<"idle" | "starting">("idle");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [usage, setUsage] = useState<{ used: number; limit: number; exempt: boolean }>({
-    used: 0,
-    limit: 7,
-    exempt: false,
-  });
+  const [usage, setUsage] = useState({ used: 0, limit: 7, exempt: false });
+  const [classes, setClasses] = useState<SidebarClass[]>([]);
+  const [mappings, setMappings] = useState<{ assignment_id: string; thread_id: string }[]>([]);
+  const [focusedAssignment, setFocusedAssignment] = useState<string | null>(null);
+  const [assignmentSubmitTarget, setAssignmentSubmitTarget] = useState<string | null>(null);
 
-  const load = async () => {
+  const loadThreads = async () => {
     setLoading(true);
-    try {
-      const r = await listFn();
-      setThreads((r as any).threads ?? []);
-    } catch {
-      setThreads([]);
-    }
+    try { setThreads(((await listFn()) as any).threads ?? []); }
+    catch { setThreads([]); }
     setLoading(false);
   };
+  const loadMappings = async () => {
+    try { setMappings(((await mappingsFn()) as any).mappings ?? []); }
+    catch {}
+  };
   useEffect(() => {
-    if (user) load();
+    if (!user) return;
+    loadThreads();
+    loadMappings();
+    classesFn().then((r) => setClasses((r.classes ?? []) as any)).catch(() => {});
   }, [user]);
   useEffect(() => {
     if (!user) return;
-    usageFn()
-      .then((r: any) => setUsage({ used: r.used ?? 0, limit: r.limit ?? 7, exempt: !!r.exempt }))
-      .catch(() => {});
+    usageFn().then((r: any) => setUsage({ used: r.used ?? 0, limit: r.limit ?? 7, exempt: !!r.exempt })).catch(() => {});
   }, [user, dialogOpen]);
 
+  const allAssignments = useMemo(
+    () => classes.flatMap((c) => c.assignments.map((a) => ({ ...a, classId: c.id, className: c.courseCode ?? c.name }))),
+    [classes],
+  );
+  const assignmentById = useMemo(
+    () => new Map(allAssignments.map((a) => [a.id, a])),
+    [allAssignments],
+  );
+  const mappedThreadIdsByAssignment = useMemo(() => {
+    const m = new Map<string, string[]>();
+    for (const row of mappings) {
+      const arr = m.get(row.assignment_id) ?? [];
+      arr.push(row.thread_id);
+      m.set(row.assignment_id, arr);
+    }
+    return m;
+  }, [mappings]);
+  const assignmentIdsByThread = useMemo(() => {
+    const m = new Map<string, string[]>();
+    for (const row of mappings) {
+      const arr = m.get(row.thread_id) ?? [];
+      arr.push(row.assignment_id);
+      m.set(row.thread_id, arr);
+    }
+    return m;
+  }, [mappings]);
+
+  const focusedMappedThreadIds = focusedAssignment
+    ? new Set(mappedThreadIdsByAssignment.get(focusedAssignment) ?? [])
+    : null;
+  const orderedThreads = useMemo(() => {
+    if (!focusedMappedThreadIds) return threads;
+    const mapped = threads.filter((t) => focusedMappedThreadIds.has(t.id));
+    const rest = threads.filter((t) => !focusedMappedThreadIds.has(t.id));
+    return [...mapped, ...rest];
+  }, [threads, focusedMappedThreadIds]);
+
   const toggle = (id: string) =>
-    setSelected((p) => {
-      const n = new Set(p);
-      n.has(id) ? n.delete(id) : n.add(id);
-      return n;
-    });
+    setSelected((p) => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; });
   const toggleAll = () =>
     setSelected((p) => (p.size === threads.length ? new Set() : new Set(threads.map((t) => t.id))));
 
-  const openDialog = () => {
-    if (selected.size) setDialogOpen(true);
+  const doMap = async (threadId: string, assignmentId: string) => {
+    // optimistic
+    setMappings((prev) => prev.some((m) => m.assignment_id === assignmentId && m.thread_id === threadId)
+      ? prev : [...prev, { assignment_id: assignmentId, thread_id: threadId }]);
+    try { await mapFn({ data: { threadId, assignmentId } }); }
+    catch (e: any) { toast.error(e.message); loadMappings(); }
+  };
+  const doUnmap = async (threadId: string, assignmentId: string) => {
+    setMappings((prev) => prev.filter((m) => !(m.assignment_id === assignmentId && m.thread_id === threadId)));
+    try { await unmapFn({ data: { threadId, assignmentId } }); }
+    catch (e: any) { toast.error(e.message); loadMappings(); }
+  };
+
+  const openDialog = (opts?: { assignmentId?: string; threadIds?: string[] }) => {
+    if (opts?.assignmentId) {
+      const ids = opts.threadIds ?? [];
+      if (!ids.length) return;
+      setSelected(new Set(ids));
+      setAssignmentSubmitTarget(opts.assignmentId);
+    } else {
+      setAssignmentSubmitTarget(null);
+      if (!selected.size) return;
+    }
+    setDialogOpen(true);
   };
 
   const inSession = Array.from(selected).some((id) => {
@@ -89,21 +162,20 @@ function ThreadsInbox() {
     setDialogOpen(false);
     setBusy(true);
     setSplash("starting");
-    if (!v.goal) {
-      toast.info("Tip: adding a goal makes your recommendations more personal.");
-    }
+    if (!v.goal) toast.info("Tip: adding a goal makes your recommendations more personal.");
     const startedAt = Date.now();
     const { posthog } = await import("@/lib/posthog");
     posthog.capture("receipt_requested", {
-      thread_count: selected.size,
-      templates: v.templates,
-      has_goal: !!v.goal,
+      thread_count: selected.size, templates: v.templates, has_goal: !!v.goal,
+      assignment_id: assignmentSubmitTarget ?? undefined,
     });
     try {
+      const targetAssignmentId = assignmentSubmitTarget;
+      const targetAssignmentCode = targetAssignmentId ? assignmentById.get(targetAssignmentId)?.code : null;
       const r = await createFn({
         data: {
           threadIds: Array.from(selected),
-          label: v.name || undefined,
+          label: v.name || (targetAssignmentCode ? `${targetAssignmentCode} — ${v.name ?? ""}`.trim() : undefined),
           goal: v.goal || undefined,
           workflowType: "study",
         },
@@ -111,50 +183,46 @@ function ThreadsInbox() {
       const jobId = (r as any).jobId as string;
       const jobIds = ((r as any).jobIds ?? [jobId]) as string[];
       const splitCount = (r as any).splitCount as number | undefined;
-      // Persist template selection per job so the receipt page can auto-run
-      // the selected study analyzers once the receipt is ready.
       try {
         for (const id of jobIds) {
-          localStorage.setItem(
-            `receipt-templates:${id}`,
-            JSON.stringify(v.templates),
-          );
+          localStorage.setItem(`receipt-templates:${id}`, JSON.stringify(v.templates));
+          if (targetAssignmentId) {
+            localStorage.setItem(`assignment-attach:${id}`, targetAssignmentId);
+          }
         }
       } catch {}
+      if (targetAssignmentCode) {
+        toast.success(`Receipt queued for ${targetAssignmentCode} — it'll attach once ready.`);
+      }
       setSelected(new Set());
+      setAssignmentSubmitTarget(null);
       if (splitCount && splitCount > 1) {
-        toast.success(
-          `Split into ${splitCount} receipts (one per workspace) so research and personal work stay separate.`,
-        );
+        toast.success(`Split into ${splitCount} receipts (one per workspace).`);
         posthog.capture("receipt_split_cross_workspace", { split_count: splitCount });
       }
       const elapsed = Date.now() - startedAt;
       const remaining = Math.max(0, 3000 - elapsed);
       window.setTimeout(() => {
         setPendingReceiptJob({ jobId, startedAt: Date.now() });
-        setSplash("idle");
-        setBusy(false);
+        setSplash("idle"); setBusy(false);
         navigate({ to: "/participant/receipts" });
       }, remaining);
     } catch (e: any) {
-      setSplash("idle");
-      setBusy(false);
+      setSplash("idle"); setBusy(false);
       posthog.capture("receipt_request_failed", { error: e?.message ?? String(e) });
       toast.error(e.message);
     }
   };
 
-
   const remove = async (id: string, title: string) => {
     if (!confirm(`Delete thread "${title}"?`)) return;
-    try {
-      await delFn({ data: { threadId: id } });
-      toast.success("Deleted");
-      load();
-    } catch (e: any) {
-      toast.error(e.message);
-    }
+    try { await delFn({ data: { threadId: id } }); toast.success("Deleted"); loadThreads(); loadMappings(); }
+    catch (e: any) { toast.error(e.message); }
   };
+
+  const hasClasses = classes.length > 0;
+  const focused = focusedAssignment ? assignmentById.get(focusedAssignment) : null;
+  const focusedMappedIds = focused ? (mappedThreadIdsByAssignment.get(focused.id) ?? []) : [];
 
   return (
     <div className="space-y-6 relative">
@@ -164,7 +232,7 @@ function ThreadsInbox() {
             <MessageSquare className="h-6 w-6" /> Threads
           </h1>
           <p className="text-sm text-muted-foreground">
-            Captured AI conversations. Select threads and generate a single receipt for analysis.
+            Captured AI conversations. Map them to assignments, or select and generate a standalone receipt.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -178,7 +246,7 @@ function ThreadsInbox() {
               {selected.size === threads.length ? "Clear" : "Select all"}
             </Button>
           )}
-          <Button size="sm" disabled={!selected.size || busy} onClick={openDialog}>
+          <Button size="sm" disabled={!selected.size || busy} onClick={() => openDialog()}>
             <FileText className="mr-1 h-4 w-4" /> Generate Receipt ({selected.size})
           </Button>
         </div>
@@ -186,26 +254,215 @@ function ThreadsInbox() {
 
       {loading ? (
         <p className="text-sm text-muted-foreground">Loading…</p>
-      ) : threads.length === 0 ? (
+      ) : threads.length === 0 && !hasClasses ? (
         <Card>
           <CardContent className="py-16 text-center text-sm text-muted-foreground">
             No threads yet. Install the extension and start chatting — or{" "}
-            <Link to="/participant/threads/new" className="text-primary underline">
-              add a thread manually
-            </Link>
-            .
+            <Link to="/participant/threads/new" className="text-primary underline">add a thread manually</Link>.
           </CardContent>
         </Card>
+      ) : hasClasses ? (
+        <div className="grid gap-4 lg:grid-cols-[300px_140px_minmax(0,1fr)]">
+          {/* Left column: Assignments */}
+          <aside className="space-y-3">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Assignments
+            </h2>
+            {classes.map((c) => (
+              <div key={c.id} className="space-y-1">
+                <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                  <GraduationCap className="h-3.5 w-3.5" />
+                  {c.courseCode ?? c.name}
+                </div>
+                <div className="space-y-1">
+                  {c.assignments.map((a) => {
+                    const mappedCount = mappedThreadIdsByAssignment.get(a.id)?.length ?? 0;
+                    const active = focusedAssignment === a.id;
+                    return (
+                      <button
+                        key={a.id}
+                        onClick={() => setFocusedAssignment(active ? null : a.id)}
+                        className={`w-full text-left rounded-md border px-3 py-2 text-sm transition ${
+                          active ? "border-primary bg-primary/5" : "hover:bg-accent"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-medium truncate">{a.code}</span>
+                          <Badge variant={mappedCount > 0 ? "default" : "outline"} className="text-[10px]">
+                            {mappedCount}
+                          </Badge>
+                        </div>
+                        <div className="text-xs text-muted-foreground truncate">
+                          {a.title.replace(/^.*—\s*/, "")}
+                        </div>
+                        {a.dueAt && (
+                          <div className="mt-0.5 text-[10px] text-muted-foreground">
+                            Due {format(new Date(a.dueAt), "MMM d")}
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </aside>
+
+          {/* Center column: focused-assignment action */}
+          <div className="hidden lg:flex flex-col items-center justify-center gap-2 py-2">
+            {focused ? (
+              <>
+                <div className="text-center text-xs text-muted-foreground">
+                  <div className="font-medium text-foreground">{focused.code}</div>
+                  <div>{focusedMappedIds.length} mapped</div>
+                </div>
+                <Button
+                  size="sm"
+                  disabled={!focusedMappedIds.length || busy}
+                  onClick={() => openDialog({ assignmentId: focused.id, threadIds: focusedMappedIds })}
+                  className="gap-1"
+                >
+                  <Sparkles className="h-3.5 w-3.5" /> Generate Receipt
+                </Button>
+                {!focusedMappedIds.length && (
+                  <p className="text-[10px] text-muted-foreground text-center max-w-[120px]">
+                    Assign threads on the right to enable
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="text-[11px] text-muted-foreground text-center max-w-[120px]">
+                Select an assignment to focus mapped threads and generate its receipt
+              </p>
+            )}
+          </div>
+
+          {/* Right column: Threads */}
+          <div className="space-y-2">
+            {threads.length === 0 ? (
+              <Card>
+                <CardContent className="py-10 text-center text-sm text-muted-foreground">
+                  No threads yet.{" "}
+                  <Link to="/participant/threads/new" className="text-primary underline">Add one manually</Link>.
+                </CardContent>
+              </Card>
+            ) : (
+              orderedThreads.map((th) => {
+                const isMappedToFocused = focusedAssignment
+                  ? (assignmentIdsByThread.get(th.id) ?? []).includes(focusedAssignment)
+                  : false;
+                const threadAssignments = assignmentIdsByThread.get(th.id) ?? [];
+                return (
+                  <Card
+                    key={th.id}
+                    className={`${selected.has(th.id) ? "border-primary" : ""} ${
+                      isMappedToFocused ? "ring-1 ring-primary/40" : ""
+                    }`}
+                  >
+                    <CardContent className="flex items-start gap-3 py-3">
+                      <Checkbox className="mt-1" checked={selected.has(th.id)} onCheckedChange={() => toggle(th.id)} />
+                      <ToolLogo tool={th.tool} size={28} />
+                      <Link
+                        to="/participant/threads/$threadId"
+                        params={{ threadId: th.id }}
+                        className="flex-1 min-w-0"
+                        title={th.title || "Untitled chat"}
+                      >
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-semibold">
+                            {format(new Date(th.first_captured_at), "MMM d, yyyy · h:mm a")}
+                          </span>
+                          <Badge variant="outline" className="capitalize">{th.tool}</Badge>
+                          <span className="text-xs text-muted-foreground">
+                            {th.turn_count} msg{th.turn_count === 1 ? "" : "s"} · updated{" "}
+                            {formatDistanceToNow(new Date(th.last_captured_at), { addSuffix: true })}
+                          </span>
+                        </div>
+                        <div className="mt-1.5 min-w-0">
+                          <ThreadSummaryChip summary={th.summary} seed={th.id} />
+                        </div>
+                        {threadAssignments.length > 0 && (
+                          <div className="mt-1.5 flex flex-wrap gap-1">
+                            {threadAssignments.map((aid) => {
+                              const a = assignmentById.get(aid);
+                              if (!a) return null;
+                              return (
+                                <span
+                                  key={aid}
+                                  className="inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary px-2 py-0.5 text-[10px] font-medium"
+                                  onClick={(e) => { e.preventDefault(); }}
+                                >
+                                  {a.code}
+                                  <button
+                                    aria-label={`Unmap ${a.code}`}
+                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); doUnmap(th.id, aid); }}
+                                    className="hover:text-destructive"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </span>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </Link>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" size="sm" className="gap-1">
+                            <Plus className="h-3.5 w-3.5" /> Assign
+                            <ChevronDown className="h-3 w-3" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-64">
+                          {classes.map((c) => (
+                            <div key={c.id}>
+                              <DropdownMenuLabel className="text-xs">
+                                {c.courseCode ?? c.name}
+                              </DropdownMenuLabel>
+                              {c.assignments.map((a) => {
+                                const mapped = (assignmentIdsByThread.get(th.id) ?? []).includes(a.id);
+                                return (
+                                  <DropdownMenuItem
+                                    key={a.id}
+                                    onSelect={(e) => {
+                                      e.preventDefault();
+                                      mapped ? doUnmap(th.id, a.id) : doMap(th.id, a.id);
+                                    }}
+                                    className="flex items-center gap-2"
+                                  >
+                                    <Checkbox checked={mapped} />
+                                    <span className="font-medium">{a.code}</span>
+                                    <span className="text-xs text-muted-foreground truncate">
+                                      {a.title.replace(/^.*—\s*/, "")}
+                                    </span>
+                                  </DropdownMenuItem>
+                                );
+                              })}
+                              <DropdownMenuSeparator />
+                            </div>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      <Button
+                        variant="ghost" size="sm"
+                        className="text-muted-foreground hover:text-destructive"
+                        onClick={() => remove(th.id, th.title || "Untitled")}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            )}
+          </div>
+        </div>
       ) : (
         <div className="grid gap-2">
           {threads.map((th) => (
             <Card key={th.id} className={selected.has(th.id) ? "border-primary" : ""}>
               <CardContent className="flex items-start gap-3 py-3">
-                <Checkbox
-                  className="mt-1"
-                  checked={selected.has(th.id)}
-                  onCheckedChange={() => toggle(th.id)}
-                />
+                <Checkbox className="mt-1" checked={selected.has(th.id)} onCheckedChange={() => toggle(th.id)} />
                 <ToolLogo tool={th.tool} size={28} />
                 <Link
                   to="/participant/threads/$threadId"
@@ -217,11 +474,9 @@ function ThreadsInbox() {
                     <span className="text-sm font-semibold">
                       {format(new Date(th.first_captured_at), "MMM d, yyyy · h:mm a")}
                     </span>
-                    <Badge variant="outline" className="capitalize">
-                      {th.tool}
-                    </Badge>
+                    <Badge variant="outline" className="capitalize">{th.tool}</Badge>
                     <span className="text-xs text-muted-foreground">
-                      {th.turn_count} message{th.turn_count === 1 ? "" : "s"} · updated{" "}
+                      {th.turn_count} msg{th.turn_count === 1 ? "" : "s"} · updated{" "}
                       {formatDistanceToNow(new Date(th.last_captured_at), { addSuffix: true })}
                     </span>
                   </div>
@@ -230,8 +485,7 @@ function ThreadsInbox() {
                   </div>
                 </Link>
                 <Button
-                  variant="ghost"
-                  size="sm"
+                  variant="ghost" size="sm"
                   className="text-muted-foreground hover:text-destructive"
                   onClick={() => remove(th.id, th.title || "Untitled")}
                 >
@@ -251,7 +505,7 @@ function ThreadsInbox() {
         dailyUsed={usage.used}
         dailyLimit={usage.limit}
         dailyLimitExempt={usage.exempt}
-        onCancel={() => setDialogOpen(false)}
+        onCancel={() => { setDialogOpen(false); setAssignmentSubmitTarget(null); }}
         onSubmit={generate}
       />
 
