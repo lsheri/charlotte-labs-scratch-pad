@@ -97,7 +97,7 @@ export async function fetchOpenAIWithRetry(
 // SCORING_MODEL uses the largest-context Gemini Pro preview for the final
 // fluency + template calls; CHUNK_SCORING_MODEL / SUMMARY_MODEL /
 // ROUTING_MODEL stay on Flash for short, cheap calls.
-export const SCORING_MODEL = "google/gemini-3.1-pro-preview";
+export const SCORING_MODEL = "google/gemini-3-flash-preview";
 export const CHUNK_SCORING_MODEL = "google/gemini-3-flash-preview";
 export const ROUTING_MODEL = "google/gemini-3-flash-preview";
 export const SUMMARY_MODEL = "google/gemini-3-flash-preview";
