@@ -85,8 +85,8 @@ function FingerprintPage() {
         <div className="flex items-start gap-3 bg-card border rounded-lg p-5">
           <Briefcase className="h-5 w-5 text-primary mt-0.5 shrink-0" />
           <div>
-            <p className="text-sm font-semibold">Employers see workflow fluency</p>
-            <p className="text-xs text-muted-foreground mt-1">Real evidence of how you collaborate with AI across tools and projects.</p>
+            <p className="text-sm font-semibold">Show your AI study skills</p>
+            <p className="text-xs text-muted-foreground mt-1">Evidence of how you learn with AI — verification habits, independent thinking, coverage.</p>
           </div>
         </div>
         <div className="flex items-start gap-3 bg-card border rounded-lg p-5">

@@ -167,7 +167,7 @@ export function LiteracyReceipt({ receipt, audit, runMeta, turns, tools, recomme
           <CardHeader className="space-y-1">
             <CardTitle className="text-base">Build your AI Fluency foundations</CardTitle>
             <p className="text-xs text-muted-foreground">
-              This session was too short for a confident reading. Practice these 4 fundamentals — they apply to every AI tool and every workflow.
+              This session was too short for a confident reading. Practice these 4 fundamentals — they apply to every AI tool and every study session.
             </p>
           </CardHeader>
           <CardContent className="grid gap-3 md:grid-cols-2">

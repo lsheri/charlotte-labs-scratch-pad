@@ -124,6 +124,25 @@ export async function runFluencyAnalysis(params: {
       .replace("{{SOURCES}}", JSON.stringify(compressedSources, null, 2));
   }
 
+  // Academic addendum — this fork is a student-facing study coach, so frame
+  // fluency around learning outcomes rather than "workflow output".
+  systemPrompt += `
+
+--- ACADEMIC CONTEXT ---
+This subject is a STUDENT using AI as a study partner (homework, reading, exam
+prep, projects). Frame every dimension and behavior through learning outcomes,
+not "workflow output" or professional deliverables:
+- Reward evidence of independent thinking, active recall, and verification of
+  AI claims against course material.
+- Flag over-reliance patterns typical in students: copy-pasting AI answers,
+  skipping the "why", not testing understanding, treating hallucinated
+  citations as trustworthy.
+- When the conversation references a course, assignment, textbook, syllabus,
+  or exam, mention it explicitly in the summary and tie coaching to it.
+- Coaching should be actionable *before the next quiz or assignment*, not
+  "before the next sprint".`;
+
+
   const content = params.conversationContent;
 
   // Schema for the analyzer is enforced by the system prompt + OpenAI JSON
