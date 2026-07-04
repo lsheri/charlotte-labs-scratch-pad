@@ -90,6 +90,14 @@ export function ParticipantSidebar() {
       { title: activeClass ? "Receipts" : "All Receipts", url: receiptsUrl, icon: Receipt },
     ],
   };
+  const toolsGroup = {
+    label: "Tools",
+    items: [
+      ...baseToolsItems,
+      ...(isAdmin ? [{ title: "Department View", url: "/admin", icon: Building2 }] : []),
+    ],
+  };
+
 
   const isActive = (url: string, exact?: boolean) =>
     exact ? path === url : path === url || path.startsWith(url + "/");
