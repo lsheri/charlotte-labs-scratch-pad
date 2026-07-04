@@ -121,7 +121,7 @@ function WorkspaceCard({ w }: { w: Workspace }) {
             )}
             <div className="mt-1.5 flex items-center gap-4 text-xs text-muted-foreground">
               <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" /> {w.threadCount} threads</span>
-              <span className="flex items-center gap-1"><Receipt className="h-3 w-3" /> {w.receiptCount} workflows</span>
+              <span className="flex items-center gap-1"><Receipt className="h-3 w-3" /> {w.receiptCount} receipts</span>
             </div>
           </div>
           <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
