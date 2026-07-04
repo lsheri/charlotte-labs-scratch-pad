@@ -22,19 +22,7 @@ function ParticipantLayout() {
           <header className="flex h-12 items-center gap-2 border-b bg-background px-4">
             <SidebarTrigger />
             <div className="ml-auto">
-              <Button
-                asChild
-                size="sm"
-                variant="outline"
-                className="border-brand-mint/50 text-brand-navy hover:bg-brand-mint/10 hover:text-brand-navy"
-              >
-                <Link to="/participant/how-it-works">
-                  <HelpCircle className="mr-1.5 h-4 w-4" />
-                  How it works
-                </Link>
-              </Button>
-            </div>
-          </header>
+              {/* "How it works" link removed with participant.how-it-works route */}
           <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-6">
             <Outlet />
           </main>
