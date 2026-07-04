@@ -281,7 +281,9 @@ export function ThreadsInbox({ classId }: { classId?: string } = {}) {
             <MessageSquare className="h-6 w-6" /> Threads
           </h1>
           <p className="text-sm text-muted-foreground">
-            Captured AI conversations. Map them to assignments, or select and generate a standalone receipt.
+            {scopedClass
+              ? `${scopedClass.courseCode ?? scopedClass.name} · Captured AI conversations for this class. Map them to assignments, or generate a receipt.`
+              : "Captured AI conversations. Map them to assignments, or select and generate a standalone receipt."}
           </p>
         </div>
         <div className="flex items-center gap-2">
