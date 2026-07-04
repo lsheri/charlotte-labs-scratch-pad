@@ -52,7 +52,13 @@ export const runStudyTemplate = createServerFn({ method: "POST" })
       templateKey: data.templateKey as StudyTemplateKey,
       force: data.force,
     });
-    return result;
+    return {
+      templateKey: result.templateKey,
+      ok: result.ok,
+      analysis: (result.analysis ?? null) as Record<string, unknown> | null,
+      error: result.error ?? null,
+      latencyMs: result.latencyMs,
+    };
   });
 
 /** Fetch the current analysis row for a receipt + template. */
