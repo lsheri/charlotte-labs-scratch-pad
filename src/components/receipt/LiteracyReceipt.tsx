@@ -8,13 +8,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { FluencyRadarChart, type RadarSeries } from "./FluencyRadarChart";
-import { AnalysisAuditTrail, type AuditData, type RunMeta } from "./AnalysisAuditTrail";
-import { WorkflowStack } from "./WorkflowStack";
 import { TurnBlock } from "@/components/conversation/TurnBlock";
 import { overallBand, dimensionEvidenceState, evidenceStateStyle, toolBadgeClass } from "@/lib/fluencyMapping";
-import { getWorkflowTypeLabel, getWorkflowTypeExtras, WORKFLOW_TYPE_LABELS, getProvenance, isVerifiedLab, PROVENANCE_LABELS, getProvenanceSource, PROVENANCE_SOURCE_LABELS } from "@/lib/displayNames";
 import { EditableReceiptTitle } from "@/components/receipt/EditableReceiptTitle";
-import { ProvenanceVial } from "@/components/provenance/ProvenanceVial";
+// Local shape stubs (previously imported from AnalysisAuditTrail, removed in prune).
+export type AuditData = any;
+export type RunMeta = any;
 import { PatternsCard } from "./PatternsCard";
 import { ReceiptCheckup } from "./ReceiptCheckup";
 import { getReceiptCheckup } from "@/serverfn/receipt-checkup";
