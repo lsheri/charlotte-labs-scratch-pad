@@ -1,13 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, GraduationCap, Users, AlertTriangle, Calendar } from "lucide-react";
+import { ArrowLeft, GraduationCap, Users, AlertTriangle, Calendar, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ToolLogo } from "@/components/ToolLogo";
 import { FluencyRadar } from "@/components/FluencyRadar";
-import { getDepartmentOverview } from "@/serverfn/department";
+import {
+  getDepartmentOverview,
+  getDepartmentToolTrends,
+  getDepartmentFluencyTrends,
+  getDepartmentAssignmentTrends,
+} from "@/serverfn/department";
 import { anonymousLabel } from "@/lib/displayNames";
 import { formatDistanceToNow, format } from "date-fns";
 
