@@ -26,6 +26,7 @@ const receiptSearchSchema = z.object({
 });
 
 export const Route = createFileRoute("/participant/receipts/$receiptId")({
+  ssr: false,
   validateSearch: zodValidator(receiptSearchSchema),
   loader: ({ params }) => getReceiptWithFluency({ data: { receiptId: params.receiptId } }),
   component: ReceiptPage,
