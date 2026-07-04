@@ -53,10 +53,7 @@ export function WelcomeTourDialog({ userId }: { userId: string | null | undefine
         </div>
 
         <DialogFooter className="gap-2 sm:gap-0">
-          <Button variant="ghost" onClick={() => dismiss("dismiss")}>Got it, skip the tour</Button>
-          <Button asChild onClick={() => dismiss("go_to_guide")}>
-            <Link to="/participant/how-it-works">Open the full guide<ArrowRight className="ml-1 h-4 w-4" /></Link>
-          </Button>
+          <Button onClick={() => dismiss("dismiss")}>Got it</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

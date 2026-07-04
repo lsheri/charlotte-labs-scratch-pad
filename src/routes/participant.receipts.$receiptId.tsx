@@ -12,12 +12,8 @@ import { LiteracyReceipt } from "@/components/receipt/LiteracyReceipt";
 import { ReceiptBuildingState } from "@/components/receipt/ReceiptBuildingState";
 import { TemplatePicker } from "@/components/receipt/TemplatePicker";
 import { TemplateTabs } from "@/components/receipt/TemplateTabs";
-import { StillYoursTemplate } from "@/components/receipt/templates/StillYoursTemplate";
-import { ThinkingMapTemplate } from "@/components/receipt/templates/ThinkingMapTemplate";
-import { ProofCardTemplate } from "@/components/receipt/templates/ProofCardTemplate";
-import { ShieldTemplate } from "@/components/receipt/templates/ShieldTemplate";
-import { ImpactStatementTemplate } from "@/components/receipt/templates/ImpactStatementTemplate";
-import { ImpactProofTemplate } from "@/components/receipt/templates/ImpactProofTemplate";
+// Non-kept templates deleted in fork prune. Verification & Study Gaps templates
+// will replace them in Phase 4/5.
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -268,42 +264,9 @@ function ReceiptPage() {
                 recommendationsLoading={recsQuery.isLoading}
                 profile={profileQuery.data?.profile ?? null}
               />
-            ) : activeTemplate === "still_yours" ? (
-              <StillYoursTemplate
-                receiptId={receiptId}
-                receipt={receipt as any}
-                run={run as any}
-                turns={turns as any}
-                recommendations={(recsQuery.data as any) ?? null}
-              />
-            ) : activeTemplate === "thinking_map" ? (
-              <ThinkingMapTemplate
-                receiptId={receiptId}
-                turns={turns as any}
-              />
-            ) : activeTemplate === "proof_card" ? (
-              <ProofCardTemplate
-                receiptId={receiptId}
-                receipt={receipt as any}
-                turns={turns as any}
-              />
-            ) : activeTemplate === "shield" ? (
-              <ShieldTemplate
-                receiptId={receiptId}
-                receipt={receipt as any}
-                turns={turns as any}
-              />
-            ) : activeTemplate === "impact_statement" ? (
-              <ImpactStatementTemplate receiptId={receiptId} />
-            ) : activeTemplate === "impact_proof" ? (
-              <ImpactProofTemplate
-                receiptId={receiptId}
-                receipt={receipt as any}
-                turns={turns as any}
-              />
             ) : (
               <div className="rounded-xl border bg-card p-8 text-center text-sm text-muted-foreground">
-                The "{activeTemplate}" template is coming soon. For now, switch back to Classic Fluency from the tabs above.
+                The "{activeTemplate}" tab isn't wired up yet in this fork. Switch back to Academic Fluency from the tabs above.
               </div>
             )}
           </div>

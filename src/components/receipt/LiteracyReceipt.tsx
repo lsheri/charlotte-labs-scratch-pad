@@ -8,13 +8,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { FluencyRadarChart, type RadarSeries } from "./FluencyRadarChart";
-import { AnalysisAuditTrail, type AuditData, type RunMeta } from "./AnalysisAuditTrail";
-import { WorkflowStack } from "./WorkflowStack";
 import { TurnBlock } from "@/components/conversation/TurnBlock";
 import { overallBand, dimensionEvidenceState, evidenceStateStyle, toolBadgeClass } from "@/lib/fluencyMapping";
-import { getWorkflowTypeLabel, getWorkflowTypeExtras, WORKFLOW_TYPE_LABELS, getProvenance, isVerifiedLab, PROVENANCE_LABELS, getProvenanceSource, PROVENANCE_SOURCE_LABELS } from "@/lib/displayNames";
 import { EditableReceiptTitle } from "@/components/receipt/EditableReceiptTitle";
-import { ProvenanceVial } from "@/components/provenance/ProvenanceVial";
+// Local shape stubs (previously imported from AnalysisAuditTrail, removed in prune).
+export type AuditData = any;
+export type RunMeta = any;
 import { PatternsCard } from "./PatternsCard";
 import { ReceiptCheckup } from "./ReceiptCheckup";
 import { getReceiptCheckup } from "@/serverfn/receipt-checkup";
@@ -69,14 +68,14 @@ function getProfileScore(profile: ProfileData, canonicalName: string): number {
 
 export function LiteracyReceipt({ receipt, audit, runMeta, turns, tools, recommendations, recommendationsLoading = false, profile, showTranscript = false, adminView = false }: Props) {
   const band = audit ? overallBand(audit.overall_level) : null;
-  const receiptDims = audit?.dimensions?.map(d => ({ label: d.display_name, value: d.score ?? 0 })) ?? [];
+  const receiptDims = audit?.dimensions?.map((d: any) => ({ label: d.display_name, value: d.score ?? 0 })) ?? [];
   const profileReceiptCount = profile?.receipt_count_total ?? 0;
   const profileReady = !!profile && profileReceiptCount >= 3;
   const radarSeries: RadarSeries[] | undefined = (() => {
     if (!profileReady || !audit?.dimensions?.length) return undefined;
-    const dims = audit.dimensions.filter(d => d.canonical_name !== 'capital_stewardship');
-    const profileDims = dims.map(d => ({ label: d.display_name, value: getProfileScore(profile!, d.canonical_name) }));
-    const receiptOverlay = dims.map(d => ({ label: d.display_name, value: d.score ?? 0 }));
+    const dims = audit.dimensions.filter((d: any) => d.canonical_name !== 'capital_stewardship');
+    const profileDims = dims.map((d: any) => ({ label: d.display_name, value: getProfileScore(profile!, d.canonical_name) }));
+    const receiptOverlay = dims.map((d: any) => ({ label: d.display_name, value: d.score ?? 0 }));
     return [
       { label: 'Your profile', dimensions: profileDims },
       { label: 'This receipt', dimensions: receiptOverlay, color: '#D94F88' },
@@ -149,33 +148,14 @@ export function LiteracyReceipt({ receipt, audit, runMeta, turns, tools, recomme
         <CardHeader className="space-y-3">
           <div className="space-y-1">
             <CardTitle className="text-lg flex items-center gap-2 min-w-0">
-              <ProvenanceVial variant={getProvenance(receipt as any)} verified={isVerifiedLab(receipt as any)} size="lg" />
               <EditableReceiptTitle receipt={receipt as any} readOnly={adminView} />
             </CardTitle>
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline" className="font-medium">
-                {PROVENANCE_LABELS[getProvenance(receipt as any)]}
-                {isVerifiedLab(receipt as any) && <span className="ml-1 text-emerald-700">· verified</span>}
-              </Badge>
-              <Badge variant="secondary" className="bg-orange-100 text-orange-900 border-orange-200" title="Primary output type — drives analysis & recommendations">
-                ★ {getWorkflowTypeLabel(receipt as any)}
-              </Badge>
-              {getWorkflowTypeExtras(receipt as any).map((t) => (
-                <Badge key={t} variant="outline" className="text-orange-700 border-orange-300" title="Secondary output tag">
-                  {WORKFLOW_TYPE_LABELS[t]}
-                </Badge>
-              ))}
               <Badge className={toolBadgeClass(receipt.tool_used)}>{receipt.tool_used}</Badge>
               <span className="text-xs text-muted-foreground">{format(new Date(receipt.created_at), "PPP 'at' p")}</span>
               {band && <Badge variant="outline" className={`border ${band.className}`}>Overall: <span className="font-bold ml-1">{band.label}</span></Badge>}
-              {getProvenanceSource(receipt as any) && (
-                <span className="text-[11px] text-muted-foreground">
-                  ({PROVENANCE_SOURCE_LABELS[getProvenanceSource(receipt as any)!]})
-                </span>
-              )}
             </div>
           </div>
-          <WorkflowStack tools={stack} />
         </CardHeader>
         {audit?.summary && (
           <CardContent className="pt-0"><p className="text-sm leading-relaxed">{audit.summary}</p></CardContent>
@@ -304,10 +284,9 @@ export function LiteracyReceipt({ receipt, audit, runMeta, turns, tools, recomme
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-sm">Skill Evidence</CardTitle>
-              <AnalysisAuditTrail auditData={audit} runMeta={runMeta} />
             </CardHeader>
             <CardContent className="space-y-2.5">
-              {visibleDims.map(d => {
+              {visibleDims.map((d: any) => {
                 const state = dimensionEvidenceState(d.score);
                 return (
                   <div key={d.canonical_name} className="flex items-center gap-3">

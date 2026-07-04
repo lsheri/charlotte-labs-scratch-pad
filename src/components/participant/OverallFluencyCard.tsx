@@ -455,11 +455,10 @@ function EmptyFingerprintCTA() {
         across 7 dimensions, updated every time you submit.
       </p>
       <Link
-        to="/participant/how-it-works"
-        onClick={() => posthog.capture("fingerprint_empty_state_cta_clicked", { target: "how_it_works" })}
+        to="/participant/extension"
         className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
       >
-        How it works <ArrowRight className="h-3 w-3" />
+        Install extension <ArrowRight className="h-3 w-3" />
       </Link>
     </div>
   );

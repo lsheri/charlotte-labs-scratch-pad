@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, MessageSquare, Receipt, Plug, Fingerprint, LogOut, Plus, Workflow, Briefcase, Sparkles } from "lucide-react";
+import { Home, MessageSquare, Receipt, Plug, Fingerprint, LogOut, Plus, Briefcase } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { CharlotteLogo } from "@/components/CharlotteLogo";
 import { Button } from "@/components/ui/button";
@@ -19,8 +19,6 @@ const groups = [
       { title: "Workspaces", url: "/participant/workspaces", icon: Briefcase },
       { title: "Threads", url: "/participant/threads", icon: MessageSquare },
       { title: "Receipts", url: "/participant/receipts", icon: Receipt },
-      { title: "Workflows", url: "/participant/workflows", icon: Workflow },
-      { title: "Demo", url: "/participant/demo", icon: Sparkles },
     ],
   },
   {
@@ -94,29 +92,7 @@ export function ParticipantSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
         ))}
-        {(hasRole("admin") || hasRole("researcher")) && (
-          <SidebarGroup>
-            {!collapsed && <SidebarGroupLabel>Role</SidebarGroupLabel>}
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {hasRole("researcher") && (
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
-                      <Link to="/researcher">{collapsed ? "P" : "Proctor"}</Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )}
-                {hasRole("admin") && (
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
-                      <Link to="/admin">{collapsed ? "A" : "Admin"}</Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
+        {/* admin/researcher role links removed in student-app fork */}
       </SidebarContent>
       <SidebarFooter>
         <div className="flex items-center gap-2 px-2 py-2">
