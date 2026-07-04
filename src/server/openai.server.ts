@@ -94,10 +94,10 @@ export async function fetchOpenAIWithRetry(
 
 // Default models — all routed through Lovable AI Gateway. Each has a 1M
 // context window, which removes the need for chunking long transcripts.
-// SCORING_MODEL goes to the most capable model for the final fluency call;
-// CHUNK_SCORING_MODEL / SUMMARY_MODEL / ROUTING_MODEL use the fast Flash
-// variant for short, cheap calls.
-export const SCORING_MODEL = "google/gemini-2.5-pro";
+// SCORING_MODEL uses the largest-context Gemini Pro preview for the final
+// fluency + template calls; CHUNK_SCORING_MODEL / SUMMARY_MODEL /
+// ROUTING_MODEL stay on Flash for short, cheap calls.
+export const SCORING_MODEL = "google/gemini-3.1-pro-preview";
 export const CHUNK_SCORING_MODEL = "google/gemini-3-flash-preview";
 export const ROUTING_MODEL = "google/gemini-3-flash-preview";
 export const SUMMARY_MODEL = "google/gemini-3-flash-preview";
@@ -105,6 +105,7 @@ export const SUMMARY_MODEL = "google/gemini-3-flash-preview";
 // Map Gemini model id → OpenAI fallback model. Only used when the primary
 // (Lovable AI Gateway) is unreachable / 5xxs / returns invalid JSON.
 const OPENAI_FALLBACK_MAP: Record<string, string> = {
+  "google/gemini-3.1-pro-preview": "gpt-4o",
   "google/gemini-2.5-pro": "gpt-4o",
   "google/gemini-3-flash-preview": "gpt-4o-mini",
   "google/gemini-3.1-flash-lite-preview": "gpt-4o-mini",
