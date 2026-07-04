@@ -90,14 +90,12 @@ function ReceiptPage() {
   });
   const existingRenderings = renderingsQuery.data ?? [];
 
-  const tabKeys = useMemo(() => {
-    const set = new Set<string>();
-    // Classic Fluency is always reachable since it requires no generation.
-    set.add("classic_fluency");
-    for (const r of existingRenderings) set.add(r.template_key);
-    if (activeTemplate) set.add(activeTemplate);
-    return Array.from(set);
-  }, [existingRenderings, activeTemplate]);
+  // Three study templates always available; renderings drive nothing here now.
+  const tabKeys = useMemo(
+    () => ["classic_fluency", "verification_risk", "study_gaps"],
+    [],
+  );
+  void existingRenderings;
 
   const profileQuery = useQuery({
     queryKey: ["fluency-profile", sessionId],
