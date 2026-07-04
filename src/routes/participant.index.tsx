@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -12,75 +13,83 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { format } from "date-fns";
-import { Trash2, Sparkles, Target, GraduationCap, MessageSquare, Receipt, Wrench } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { Trash2, ShieldAlert, Target, MessageSquare, GraduationCap, ChevronRight } from "lucide-react";
 import { ToolLogo } from "@/components/ToolLogo";
-import { ToolCoverageRow } from "@/components/participant/ToolCoverageRow";
-import { useQuery } from "@tanstack/react-query";
 import { deleteMyData, createPersonalSession, getCaptureTarget } from "@/serverfn/participant";
 import { listMyThreads } from "@/serverfn/threads";
-import { sendEnrollmentConfirmation, withdrawFromStudy } from "@/serverfn/study-lifecycle";
-import { getMyToolHistory } from "@/serverfn/fluency-profile";
+import { sendEnrollmentConfirmation } from "@/serverfn/study-lifecycle";
+import { getOpenVerificationItems, getRecentStudyGaps } from "@/serverfn/study-analyses";
 import { OverallFluencyCard } from "@/components/participant/OverallFluencyCard";
 import { WelcomeTourDialog } from "@/components/WelcomeTourDialog";
 
 export const Route = createFileRoute("/participant/")({ component: ParticipantHome });
 
-interface ReceiptRow { id: string; tool_used: string; prompt_preview: string | null; created_at: string; }
-interface SessionRow { id: string; name: string; join_code: string; status: string; researcher_id: string; }
 interface PendingSession { id: string; name: string; consent_text: string; status: string; }
 interface CaptureTarget { sessionId: string; name: string; joinCode: string; status: string; isPersonal: boolean; }
+
+const RISK_STYLES: Record<string, string> = {
+  high: "bg-red-50 text-red-800 border-red-200",
+  medium_high: "bg-orange-50 text-orange-800 border-orange-200",
+  medium: "bg-amber-50 text-amber-800 border-amber-200",
+  low: "bg-emerald-50 text-emerald-800 border-emerald-200",
+};
 
 function ParticipantHome() {
   const { user } = useAuth();
   const deleteFn = useServerFn(deleteMyData);
   const enrollFn = useServerFn(sendEnrollmentConfirmation);
-  const withdrawFn = useServerFn(withdrawFromStudy);
+  
   const personalFn = useServerFn(createPersonalSession);
   const targetFn = useServerFn(getCaptureTarget);
   const listThreadsFn = useServerFn(listMyThreads);
+  const fetchVerification = useServerFn(getOpenVerificationItems);
+  const fetchGaps = useServerFn(getRecentStudyGaps);
 
-  const fetchToolHistory = useServerFn(getMyToolHistory);
-  const { data: toolHistoryData } = useQuery({
-    queryKey: ['tool-history', user?.id],
-    queryFn: () => fetchToolHistory(),
-    enabled: !!user,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const [receipts, setReceipts] = useState<ReceiptRow[]>([]);
-  const [threadCount, setThreadCount] = useState(0);
-  const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [target, setTarget] = useState<CaptureTarget | null>(null);
   const [joinCode, setJoinCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [pending, setPending] = useState<PendingSession | null>(null);
 
-  const load = async () => {
+  useEffect(() => {
     if (!user) return;
-    const [{ data: r }, { data: m }, t, th] = await Promise.all([
-      supabase.from("receipts").select("id, tool_used, prompt_preview, created_at")
-        .eq("participant_id", user.id).order("created_at", { ascending: false }).limit(6),
-      supabase.from("session_participants").select("session_id").eq("participant_id", user.id),
-      targetFn().catch(() => ({ target: null })),
-      listThreadsFn().catch(() => ({ threads: [] })),
-    ]);
-    setReceipts((r ?? []) as ReceiptRow[]);
-    setTarget((t as any)?.target ?? null);
-    setThreadCount(((th as any)?.threads ?? []).length);
-    const ids = (m ?? []).map(x => x.session_id);
-    if (ids.length) {
-      const { data: s } = await supabase.from("research_sessions")
-        .select("id, name, join_code, status, researcher_id").in("id", ids);
-      setSessions((s ?? []) as SessionRow[]);
-    } else setSessions([]);
-  };
-  useEffect(() => { load(); }, [user]);
+    targetFn().then((t: any) => setTarget(t?.target ?? null)).catch(() => {});
+  }, [user]);
+
+  const verificationQuery = useQuery({
+    queryKey: ["home-verification", user?.id],
+    queryFn: () => fetchVerification(),
+    enabled: !!user,
+    staleTime: 60_000,
+  });
+
+  const gapsQuery = useQuery({
+    queryKey: ["home-gaps", user?.id],
+    queryFn: () => fetchGaps(),
+    enabled: !!user,
+    staleTime: 60_000,
+  });
+
+  const threadsQuery = useQuery({
+    queryKey: ["home-threads", user?.id],
+    queryFn: () => listThreadsFn(),
+    enabled: !!user,
+    staleTime: 60_000,
+  });
+
+  const openItems = (verificationQuery.data?.items ?? []) as any[];
+  const gapTopics = (gapsQuery.data?.topics ?? []) as any[];
+  const recentThreads = ((threadsQuery.data as any)?.threads ?? []).slice(0, 5);
 
   const startPersonal = async () => {
     setBusy(true);
-    try { await personalFn(); toast.success("Personal log ready."); load(); }
-    catch (e: any) { toast.error(e.message); } finally { setBusy(false); }
+    try {
+      await personalFn();
+      toast.success("Personal log ready.");
+      const t: any = await targetFn();
+      setTarget(t?.target ?? null);
+    } catch (e: any) { toast.error(e.message); }
+    finally { setBusy(false); }
   };
   const lookup = async () => {
     if (!user || !joinCode.trim()) return;
@@ -93,7 +102,7 @@ function ParticipantHome() {
     if (s.status === "closed") { toast.error("Session closed"); return; }
     const { data: existing } = await supabase.from("session_participants")
       .select("id, consent_accepted_at").eq("session_id", s.id).eq("participant_id", user.id).maybeSingle();
-    if (existing?.consent_accepted_at) { toast.success(`Already joined "${s.name}"`); setJoinCode(""); load(); return; }
+    if (existing?.consent_accepted_at) { toast.success(`Already joined "${s.name}"`); setJoinCode(""); return; }
     setPending({ id: s.id, name: s.name, consent_text: s.consent_text, status: s.status });
   };
   const accept = async () => {
@@ -106,17 +115,19 @@ function ParticipantHome() {
     if (error && !/duplicate/i.test(error.message)) { toast.error(error.message); return; }
     toast.success(`Joined "${pending.name}"`);
     enrollFn({ data: { sessionId: pending.id } }).catch(() => {});
-    setPending(null); setJoinCode(""); load();
-  };
-  const handleWithdraw = async (sessionId: string, name: string) => {
-    if (!confirm(`Withdraw from "${name}"?`)) return;
-    try { await withdrawFn({ data: { sessionId } }); toast.success(`Withdrew`); load(); }
-    catch (e: any) { toast.error(e.message); }
+    setPending(null); setJoinCode("");
+    const t: any = await targetFn();
+    setTarget(t?.target ?? null);
   };
   const handleDelete = async () => {
     setBusy(true);
-    try { const r = await deleteFn(); toast.success(`Deleted ${r.deleted.conversations} captures and ${r.deleted.receipts} receipts.`); load(); }
-    catch (e: any) { toast.error(e.message); } finally { setBusy(false); }
+    try {
+      const r = await deleteFn();
+      toast.success(`Deleted ${r.deleted.conversations} captures and ${r.deleted.receipts} receipts.`);
+      verificationQuery.refetch();
+      gapsQuery.refetch();
+      threadsQuery.refetch();
+    } catch (e: any) { toast.error(e.message); } finally { setBusy(false); }
   };
 
   if (pending) {
@@ -148,7 +159,7 @@ function ParticipantHome() {
       <WelcomeTourDialog userId={user?.id} />
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">{greeting}, {name}.</h1>
-        <p className="text-sm text-muted-foreground">AI Collaboration Portfolio · Powered by Charlotte Labs</p>
+        <p className="text-sm text-muted-foreground">Your study coach for AI-assisted work.</p>
       </div>
 
       {/* Connect / target row */}
@@ -186,88 +197,142 @@ function ParticipantHome() {
         </Card>
       )}
 
-      {/* Hero: overall fluency radar — the only thing only we can show */}
-      <OverallFluencyCard />
-
-      {/* Thin stat strip — counts support the chart, not vice versa */}
-      <div className="grid gap-3 sm:grid-cols-3">
-        <KPI label="Receipts" value={receipts.length} icon={Receipt} />
-        <KPI label="Threads" value={threadCount} icon={MessageSquare} />
-        <KPI label="Workspaces" value={sessions.length} icon={Wrench} />
-      </div>
-
-      {/* Tool Coverage */}
+      {/* 1. Open Verification & Risk items */}
       <Card>
-        <CardContent className="py-4">
-          <ToolCoverageRow history={(toolHistoryData?.history ?? []) as any} />
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <ShieldAlert className="h-4 w-4 text-red-600" />
+            Open Verification & Risk items
+            {openItems.length > 0 && (
+              <Badge variant="destructive" className="ml-1">{openItems.length}</Badge>
+            )}
+          </CardTitle>
+          <CardDescription>Unchecked claims and risky AI outputs across your recent receipts.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {verificationQuery.isLoading ? (
+            <p className="text-xs text-muted-foreground">Loading…</p>
+          ) : openItems.length === 0 ? (
+            <p className="text-xs text-muted-foreground">Nothing to verify right now. Nice.</p>
+          ) : (
+            <div className="space-y-1.5">
+              {openItems.slice(0, 5).map((it, i) => (
+                <Link
+                  key={`${it.receiptId}:${it.itemKey}:${i}`}
+                  to="/participant/receipts/$receiptId"
+                  params={{ receiptId: it.receiptId }}
+                  search={{ template: "verification_risk" }}
+                  className="flex items-center gap-2 rounded-md border p-2 hover:bg-secondary/50 text-sm"
+                >
+                  <Badge variant="outline" className="text-[10px]">
+                    {it.kind === "risk_item" ? "risk" : "claim"}
+                  </Badge>
+                  <span className="flex-1 truncate">{it.title}</span>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </Link>
+              ))}
+              {openItems.length > 5 && (
+                <p className="text-[11px] text-muted-foreground pl-1">
+                  +{openItems.length - 5} more across your receipts.
+                </p>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Recent receipts */}
-      <div>
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Recent receipts</h2>
-          <Link to="/participant/receipts" className="text-xs text-muted-foreground hover:text-foreground">View all →</Link>
-        </div>
-        {receipts.length === 0 ? (
-          <Card><CardContent className="py-8 text-center text-sm text-muted-foreground">
-            No receipts yet. <Link to="/participant/threads" className="underline">Pick threads</Link> to generate one.
-          </CardContent></Card>
-        ) : (
-          <div className="grid gap-2">
-            {receipts.map(r => (
-              <Link key={r.id} to="/participant/receipts/$receiptId" params={{ receiptId: r.id }}>
-                <Card className="transition hover:border-primary/60 hover:bg-secondary/30">
-                  <CardContent className="flex items-center gap-3 py-3">
-                    <ToolLogo tool={r.tool_used} size={28} />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium capitalize">{r.tool_used}</span>
-                        <span className="text-xs text-muted-foreground">{format(new Date(r.created_at), "MMM d, yyyy")}</span>
-                      </div>
-                      <p className="truncate text-xs text-muted-foreground">{r.prompt_preview ?? "—"}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
+      {/* 2. Study Gaps summary */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Target className="h-4 w-4 text-amber-600" />
+            Study Gaps
+            {(gapsQuery.data?.highRiskCount ?? 0) > 0 && (
+              <Badge variant="destructive" className="ml-1">
+                {gapsQuery.data?.highRiskCount} high risk
+              </Badge>
+            )}
+          </CardTitle>
+          <CardDescription>Top topics you still need to practice without AI.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {gapsQuery.isLoading ? (
+            <p className="text-xs text-muted-foreground">Loading…</p>
+          ) : gapTopics.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              No study gaps analyzed yet. Generate a receipt with the "Study Gaps" template.
+            </p>
+          ) : (
+            <div className="space-y-1.5">
+              {gapTopics.slice(0, 5).map((t, i) => (
+                <Link
+                  key={i}
+                  to="/participant/receipts/$receiptId"
+                  params={{ receiptId: t.receiptId }}
+                  search={{ template: "study_gaps" }}
+                  className="flex items-center gap-2 rounded-md border p-2 hover:bg-secondary/50 text-sm"
+                >
+                  <Badge variant="outline" className={RISK_STYLES[t.risk] ?? ""}>
+                    {t.risk.replace("_", " ")}
+                  </Badge>
+                  <span className="flex-1 truncate">{t.name}</span>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </Link>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-      {/* Workspaces */}
-      {sessions.length > 0 && (
-        <div>
-          <h2 className="mb-2 text-lg font-semibold">Workspaces</h2>
-          <div className="grid gap-2 md:grid-cols-2">
-            {sessions.map(s => {
-              const isPersonal = s.name === "My personal log" && s.researcher_id === user?.id;
-              return (
-                <Card key={s.id}>
-                  <CardContent className="flex items-center justify-between gap-2 py-3">
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-medium">{s.name}</div>
-                      <div className="text-xs text-muted-foreground">{s.join_code} · {s.status}</div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {isPersonal && <Badge variant="outline">Personal</Badge>}
-                      <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-destructive"
-                        onClick={() => handleWithdraw(s.id, s.name)} disabled={busy}>
-                        {isPersonal ? "Delete" : "Withdraw"}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+      {/* 3. Academic Fluency snapshot */}
+      <OverallFluencyCard />
+
+      {/* 4. Recent threads */}
+      <Card>
+        <CardHeader className="pb-3 flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-base flex items-center gap-2">
+              <MessageSquare className="h-4 w-4" /> Recent threads
+            </CardTitle>
+            <CardDescription>Your last five captured AI conversations.</CardDescription>
           </div>
-        </div>
-      )}
+          <Link to="/participant/threads" className="text-xs text-muted-foreground hover:text-foreground">
+            View all →
+          </Link>
+        </CardHeader>
+        <CardContent>
+          {threadsQuery.isLoading ? (
+            <p className="text-xs text-muted-foreground">Loading…</p>
+          ) : recentThreads.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              No threads yet. Install the extension or{" "}
+              <Link to="/participant/threads/new" className="underline">add one manually</Link>.
+            </p>
+          ) : (
+            <div className="space-y-1.5">
+              {recentThreads.map((th: any) => (
+                <Link
+                  key={th.id}
+                  to="/participant/threads/$threadId"
+                  params={{ threadId: th.id }}
+                  className="flex items-center gap-3 rounded-md border p-2 hover:bg-secondary/50 text-sm"
+                >
+                  <ToolLogo tool={th.tool} size={22} />
+                  <span className="flex-1 truncate">{th.title || "Untitled chat"}</span>
+                  <span className="text-[11px] text-muted-foreground shrink-0">
+                    {formatDistanceToNow(new Date(th.last_captured_at), { addSuffix: true })}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Card className="border-destructive/40">
         <CardHeader>
           <CardTitle className="text-base">Delete my data</CardTitle>
-          <CardDescription>Permanently remove all receipts, captures, fluency analyses, and tokens.</CardDescription>
+          <CardDescription>Permanently remove all receipts, captures, and tokens.</CardDescription>
         </CardHeader>
         <CardContent>
           <AlertDialog>
@@ -277,7 +342,7 @@ function ParticipantHome() {
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete everything?</AlertDialogTitle>
-                <AlertDialogDescription>This removes all your captures, fluency runs, session memberships, and tokens. Account remains.</AlertDialogDescription>
+                <AlertDialogDescription>This removes all your captures, analyses, session memberships, and tokens. Account remains.</AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -288,19 +353,5 @@ function ParticipantHome() {
         </CardContent>
       </Card>
     </div>
-  );
-}
-
-function KPI({ label, value, icon: Icon }: { label: string; value: number; icon: any; highlight?: boolean }) {
-  return (
-    <Card>
-      <CardContent className="flex items-center justify-between gap-3 py-3">
-        <div>
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
-          <div className="mt-0.5 text-2xl font-semibold tabular-nums">{value}</div>
-        </div>
-        <Icon className="h-5 w-5 text-muted-foreground/60" />
-      </CardContent>
-    </Card>
   );
 }

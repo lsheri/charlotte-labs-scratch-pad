@@ -96,15 +96,8 @@ function ThreadsInbox() {
     const { posthog } = await import("@/lib/posthog");
     posthog.capture("receipt_requested", {
       thread_count: selected.size,
-      workflow_type: v.workflowType,
-      workflow_type_set: v.workflowTypeSet,
-      workflow_type_extras: v.workflowTypeExtras,
-      workflow_type_count: 1 + (v.workflowTypeExtras?.length ?? 0),
-      workflow_type_custom: v.workflowTypeCustom ?? null,
-      provenance: v.provenance,
+      templates: v.templates,
       has_goal: !!v.goal,
-      tag_count: (v.tags ?? []).length,
-      save_as_template: !!v.saveAsTemplate,
     });
     try {
       const r = await createFn({
@@ -112,19 +105,22 @@ function ThreadsInbox() {
           threadIds: Array.from(selected),
           label: v.name || undefined,
           goal: v.goal || undefined,
-          workflowType: v.workflowType,
-          workflowTypeSet: v.workflowTypeSet,
-          workflowTypeExtras: v.workflowTypeExtras,
-          workflowTypeCustom: v.workflowTypeCustom,
-          purpose: v.purpose ?? undefined,
-          tags: v.tags,
-          saveAsTemplate: v.saveAsTemplate,
-          provenance: v.provenance,
-          provenanceUserOverride: v.provenanceUserOverride,
+          workflowType: "study",
         },
       });
       const jobId = (r as any).jobId as string;
+      const jobIds = ((r as any).jobIds ?? [jobId]) as string[];
       const splitCount = (r as any).splitCount as number | undefined;
+      // Persist template selection per job so the receipt page can auto-run
+      // the selected study analyzers once the receipt is ready.
+      try {
+        for (const id of jobIds) {
+          localStorage.setItem(
+            `receipt-templates:${id}`,
+            JSON.stringify(v.templates),
+          );
+        }
+      } catch {}
       setSelected(new Set());
       if (splitCount && splitCount > 1) {
         toast.success(
@@ -132,7 +128,6 @@ function ThreadsInbox() {
         );
         posthog.capture("receipt_split_cross_workspace", { split_count: splitCount });
       }
-      // Hold the spider splash for at least 3s, then hand off to the receipts page.
       const elapsed = Date.now() - startedAt;
       const remaining = Math.max(0, 3000 - elapsed);
       window.setTimeout(() => {
@@ -148,6 +143,7 @@ function ThreadsInbox() {
       toast.error(e.message);
     }
   };
+
 
   const remove = async (id: string, title: string) => {
     if (!confirm(`Delete thread "${title}"?`)) return;
