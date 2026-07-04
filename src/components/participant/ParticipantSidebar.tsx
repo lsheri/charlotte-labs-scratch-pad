@@ -37,11 +37,22 @@ export function ParticipantSidebar() {
   const path = useRouterState({ select: (r) => r.location.pathname });
   const { user, signOut, hasRole } = useAuth();
   const fetchHealth = useServerFn(getExtensionHealth);
+  const fetchClasses = useServerFn(listMyClasses);
   const [healthStatus, setHealthStatus] = useState<"green" | "amber" | "red" | "unknown" | null>(null);
+  const [hasClasses, setHasClasses] = useState(false);
 
   useEffect(() => {
     fetchHealth().then((h) => setHealthStatus(h.status)).catch(() => {});
-  }, [fetchHealth]);
+    fetchClasses().then((r) => setHasClasses((r.classes ?? []).length > 0)).catch(() => {});
+  }, [fetchHealth, fetchClasses]);
+
+  const groups = hasClasses
+    ? [
+        baseGroups[0],
+        { label: "Class", items: [{ title: "Department", url: "/participant/department", icon: GraduationCap }] },
+        baseGroups[1],
+      ]
+    : baseGroups;
 
   const isActive = (url: string, exact?: boolean) =>
     exact ? path === url : path === url || path.startsWith(url + "/");
