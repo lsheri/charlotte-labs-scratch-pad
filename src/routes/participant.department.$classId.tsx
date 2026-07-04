@@ -34,14 +34,23 @@ export const Route = createFileRoute("/participant/department/$classId")({
 function ClassDashboard() {
   const { classId } = Route.useParams();
   const fetchFn = useServerFn(getDepartmentOverview);
+  const fetchTools = useServerFn(getDepartmentToolTrends);
+  const fetchFluency = useServerFn(getDepartmentFluencyTrends);
+  const fetchAssignments = useServerFn(getDepartmentAssignmentTrends);
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [trends, setTrends] = useState<any>(null);
 
   useEffect(() => {
     fetchFn({ data: { classId } })
       .then(setData)
       .catch((e) => setError(e?.message ?? "Failed to load class"));
-  }, [classId, fetchFn]);
+    Promise.all([
+      fetchTools({ data: { classId } }).catch(() => ({ weeks: [], series: [] })),
+      fetchFluency({ data: { classId } }).catch(() => ({ weeks: [], series: [] })),
+      fetchAssignments({ data: { classId } }).catch(() => ({ assignments: [] })),
+    ]).then(([tools, fluency, assignments]) => setTrends({ tools, fluency, assignments }));
+  }, [classId, fetchFn, fetchTools, fetchFluency, fetchAssignments]);
 
   if (error) return <div className="p-6 text-sm text-muted-foreground">{error}</div>;
   if (!data) return <div className="p-6 text-sm text-muted-foreground">Loading…</div>;
