@@ -10,10 +10,9 @@ import { getFluencyRecommendations } from "@/serverfn/recommendations";
 import { getMyFluencyProfile } from "@/serverfn/fluency-profile";
 import { LiteracyReceipt } from "@/components/receipt/LiteracyReceipt";
 import { ReceiptBuildingState } from "@/components/receipt/ReceiptBuildingState";
-import { TemplatePicker } from "@/components/receipt/TemplatePicker";
 import { TemplateTabs } from "@/components/receipt/TemplateTabs";
-// Non-kept templates deleted in fork prune. Verification & Study Gaps templates
-// will replace them in Phase 4/5.
+import { StudyGapTemplate } from "@/components/receipt/templates/StudyGapTemplate";
+import { VerificationRiskTemplate } from "@/components/receipt/templates/VerificationRiskTemplate";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -91,14 +90,12 @@ function ReceiptPage() {
   });
   const existingRenderings = renderingsQuery.data ?? [];
 
-  const tabKeys = useMemo(() => {
-    const set = new Set<string>();
-    // Classic Fluency is always reachable since it requires no generation.
-    set.add("classic_fluency");
-    for (const r of existingRenderings) set.add(r.template_key);
-    if (activeTemplate) set.add(activeTemplate);
-    return Array.from(set);
-  }, [existingRenderings, activeTemplate]);
+  // Three study templates always available; renderings drive nothing here now.
+  const tabKeys = useMemo(
+    () => ["classic_fluency", "verification_risk", "study_gaps"],
+    [],
+  );
+  void existingRenderings;
 
   const profileQuery = useQuery({
     queryKey: ["fluency-profile", sessionId],
@@ -227,33 +224,15 @@ function ReceiptPage() {
       )}
 
       {showReceipt && (() => {
-        const jobCompleted = job?.status === "completed";
-        const pickerActive = Boolean(templatePickerEnabled) &&
-          (jobCompleted || (!job && Boolean(run)));
-        const showPicker = pickerActive && !activeTemplate;
-        const showTabs = pickerActive && Boolean(activeTemplate);
-        const showClassic =
-          !pickerActive || activeTemplate === "classic_fluency" || !activeTemplate;
-
-        if (showPicker) {
-          return (
-            <TemplatePicker
-              receiptId={receiptId}
-              existingRenderings={existingRenderings}
-            />
-          );
-        }
-
+        const currentTab = activeTemplate ?? "classic_fluency";
         return (
           <div className="space-y-4">
-            {showTabs && (
-              <TemplateTabs
-                receiptId={receiptId}
-                activeKey={activeTemplate!}
-                templateKeys={tabKeys}
-              />
-            )}
-            {showClassic ? (
+            <TemplateTabs
+              receiptId={receiptId}
+              activeKey={currentTab}
+              templateKeys={tabKeys}
+            />
+            {currentTab === "classic_fluency" && (
               <LiteracyReceipt
                 receipt={receipt as any}
                 audit={audit}
@@ -264,10 +243,12 @@ function ReceiptPage() {
                 recommendationsLoading={recsQuery.isLoading}
                 profile={profileQuery.data?.profile ?? null}
               />
-            ) : (
-              <div className="rounded-xl border bg-card p-8 text-center text-sm text-muted-foreground">
-                The "{activeTemplate}" tab isn't wired up yet in this fork. Switch back to Academic Fluency from the tabs above.
-              </div>
+            )}
+            {currentTab === "verification_risk" && (
+              <VerificationRiskTemplate receiptId={receiptId} />
+            )}
+            {currentTab === "study_gaps" && (
+              <StudyGapTemplate receiptId={receiptId} />
             )}
           </div>
         );
