@@ -16,11 +16,13 @@ export const listClassSidebar = createServerFn({ method: "GET" })
       .not("consent_accepted_at", "is", null);
     if (error) throw new Error(error.message);
 
-    const classes = (memberships ?? [])
-      .map((m: any) => m.research_sessions)
-      .filter((s: any) => (s.metadata as any)?.kind === "class");
+    const allSessions = (memberships ?? []).map((m: any) => m.research_sessions);
+    const classes = allSessions.filter((s: any) => (s.metadata as any)?.kind === "class");
+    const personal = allSessions.find((s: any) => (s.metadata as any)?.kind !== "class");
+    const personalSessionId = personal?.id ?? null;
 
-    if (!classes.length) return { classes: [] as any[] };
+    if (!classes.length) return { classes: [] as any[], personalSessionId };
+
 
     const ids = classes.map((c: any) => c.id);
     const { data: assignments } = await supabase
