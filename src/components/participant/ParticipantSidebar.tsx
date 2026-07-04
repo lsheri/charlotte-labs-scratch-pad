@@ -49,23 +49,24 @@ export function ParticipantSidebar() {
   const fetchClasses = useServerFn(listClassSidebar);
   const [healthStatus, setHealthStatus] = useState<"green" | "amber" | "red" | "unknown" | null>(null);
   const [classes, setClasses] = useState<SidebarClass[]>([]);
+  const [personalSessionId, setPersonalSessionId] = useState<string | null>(null);
   const [activeWorkspaceId, setActiveWorkspaceId] = useActiveWorkspaceId();
 
   useEffect(() => {
     fetchHealth().then((h) => setHealthStatus(h.status)).catch(() => {});
-    fetchClasses().then((r) => {
+    fetchClasses().then((r: any) => {
       const list = (r.classes ?? []) as SidebarClass[];
       setClasses(list);
-      // Default to first class workspace if user hasn't explicitly chosen one
-      try {
-        const chosen = window.localStorage.getItem("charlotte:workspaceChosen");
-        if (!chosen && list.length > 0 && !activeWorkspaceId) {
-          setActiveWorkspaceId(list[0].id);
-        }
-      } catch {}
+      setPersonalSessionId(r.personalSessionId ?? null);
+      // Default active workspace to first class (e.g. Econ) so uploaded
+      // content lives in the class workspace, not Personal.
+      if (list.length > 0 && !activeWorkspaceId) {
+        setActiveWorkspaceId(list[0].id);
+      }
     }).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchHealth, fetchClasses]);
+
 
   useEffect(() => {
     const m = path.match(/^\/participant\/department\/([^/]+)/);
