@@ -6,9 +6,14 @@
 // You can pass additional config via defineConfig({ vite: { ... } }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL ?? process.env.SUPABASE_URL;
+const LOVABLE_CLOUD_URL = "https://nvxokbnrivmqlxqdmlrm.supabase.co";
+const LOVABLE_CLOUD_PUBLISHABLE_KEY = "sb_publishable_S4oUXcDGgJ4MZcmIZ3Cr4w_AncZSAlp";
+
+const supabaseUrl = process.env.VITE_SUPABASE_URL ?? process.env.SUPABASE_URL ?? LOVABLE_CLOUD_URL;
 const supabasePublishableKey =
-  process.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_PUBLISHABLE_KEY;
+  process.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
+  process.env.SUPABASE_PUBLISHABLE_KEY ??
+  LOVABLE_CLOUD_PUBLISHABLE_KEY;
 
 const publicCloudEnv = {
   ...(supabaseUrl
