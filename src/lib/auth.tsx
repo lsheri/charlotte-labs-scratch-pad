@@ -44,28 +44,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // Inject Supabase access token into /_serverFn/ requests so server-side
-    // requireSupabaseAuth middleware sees an Authorization header.
-    if (typeof window !== "undefined" && !(window as any).__serverFnFetchPatched) {
-      (window as any).__serverFnFetchPatched = true;
-      const orig = window.fetch.bind(window);
-      window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-        try {
-          const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
-          if (url.includes("/_serverFn/")) {
-            const headers = new Headers(init?.headers || (input instanceof Request ? input.headers : undefined));
-            if (!headers.has("authorization")) {
-              const { data } = await supabase.auth.getSession();
-              const token = data.session?.access_token;
-              if (token) headers.set("authorization", `Bearer ${token}`);
-            }
-            return orig(input, { ...init, headers });
-          }
-        } catch {}
-        return orig(input, init);
-      };
-    }
-
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(s);
       if (s?.user) {
