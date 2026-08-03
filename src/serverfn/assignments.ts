@@ -124,7 +124,7 @@ export const attachReceiptToAssignment = createServerFn({ method: "POST" })
     }
     const { error } = await supabase
       .from("assignment_submissions")
-      .insert(row as any);
+      .upsert(row as any, { onConflict: "assignment_id,participant_id" });
     if (error) throw new Error(error.message);
     return { ok: true };
   });
