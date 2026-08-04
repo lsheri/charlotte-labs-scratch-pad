@@ -345,9 +345,37 @@ export function FluencyRadarChart({
             <PolarGrid stroke="#5BA8D9" strokeOpacity={0.55} strokeWidth={1.25} />
             <PolarAngleAxis
               dataKey="dimension"
-              tick={{ fontSize: tickFontSize, fill: "#0c2340", fontWeight: 700, letterSpacing: "0.05em" }}
+              tick={(props: any) => {
+                const { x, y, payload, textAnchor } = props;
+                const words = String(payload?.value ?? "").split(" ");
+                // Wrap long labels so side axes never clip against the card edge.
+                const lines: string[] = [];
+                let cur = "";
+                for (const w of words) {
+                  if ((cur + " " + w).trim().length > 14 && cur) { lines.push(cur); cur = w; }
+                  else cur = (cur + " " + w).trim();
+                }
+                if (cur) lines.push(cur);
+                const dyStart = -((lines.length - 1) * (tickFontSize + 2)) / 2;
+                return (
+                  <text
+                    x={x}
+                    y={y}
+                    textAnchor={textAnchor}
+                    fill="#0c2340"
+                    fontSize={tickFontSize}
+                    fontWeight={700}
+                    letterSpacing="0.05em"
+                  >
+                    {lines.map((ln, i) => (
+                      <tspan key={i} x={x} dy={i === 0 ? dyStart : tickFontSize + 2}>{ln}</tspan>
+                    ))}
+                  </text>
+                );
+              }}
               tickSize={10}
             />
+
             {allSeries.map((s, si) => {
               const palette = BRAND_PALETTE[si % BRAND_PALETTE.length];
               const strokeColor = s.color || palette.stroke;
