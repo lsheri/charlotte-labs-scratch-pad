@@ -2,11 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import { Receipt as ReceiptIcon, TrendingUp, X, Fingerprint } from "lucide-react";
+import { Receipt as ReceiptIcon, TrendingUp, X, Fingerprint, Star } from "lucide-react";
 import { ToolLogo } from "@/components/ToolLogo";
 import { getWorkflowTypeLabel, getProvenance, isVerifiedLab } from "@/lib/displayNames";
 import { ProvenanceVial } from "@/components/provenance/ProvenanceVial";
@@ -26,6 +27,15 @@ function ReceiptsRoute() {
 }
 
 interface R { id: string; tool_used: string; prompt_preview: string | null; created_at: string; metadata: any; }
+
+function isFeaturedReceipt(r: R): boolean {
+  return r.metadata?.featured === true;
+}
+
+function getFeaturedReason(r: R): string | null {
+  const reason = r.metadata?.featuredReason;
+  return typeof reason === "string" && reason.trim() ? reason.trim() : null;
+}
 
 const NOTE_KEY = "receipts_directional_note_dismissed_v1";
 
@@ -89,7 +99,13 @@ export function ReceiptsList({ classId }: { classId?: string } = {}) {
     // Workspace scope: receipts belong to the class session directly.
     if (classId) q = q.eq("session_id", classId);
     const { data } = await q;
-    const rows = (data ?? []) as R[];
+    let rows = (data ?? []) as R[];
+    // Surface the featured example first so casual browsers see the best receipt immediately.
+    rows = rows.sort((a, b) => {
+      const af = isFeaturedReceipt(a) ? 1 : 0;
+      const bf = isFeaturedReceipt(b) ? 1 : 0;
+      return bf - af;
+    });
     setReceipts(rows);
     if (typeof window !== "undefined" && rows[0]) {
       window.localStorage.setItem("charlotte:firstReceiptId", rows[0].id);
@@ -122,26 +138,43 @@ export function ReceiptsList({ classId }: { classId?: string } = {}) {
         </CardContent></Card>
       ) : (
         <div className="grid gap-2" data-tour="receipts-list">
-          {receipts.map(r => (
-            <Link key={r.id} to="/participant/receipts/$receiptId" params={{ receiptId: r.id }}>
-              <Card className="transition hover:border-primary/60 hover:bg-secondary/30">
-                <CardContent className="flex items-center justify-between gap-4 py-3">
-                  <div className="min-w-0 flex items-center gap-3">
-                    <ProvenanceVial variant={getProvenance(r as any)} verified={isVerifiedLab(r as any)} size="md" />
-                    <ToolLogo tool={r.tool_used} size={32} />
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Badge variant="outline" className="capitalize">{r.tool_used}</Badge>
-                        <Badge variant="secondary">{getWorkflowTypeLabel(r as any)}</Badge>
-                        <span className="text-xs text-muted-foreground">{format(new Date(r.created_at), "MMM d, yyyy · h:mm a")}</span>
+          {receipts.map(r => {
+            const featured = isFeaturedReceipt(r);
+            const featuredReason = getFeaturedReason(r);
+            return (
+              <Link key={r.id} to="/participant/receipts/$receiptId" params={{ receiptId: r.id }}>
+                <Card
+                  className={cn(
+                    "transition",
+                    featured
+                      ? "border-amber-400/80 bg-amber-50/60 shadow-sm hover:border-amber-500 hover:bg-amber-50 dark:border-amber-500/60 dark:bg-amber-950/20 dark:hover:bg-amber-950/30"
+                      : "hover:border-primary/60 hover:bg-secondary/30",
+                  )}
+                  title={featuredReason ?? undefined}
+                >
+                  <CardContent className="flex items-center justify-between gap-4 py-3">
+                    <div className="min-w-0 flex items-center gap-3">
+                      <ProvenanceVial variant={getProvenance(r as any)} verified={isVerifiedLab(r as any)} size="md" />
+                      <ToolLogo tool={r.tool_used} size={32} />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge variant="outline" className="capitalize">{r.tool_used}</Badge>
+                          <Badge variant="secondary">{getWorkflowTypeLabel(r as any)}</Badge>
+                          {featured && (
+                            <Badge className="bg-amber-500 text-white hover:bg-amber-500 border-0">
+                              <Star className="mr-1 h-3 w-3 fill-current" /> Featured
+                            </Badge>
+                          )}
+                          <span className="text-xs text-muted-foreground">{format(new Date(r.created_at), "MMM d, yyyy · h:mm a")}</span>
+                        </div>
+                        <p className="mt-1 truncate text-sm font-medium"><EditableReceiptTitle receipt={r as any} /></p>
                       </div>
-                      <p className="mt-1 truncate text-sm font-medium"><EditableReceiptTitle receipt={r as any} /></p>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+                  </CardContent>
+                </Card>
+              </Link>
+            );
+          })}
         </div>
       )}
       <PendingReceiptJobCard onCompleted={() => refresh()} />
