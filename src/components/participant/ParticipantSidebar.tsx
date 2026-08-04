@@ -3,11 +3,11 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   Home, MessageSquare, Receipt, Plug, Fingerprint, LogOut, Plus,
   Briefcase, GraduationCap, ChevronRight, FileText, Check, ChevronsUpDown, User,
-  Building2, Presentation,
+  Building2,
 } from "lucide-react";
-import { PitchDeck } from "@/components/participant/PitchDeck";
 import { useServerFn } from "@tanstack/react-start";
 import { CharlotteLogo } from "@/components/CharlotteLogo";
+
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { getExtensionHealth } from "@/serverfn/extension";
@@ -42,6 +42,7 @@ export function ParticipantSidebar() {
   const fetchHealth = useServerFn(getExtensionHealth);
   const [healthStatus, setHealthStatus] = useState<"green" | "amber" | "red" | "unknown" | null>(null);
   const { classes, activeWorkspaceId, activeClass: ctxActiveClass, setWorkspace } = useWorkspace();
+
   const [deckOpen, setDeckOpen] = useState(false);
 
   useEffect(() => {
