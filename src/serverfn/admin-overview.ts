@@ -216,12 +216,12 @@ export const getDepartmentDashboard = createServerFn({ method: "POST" })
 
     return {
       session: session.data,
-      cohortSize: DEMO_COHORT,
+      cohortSize: participantCount,
       overall: {
-        participantCount: DEMO_COHORT,
+        participantCount,
         assignmentCount: assignmentList.length,
-        threadCount: scaleCount(threadList.length),
-        totalTurns: scaleCount(totalTurns),
+        threadCount: threadList.length,
+        totalTurns,
         avgTurnsPerThread:
           threadList.length === 0
             ? 0
@@ -231,7 +231,8 @@ export const getDepartmentDashboard = createServerFn({ method: "POST" })
       },
       fluencyByDimension,
       toolBreakdown,
-      verifCounts: verifScaled,
+      verifCounts,
+
       perAssignment,
     };
   });
