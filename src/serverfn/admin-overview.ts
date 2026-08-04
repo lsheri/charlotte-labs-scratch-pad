@@ -167,9 +167,7 @@ export const getDepartmentDashboard = createServerFn({ method: "POST" })
         relevantThreads.length === 0
           ? 0
           : relevantThreads.reduce((s, t) => s + (t.turn_count ?? 0), 0) / relevantThreads.length;
-      const scaledThreadCount = Math.min(DEMO_COHORT, scaleCount(relevantThreads.length));
-      // Assume ~1 thread per student per assignment when scaling.
-      const scaledStudents = Math.min(DEMO_COHORT, scaledThreadCount);
+      const uniqueStudents = new Set(linked.map((at) => at.participant_id)).size;
       return {
         id: a.id,
         code: a.code,
@@ -179,8 +177,9 @@ export const getDepartmentDashboard = createServerFn({ method: "POST" })
         toolsUsed,
         toolsCoveredCount: coveredTools.length,
         expectedToolsCount: expected.length,
-        threadCount: scaledThreadCount,
-        uniqueStudents: scaledStudents,
+        threadCount: relevantThreads.length,
+        uniqueStudents,
+
         avgTurns: Math.round(avgTurns * 10) / 10,
         risk,
       };
