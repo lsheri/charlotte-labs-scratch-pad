@@ -47,7 +47,7 @@ function AuthPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/" });
+    if (!loading && user) navigate({ to: "/participant/demo" });
   }, [user, loading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
