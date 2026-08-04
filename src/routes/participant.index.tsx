@@ -155,12 +155,23 @@ function ParticipantHome() {
   const name = user?.email?.split("@")[0] ?? "there";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-tour="home-overview">
       <WelcomeTourDialog userId={user?.id} />
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight">{greeting}, {name}.</h1>
-        <p className="text-sm text-muted-foreground">Your study coach for AI-assisted work.</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">{greeting}, {name}.</h1>
+          <p className="text-sm text-muted-foreground">Your study coach for AI-assisted work.</p>
+        </div>
+        <Button
+          size="lg"
+          onClick={() => startTour("participant")}
+          className="gap-2 bg-amber-400 font-bold text-amber-950 shadow-lg shadow-amber-500/30 hover:bg-amber-300"
+        >
+          <PlayCircle className="h-5 w-5" />
+          Play Demo
+        </Button>
       </div>
+
 
       {/* Connect / target row */}
       {target ? (
