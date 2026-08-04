@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
-import { X, Bug, Play, Home } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { TeamOutreachPanel } from "./TeamOutreachPanel";
+import { X, Play, Home } from "lucide-react";
 import { useTour } from "@/components/tour/TourProvider";
 import { DEMOS } from "@/components/tour/demos";
+
 
 const DISMISS_KEY = "charlotte_banner_dismissed_at";
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
@@ -92,32 +89,7 @@ export function ResearchBanner() {
         </div>
       </div>
 
-      {isMobile ? (
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger className="hidden" />
-          <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto">
-            <SheetHeader>
-              <SheetTitle>Charlotte Labs</SheetTitle>
-            </SheetHeader>
-            <div className="mt-4">
-              <TeamOutreachPanel initialTab="bug" onClose={() => setOpen(false)} />
-            </div>
-          </SheetContent>
-        </Sheet>
-      ) : (
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <span className="absolute left-1/2 top-full block h-0 w-0" />
-          </PopoverTrigger>
-          <PopoverContent
-            align="center"
-            sideOffset={4}
-            className="w-[min(640px,calc(100vw-2rem))] p-4"
-          >
-            <TeamOutreachPanel initialTab="bug" onClose={() => setOpen(false)} />
-          </PopoverContent>
-        </Popover>
-      )}
+
     </div>
   );
 }
