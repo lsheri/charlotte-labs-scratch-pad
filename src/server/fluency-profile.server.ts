@@ -143,7 +143,7 @@ export async function updateFluencyProfile(
     const dims: Record<string, DimScore> = {};
     for (const d of rawDims) {
       if (d?.canonical_name && typeof d.score === "number") {
-        dims[d.canonical_name] = {
+        dims[normDim(d.canonical_name)] = {
           score: d.score,
           weight: evidenceWeight(d.evidence_basis),
         };
@@ -173,7 +173,7 @@ export async function updateFluencyProfile(
         )
           ? (tr.analysis_output_json!.dimensions as AnalysisDimension[])
           : [];
-        const match = tdims.find(d => d?.canonical_name === dim);
+        const match = tdims.find(d => d?.canonical_name && normDim(d.canonical_name) === dim);
         if (match && typeof match.score === "number") {
           allScores.push({
             score: match.score,
