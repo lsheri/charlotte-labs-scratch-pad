@@ -70,7 +70,7 @@ function AuthPage() {
         setBusy(false);
         return;
       }
-      navigate({ to: "/" });
+      navigate({ to: "/participant/demo" });
     } catch {
       setError("Something went wrong. Please try again.");
       setBusy(false);
