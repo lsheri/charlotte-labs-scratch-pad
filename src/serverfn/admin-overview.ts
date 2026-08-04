@@ -71,7 +71,7 @@ function trivialityRisk(input: {
   return { score, band, drivers };
 }
 
-const DEMO_COHORT = 100;
+
 
 const FLUENCY_DIMENSIONS = [
   { key: "direction", label: "Direction", blurb: "Clarity of student goals given to AI" },
@@ -132,26 +132,19 @@ export const getDepartmentDashboard = createServerFn({ method: "POST" })
     const assignmentList = assignments.data ?? [];
     const fluencyRows = fluency.data ?? [];
 
-    const realParticipants = (participants.data ?? []).length;
-    const scale = realParticipants > 0 ? DEMO_COHORT / realParticipants : DEMO_COHORT;
-    const scaleCount = (n: number) => Math.round(n * scale);
+    const participantCount = (participants.data ?? []).length;
 
-    // Tool usage across all threads in this department (scaled)
+    // Tool usage across all threads in this department
     const toolCounts: Record<string, number> = {};
     for (const t of threadList) toolCounts[t.tool] = (toolCounts[t.tool] ?? 0) + 1;
     const toolBreakdown = Object.entries(toolCounts)
-      .map(([tool, count]) => ({ tool, count: scaleCount(count) }))
+      .map(([tool, count]) => ({ tool, count }))
       .sort((a, b) => b.count - a.count);
 
-    // Verification pattern across all threads (scaled)
+    // Verification pattern across all threads
     const verifCounts = { none: 0, partial: 0, high: 0, unknown: 0 };
     for (const t of threadList) verifCounts[verificationFromTitle(t.title)]++;
-    const verifScaled = {
-      none: scaleCount(verifCounts.none),
-      partial: scaleCount(verifCounts.partial),
-      high: scaleCount(verifCounts.high),
-      unknown: scaleCount(verifCounts.unknown),
-    };
+
 
     // Per-assignment rollups
     const threadById = new Map(threadList.map((t) => [t.id, t]));
@@ -174,9 +167,7 @@ export const getDepartmentDashboard = createServerFn({ method: "POST" })
         relevantThreads.length === 0
           ? 0
           : relevantThreads.reduce((s, t) => s + (t.turn_count ?? 0), 0) / relevantThreads.length;
-      const scaledThreadCount = Math.min(DEMO_COHORT, scaleCount(relevantThreads.length));
-      // Assume ~1 thread per student per assignment when scaling.
-      const scaledStudents = Math.min(DEMO_COHORT, scaledThreadCount);
+      const uniqueStudents = new Set(linked.map((at) => at.participant_id)).size;
       return {
         id: a.id,
         code: a.code,
@@ -186,8 +177,9 @@ export const getDepartmentDashboard = createServerFn({ method: "POST" })
         toolsUsed,
         toolsCoveredCount: coveredTools.length,
         expectedToolsCount: expected.length,
-        threadCount: scaledThreadCount,
-        uniqueStudents: scaledStudents,
+        threadCount: relevantThreads.length,
+        uniqueStudents,
+
         avgTurns: Math.round(avgTurns * 10) / 10,
         risk,
       };
@@ -209,8 +201,9 @@ export const getDepartmentDashboard = createServerFn({ method: "POST" })
       let score: number;
       if (vals.length > 0) {
         const avg = vals.reduce((s: number, n: number) => s + n, 0) / vals.length;
-        // Profile scores may be 0-1 or 0-100; normalize.
-        score = Math.round(avg <= 1 ? avg * 100 : avg);
+        // Profile scores are stored on a 1-5 rubric scale; render as 0-100.
+        score = Math.round(avg <= 5 ? (avg / 5) * 100 : avg);
+
       } else {
         score = FALLBACK_FLUENCY[d.key];
       }
@@ -224,12 +217,12 @@ export const getDepartmentDashboard = createServerFn({ method: "POST" })
 
     return {
       session: session.data,
-      cohortSize: DEMO_COHORT,
+      cohortSize: participantCount,
       overall: {
-        participantCount: DEMO_COHORT,
+        participantCount,
         assignmentCount: assignmentList.length,
-        threadCount: scaleCount(threadList.length),
-        totalTurns: scaleCount(totalTurns),
+        threadCount: threadList.length,
+        totalTurns,
         avgTurnsPerThread:
           threadList.length === 0
             ? 0
@@ -239,7 +232,8 @@ export const getDepartmentDashboard = createServerFn({ method: "POST" })
       },
       fluencyByDimension,
       toolBreakdown,
-      verifCounts: verifScaled,
+      verifCounts,
+
       perAssignment,
     };
   });
