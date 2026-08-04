@@ -11,7 +11,10 @@ export interface TourStep {
   target?: string;
   /** Route to navigate to before the step is shown. */
   to?: string | ((ctx: TourContext) => string | null);
+  /** Search params to apply with the navigation (e.g. which template tab). */
+  search?: Record<string, string>;
   placement?: "right" | "left" | "top" | "bottom";
+
   /** Roadmap/concept content — badged so nobody mistakes it for shipped product. */
   preview?: boolean;
   /**
