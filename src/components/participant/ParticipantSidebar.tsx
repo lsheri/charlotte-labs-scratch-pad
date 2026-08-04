@@ -234,7 +234,39 @@ export function ParticipantSidebar() {
       <SidebarContent>
         {renderGroup(workspaceGroup)}
 
-        {classes.length > 0 && (
+        {/* Single-class accounts get a flat, always-open Assignments group —
+            no "Classes" wrapper and no duplicate Threads/Receipts entries. */}
+        {singleWorkspace && activeClass && activeClass.assignments.length > 0 && (
+          <SidebarGroup>
+            {!collapsed && <SidebarGroupLabel>Assignments</SidebarGroupLabel>}
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {activeClass.assignments.map((a) => {
+                  const url = `/participant/department/${activeClass.id}/assignments/${a.id}`;
+                  return (
+                    <SidebarMenuItem key={a.id}>
+                      <SidebarMenuButton asChild isActive={isActive(url)}>
+                        <Link to={url} className="flex items-center gap-2">
+                          <FileText className="h-4 w-4 shrink-0 opacity-70" />
+                          {!collapsed && (
+                            <>
+                              <span className="font-medium">{a.code}</span>
+                              <span className="truncate text-muted-foreground">
+                                {a.title.replace(/^.*—\s*/, "")}
+                              </span>
+                            </>
+                          )}
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {!singleWorkspace && classes.length > 0 && (
           <SidebarGroup>
             {!collapsed && <SidebarGroupLabel>Classes</SidebarGroupLabel>}
             <SidebarGroupContent>
@@ -257,6 +289,7 @@ export function ParticipantSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
         )}
+
 
         {renderGroup(toolsGroup)}
 
