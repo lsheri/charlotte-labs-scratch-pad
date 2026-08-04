@@ -84,7 +84,7 @@ export function FluencyRadarChart({
   // Compute geometry
   const cx = dims.w / 2;
   const cy = dims.h / 2;
-  const labelInset = Math.max(compact ? 58 : 118, Math.min(compact ? 76 : 165, dims.w * (compact ? 0.14 : 0.17)));
+  const labelInset = Math.max(compact ? 64 : 145, Math.min(compact ? 82 : 195, dims.w * (compact ? 0.15 : 0.2)));
   const labelVerticalInset = Math.max(compact ? 26 : 48, Math.min(compact ? 40 : 78, dims.h * 0.09));
   const outerFrac = compact ? 0.9 : 0.9;
 
