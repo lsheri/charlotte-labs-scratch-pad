@@ -212,24 +212,23 @@ export function FluencyRadarChart({
     return () => window.clearInterval(id);
   }, [hovering, numAxes, maxR, pointAt]);
 
-  // Attention-grabber: jiggle 5s after mount, then every 15s
   useEffect(() => {
     if (reducedMotion.current) return;
+    let intervalId: number | undefined;
     const doJiggle = () => {
       setJiggling(true);
       window.setTimeout(() => setJiggling(false), 1400);
     };
     const t = window.setTimeout(() => {
       doJiggle();
-      const i = window.setInterval(doJiggle, 15000);
-      (t as unknown as { _i?: number })._i = i;
+      intervalId = window.setInterval(doJiggle, 15000);
     }, 5000);
     return () => {
       window.clearTimeout(t);
-      const i = (t as unknown as { _i?: number })._i;
-      if (i) window.clearInterval(i);
+      if (intervalId) window.clearInterval(intervalId);
     };
   }, []);
+
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = containerRef.current?.getBoundingClientRect();
