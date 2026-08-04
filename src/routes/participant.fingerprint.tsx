@@ -3,7 +3,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Briefcase, GraduationCap } from "lucide-react";
+import { Briefcase, GraduationCap, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useTour } from "@/components/tour/TourProvider";
 import { CharlotteWeb } from "@/components/web/CharlotteWeb";
 import { WorkflowsSection } from "@/components/web/WorkflowsSection";
 
@@ -21,6 +23,7 @@ const MEDIA_LEGEND = [
 
 function FingerprintPage() {
   const { user } = useAuth();
+  const { start: startTour } = useTour();
   const [sessions, setSessions] = useState<SessionOpt[]>([]);
   const [sessionId, setSessionId] = useState<string>("all");
 
