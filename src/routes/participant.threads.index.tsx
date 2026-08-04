@@ -350,7 +350,7 @@ export function ThreadsInbox({ classId }: { classId?: string } = {}) {
           </svg>
 
           {/* Left column: Assignments */}
-          <aside data-tour="assignments-column" className="relative self-start space-y-4" style={{ zIndex: 2 }}>
+          <aside className="relative self-start space-y-4" style={{ zIndex: 2 }}>
             {!scopedClass && (
               <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Assignments
@@ -364,13 +364,20 @@ export function ThreadsInbox({ classId }: { classId?: string } = {}) {
                   <span className="text-muted-foreground/60">· Assignments</span>
                 </div>
                 <div className="space-y-2">
-                  {c.assignments.map((a) => {
+                  {c.assignments.map((a, ai) => {
                     const mappedIds = mappedThreadIdsByAssignment.get(a.id) ?? [];
                     const mappedCount = mappedIds.length;
                     const active = focusedAssignment === a.id;
                     const cleanTitle = a.title.replace(/^.*—\s*/, "");
                     return (
-                      <div key={a.id} className="flex items-stretch gap-2">
+                      <div
+                        key={a.id}
+                        // Spotlight the first real assignment card: the whole
+                        // <aside> is taller than the viewport and spotlighting
+                        // it lands on blank space.
+                        data-tour={ai === 0 ? "assignments-column" : undefined}
+                        className="flex items-stretch gap-2"
+                      >
                         <Button
                           size="sm"
                           variant="default"
@@ -506,7 +513,7 @@ export function ThreadsInbox({ classId }: { classId?: string } = {}) {
                               <DropdownMenuLabel className="text-xs">
                                 {c.courseCode ?? c.name}
                               </DropdownMenuLabel>
-                              {c.assignments.map((a) => {
+                              {c.assignments.map((a, ai) => {
                                 const mapped = (assignmentIdsByThread.get(th.id) ?? []).includes(a.id);
                                 return (
                                   <DropdownMenuItem
