@@ -30,14 +30,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import charlotteMascot from "@/assets/charlotte-mascot.png";
 import { setPendingReceiptJob } from "@/lib/pendingReceiptJob";
-import { useActiveWorkspaceId } from "@/lib/activeWorkspace";
+import { useWorkspace } from "@/lib/workspace";
 
 export const Route = createFileRoute("/participant/threads/")({
   component: ThreadsRoute,
 });
 
 function ThreadsRoute() {
-  const [activeWorkspaceId] = useActiveWorkspaceId();
+  const { activeWorkspaceId, ready } = useWorkspace();
+  if (!ready) return <p className="text-sm text-muted-foreground">Loading…</p>;
   return <ThreadsInbox classId={activeWorkspaceId ?? undefined} />;
 }
 

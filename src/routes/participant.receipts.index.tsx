@@ -13,14 +13,15 @@ import { ProvenanceVial } from "@/components/provenance/ProvenanceVial";
 import { PendingReceiptJobCard } from "@/components/receipt/PendingReceiptJobCard";
 import { IncompleteJobsPanel } from "@/components/receipt/IncompleteJobsPanel";
 import { EditableReceiptTitle } from "@/components/receipt/EditableReceiptTitle";
-import { useActiveWorkspaceId } from "@/lib/activeWorkspace";
+import { useWorkspace } from "@/lib/workspace";
 
 export const Route = createFileRoute("/participant/receipts/")({
   component: ReceiptsRoute,
 });
 
 function ReceiptsRoute() {
-  const [activeWorkspaceId] = useActiveWorkspaceId();
+  const { activeWorkspaceId, ready } = useWorkspace();
+  if (!ready) return <p className="text-sm text-muted-foreground">Loading…</p>;
   return <ReceiptsList classId={activeWorkspaceId ?? undefined} />;
 }
 
@@ -88,7 +89,11 @@ export function ReceiptsList({ classId }: { classId?: string } = {}) {
     // Workspace scope: receipts belong to the class session directly.
     if (classId) q = q.eq("session_id", classId);
     const { data } = await q;
-    setReceipts((data ?? []) as R[]);
+    const rows = (data ?? []) as R[];
+    setReceipts(rows);
+    if (typeof window !== "undefined" && rows[0]) {
+      window.localStorage.setItem("charlotte:firstReceiptId", rows[0].id);
+    }
     setLoading(false);
   }, [user, classId]);
 
@@ -116,7 +121,7 @@ export function ReceiptsList({ classId }: { classId?: string } = {}) {
           No receipts yet. Go to <Link to="/participant/threads" className="underline">Threads</Link>, select 1+ and click "Generate Receipt".
         </CardContent></Card>
       ) : (
-        <div className="grid gap-2">
+        <div className="grid gap-2" data-tour="receipts-list">
           {receipts.map(r => (
             <Link key={r.id} to="/participant/receipts/$receiptId" params={{ receiptId: r.id }}>
               <Card className="transition hover:border-primary/60 hover:bg-secondary/30">
