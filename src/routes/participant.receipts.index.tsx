@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import { Receipt as ReceiptIcon, TrendingUp, X, Fingerprint } from "lucide-react";
+import { Receipt as ReceiptIcon, TrendingUp, X, Fingerprint, Star } from "lucide-react";
 import { ToolLogo } from "@/components/ToolLogo";
 import { getWorkflowTypeLabel, getProvenance, isVerifiedLab } from "@/lib/displayNames";
 import { ProvenanceVial } from "@/components/provenance/ProvenanceVial";
