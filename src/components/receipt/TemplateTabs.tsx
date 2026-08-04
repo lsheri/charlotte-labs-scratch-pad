@@ -21,7 +21,7 @@ export function TemplateTabs({ receiptId, activeKey, templateKeys, labelFor }: P
   const label = (k: string) => labelFor?.(k) ?? PRETTY[k] ?? k;
 
   return (
-    <div className="flex items-center gap-1 border-b border-border overflow-x-auto">
+    <div className="flex items-center gap-1 border-b border-border overflow-x-auto" data-tour="template-tabs">
       {templateKeys.map((key) => {
         const active = key === activeKey;
         return (

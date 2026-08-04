@@ -159,7 +159,7 @@ export function StudyGapTemplate({ receiptId }: Props) {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5" data-tour="study-gaps-body">
       <div className="rounded-xl border bg-gradient-to-br from-[#0A2848] to-[#123a66] p-5 text-white">
         <div className="flex items-start gap-3">
           <div className="rounded-full bg-white/15 p-2">

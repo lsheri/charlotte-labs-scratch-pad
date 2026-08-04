@@ -62,13 +62,15 @@ export function ParticipantSidebar() {
   const activeLabel = activeClass ? (activeClass.courseCode ?? activeClass.name) : "Personal";
   const threadsUrl = activeClass ? `/participant/department/${activeClass.id}/threads` : "/participant/threads";
   const receiptsUrl = activeClass ? `/participant/department/${activeClass.id}/receipts` : "/participant/receipts";
-  const homeUrl = activeClass ? `/participant/department/${activeClass.id}` : "/participant";
+  // Home is always the personal student dashboard — never class-scoped.
+  const homeUrl = "/participant";
 
 
   const workspaceGroup = {
     label: "Workspace",
     items: [
-      { title: "Home", url: homeUrl, icon: Home, exact: !activeClass },
+      { title: "Home", url: homeUrl, icon: Home, exact: true },
+
       ...(singleWorkspace ? [] : [{ title: "Workspaces", url: "/participant/workspaces", icon: Briefcase }]),
       { title: activeClass ? "Threads" : "All Threads", url: threadsUrl, icon: MessageSquare },
       { title: activeClass ? "Receipts" : "All Receipts", url: receiptsUrl, icon: Receipt },

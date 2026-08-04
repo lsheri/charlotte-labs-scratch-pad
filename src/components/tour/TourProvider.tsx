@@ -71,8 +71,18 @@ export function TourProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!step) return;
     const to = typeof step.to === "function" ? step.to(tourCtx) : step.to;
-    if (to && to !== pathname) navigate({ to: to as any });
+    if (!to) return;
+    if (step.search) {
+      const current = new URLSearchParams(window.location.search);
+      const same =
+        to === pathname &&
+        Object.entries(step.search).every(([k, v]) => current.get(k) === v);
+      if (!same) navigate({ to: to as any, search: step.search as any });
+      return;
+    }
+    if (to !== pathname) navigate({ to: to as any });
   }, [step, pathname, navigate, tourCtx]);
+
 
   // Let the page put itself in the state a step describes.
   useEffect(() => {
