@@ -184,7 +184,12 @@ function TourOverlay({
   const calloutStyle = calloutPosition(rect, step.placement);
 
   return (
-    <div className="fixed inset-0 z-[200]" role="dialog" aria-modal="true" aria-label="Guided tour">
+    <div
+      className="pointer-events-none fixed inset-0 z-[200]"
+      role="dialog"
+      aria-modal="false"
+      aria-label="Guided tour"
+    >
       {rect ? (
         <div
           className="pointer-events-none absolute rounded-xl ring-2 ring-primary/70 transition-all duration-200"
@@ -197,11 +202,12 @@ function TourOverlay({
           }}
         />
       ) : (
-        <div className="absolute inset-0 bg-[rgba(9,14,30,0.62)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[rgba(9,14,30,0.62)]" />
       )}
 
       <div
-        className="absolute w-[min(92vw,360px)] rounded-xl border bg-card p-4 shadow-2xl"
+        data-tour-callout
+        className="pointer-events-auto absolute w-[min(92vw,360px)] rounded-xl border bg-card p-4 shadow-2xl"
         style={calloutStyle}
       >
         <div className="flex items-start gap-2">
@@ -209,9 +215,15 @@ function TourOverlay({
             <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">
               Step {index + 1} of {total}
             </p>
+            {step.preview && (
+              <span className="mt-1 inline-block rounded-full border border-amber-400 bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-900">
+                Demo · In development
+              </span>
+            )}
             <h2 className="mt-1 text-base font-semibold leading-tight">{step.title}</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{step.body}</p>
           </div>
+
           <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={onExit} aria-label="Exit tour">
             <X className="h-4 w-4" />
           </Button>
