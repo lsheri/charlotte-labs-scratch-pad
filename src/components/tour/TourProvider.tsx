@@ -6,14 +6,21 @@ import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { X, ArrowLeft, ArrowRight } from "lucide-react";
-import { PARTICIPANT_TOUR, DEPARTMENT_TOUR, type TourStep } from "./tourSteps";
+import { useServerFn } from "@tanstack/react-start";
+import { getLatestAnalyzedReceiptId } from "@/serverfn/receipts";
+import {
+  PARTICIPANT_TOUR, DEPARTMENT_TOUR, ROADMAP_TOUR,
+  type TourStep, type TourContext,
+} from "./tourSteps";
 
-type FlowId = "participant" | "department";
+type FlowId = "participant" | "department" | "roadmap";
 
 const FLOWS: Record<FlowId, TourStep[]> = {
   participant: PARTICIPANT_TOUR,
   department: DEPARTMENT_TOUR,
+  roadmap: ROADMAP_TOUR,
 };
+
 
 interface TourApi {
   start: (flow: FlowId) => void;
