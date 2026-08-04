@@ -42,6 +42,8 @@ function ThreadsRoute() {
   return <ThreadsInbox classId={activeWorkspaceId ?? undefined} />;
 }
 
+/** Prefer the already-loaded workspace classes; fall back to a local fetch. */
+
 type SidebarClass = {
   id: string; name: string; courseCode: string | null;
   assignments: { id: string; code: string; title: string; dueAt: string | null }[];
@@ -67,7 +69,9 @@ export function ThreadsInbox({ classId }: { classId?: string } = {}) {
   const [splash, setSplash] = useState<"idle" | "starting">("idle");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [usage, setUsage] = useState({ used: 0, limit: 7, exempt: false });
-  const [classes, setClasses] = useState<SidebarClass[]>([]);
+  const { classes: workspaceClasses } = useWorkspace();
+  const [fetchedClasses, setFetchedClasses] = useState<SidebarClass[]>([]);
+  const classes: SidebarClass[] = workspaceClasses.length ? (workspaceClasses as SidebarClass[]) : fetchedClasses;
   const [mappings, setMappings] = useState<{ assignment_id: string; thread_id: string }[]>([]);
   const [focusedAssignment, setFocusedAssignment] = useState<string | null>(null);
   const [assignmentSubmitTarget, setAssignmentSubmitTarget] = useState<string | null>(null);
@@ -86,17 +90,19 @@ export function ThreadsInbox({ classId }: { classId?: string } = {}) {
     if (!user) return;
     loadThreads();
     loadMappings();
-    classesFn().then((r) => setClasses((r.classes ?? []) as any)).catch(() => {});
+    classesFn().then((r) => setFetchedClasses((r.classes ?? []) as any)).catch(() => {});
   }, [user]);
   useEffect(() => {
     if (!user) return;
     usageFn().then((r: any) => setUsage({ used: r.used ?? 0, limit: r.limit ?? 7, exempt: !!r.exempt })).catch(() => {});
   }, [user, dialogOpen]);
 
-  const visibleClasses = useMemo(
-    () => (classId ? classes.filter((c) => c.id === classId) : classes),
-    [classes, classId],
-  );
+  const visibleClasses = useMemo(() => {
+    if (!classId) return classes;
+    const scoped = classes.filter((c) => c.id === classId);
+    // A classId that does not match any loaded class must not blank the column.
+    return scoped.length ? scoped : classes;
+  }, [classes, classId]);
   const scopedClass = classId ? visibleClasses[0] ?? null : null;
   const allAssignments = useMemo(
     () => visibleClasses.flatMap((c) => c.assignments.map((a) => ({ ...a, classId: c.id, className: c.courseCode ?? c.name }))),
