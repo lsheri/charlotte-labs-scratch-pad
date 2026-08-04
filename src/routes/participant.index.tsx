@@ -170,7 +170,7 @@ function ParticipantHome() {
           className="gap-2 bg-amber-400 font-bold text-amber-950 shadow-lg shadow-amber-500/30 hover:bg-amber-300"
         >
           <PlayCircle className="h-5 w-5" />
-          Play Demo
+          Play Student Journey Demo
         </Button>
       </div>
 
