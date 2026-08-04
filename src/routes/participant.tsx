@@ -8,36 +8,6 @@ import { WorkspaceProvider } from "@/lib/workspace";
 
 export const Route = createFileRoute("/participant")({ component: ParticipantLayout });
 
-const TOUR_SEEN_KEY = "charlotte:tour_seen_v1";
-
-function TourLauncher() {
-  const { start, active } = useTour();
-  const { ready, activeClass } = useWorkspace();
-
-  // Only auto-start once the account's real workspace data is confirmed loaded.
-  useEffect(() => {
-    if (!ready || !activeClass) return;
-    if (typeof window === "undefined") return;
-    if (window.localStorage.getItem(TOUR_SEEN_KEY) === "1") return;
-    window.localStorage.setItem(TOUR_SEEN_KEY, "1");
-    const t = window.setTimeout(() => start("participant"), 600);
-    return () => window.clearTimeout(t);
-  }, [ready, activeClass, start]);
-
-  return (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="gap-1.5 text-muted-foreground"
-      disabled={!ready || !!active}
-      onClick={() => start("participant")}
-    >
-      <HelpCircle className="h-4 w-4" />
-      Take the tour
-    </Button>
-  );
-}
-
 function ParticipantLayout() {
   const { ready } = useParticipantGuard();
   if (!ready) {
