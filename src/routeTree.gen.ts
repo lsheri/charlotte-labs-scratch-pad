@@ -24,6 +24,7 @@ import { Route as ParticipantDepartmentRouteImport } from './routes/participant.
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as ParticipantThreadsIndexRouteImport } from './routes/participant.threads.index'
 import { Route as ParticipantReceiptsIndexRouteImport } from './routes/participant.receipts.index'
+import { Route as ParticipantDepartmentIndexRouteImport } from './routes/participant.department.index'
 import { Route as ParticipantWorkspacesWorkspaceIdRouteImport } from './routes/participant.workspaces.$workspaceId'
 import { Route as ParticipantThreadsNewRouteImport } from './routes/participant.threads.new'
 import { Route as ParticipantThreadsThreadIdRouteImport } from './routes/participant.threads.$threadId'
@@ -33,6 +34,7 @@ import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/em
 import { Route as ApiPublicTeamOutreachRouteImport } from './routes/api/public/team-outreach'
 import { Route as ApiPublicExtensionStatusRouteImport } from './routes/api/public/extension-status'
 import { Route as ApiPublicCaptureConversationRouteImport } from './routes/api/public/capture-conversation'
+import { Route as ParticipantDepartmentClassIdIndexRouteImport } from './routes/participant.department.$classId.index'
 import { Route as ParticipantDepartmentClassIdThreadsRouteImport } from './routes/participant.department.$classId.threads'
 import { Route as ParticipantDepartmentClassIdReceiptsRouteImport } from './routes/participant.department.$classId.receipts'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
@@ -121,6 +123,12 @@ const ParticipantReceiptsIndexRoute =
     path: '/receipts/',
     getParentRoute: () => ParticipantRoute,
   } as any)
+const ParticipantDepartmentIndexRoute =
+  ParticipantDepartmentIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => ParticipantDepartmentRoute,
+  } as any)
 const ParticipantWorkspacesWorkspaceIdRoute =
   ParticipantWorkspacesWorkspaceIdRouteImport.update({
     id: '/$workspaceId',
@@ -171,6 +179,12 @@ const ApiPublicCaptureConversationRoute =
     id: '/api/public/capture-conversation',
     path: '/api/public/capture-conversation',
     getParentRoute: () => rootRouteImport,
+  } as any)
+const ParticipantDepartmentClassIdIndexRoute =
+  ParticipantDepartmentClassIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => ParticipantDepartmentClassIdRoute,
   } as any)
 const ParticipantDepartmentClassIdThreadsRoute =
   ParticipantDepartmentClassIdThreadsRouteImport.update({
@@ -260,6 +274,7 @@ export interface FileRoutesByFullPath {
   '/participant/threads/$threadId': typeof ParticipantThreadsThreadIdRoute
   '/participant/threads/new': typeof ParticipantThreadsNewRoute
   '/participant/workspaces/$workspaceId': typeof ParticipantWorkspacesWorkspaceIdRoute
+  '/participant/department/': typeof ParticipantDepartmentIndexRoute
   '/participant/receipts/': typeof ParticipantReceiptsIndexRoute
   '/participant/threads/': typeof ParticipantThreadsIndexRoute
   '/api/public/cron/researcher-digest': typeof ApiPublicCronResearcherDigestRoute
@@ -272,6 +287,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/participant/department/$classId/receipts': typeof ParticipantDepartmentClassIdReceiptsRoute
   '/participant/department/$classId/threads': typeof ParticipantDepartmentClassIdThreadsRoute
+  '/participant/department/$classId/': typeof ParticipantDepartmentClassIdIndexRoute
   '/participant/department/$classId/assignments/$assignmentId': typeof ParticipantDepartmentClassIdAssignmentsAssignmentIdRoute
 }
 export interface FileRoutesByTo {
@@ -282,7 +298,6 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
-  '/participant/department': typeof ParticipantDepartmentRouteWithChildren
   '/participant/extension': typeof ParticipantExtensionRoute
   '/participant/fingerprint': typeof ParticipantFingerprintRoute
   '/participant/workspaces': typeof ParticipantWorkspacesRouteWithChildren
@@ -291,11 +306,11 @@ export interface FileRoutesByTo {
   '/api/public/extension-status': typeof ApiPublicExtensionStatusRoute
   '/api/public/team-outreach': typeof ApiPublicTeamOutreachRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
-  '/participant/department/$classId': typeof ParticipantDepartmentClassIdRouteWithChildren
   '/participant/receipts/$receiptId': typeof ParticipantReceiptsReceiptIdRoute
   '/participant/threads/$threadId': typeof ParticipantThreadsThreadIdRoute
   '/participant/threads/new': typeof ParticipantThreadsNewRoute
   '/participant/workspaces/$workspaceId': typeof ParticipantWorkspacesWorkspaceIdRoute
+  '/participant/department': typeof ParticipantDepartmentIndexRoute
   '/participant/receipts': typeof ParticipantReceiptsIndexRoute
   '/participant/threads': typeof ParticipantThreadsIndexRoute
   '/api/public/cron/researcher-digest': typeof ApiPublicCronResearcherDigestRoute
@@ -308,6 +323,7 @@ export interface FileRoutesByTo {
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/participant/department/$classId/receipts': typeof ParticipantDepartmentClassIdReceiptsRoute
   '/participant/department/$classId/threads': typeof ParticipantDepartmentClassIdThreadsRoute
+  '/participant/department/$classId': typeof ParticipantDepartmentClassIdIndexRoute
   '/participant/department/$classId/assignments/$assignmentId': typeof ParticipantDepartmentClassIdAssignmentsAssignmentIdRoute
 }
 export interface FileRoutesById {
@@ -334,6 +350,7 @@ export interface FileRoutesById {
   '/participant/threads/$threadId': typeof ParticipantThreadsThreadIdRoute
   '/participant/threads/new': typeof ParticipantThreadsNewRoute
   '/participant/workspaces/$workspaceId': typeof ParticipantWorkspacesWorkspaceIdRoute
+  '/participant/department/': typeof ParticipantDepartmentIndexRoute
   '/participant/receipts/': typeof ParticipantReceiptsIndexRoute
   '/participant/threads/': typeof ParticipantThreadsIndexRoute
   '/api/public/cron/researcher-digest': typeof ApiPublicCronResearcherDigestRoute
@@ -346,6 +363,7 @@ export interface FileRoutesById {
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/participant/department/$classId/receipts': typeof ParticipantDepartmentClassIdReceiptsRoute
   '/participant/department/$classId/threads': typeof ParticipantDepartmentClassIdThreadsRoute
+  '/participant/department/$classId/': typeof ParticipantDepartmentClassIdIndexRoute
   '/participant/department/$classId/assignments/$assignmentId': typeof ParticipantDepartmentClassIdAssignmentsAssignmentIdRoute
 }
 export interface FileRouteTypes {
@@ -373,6 +391,7 @@ export interface FileRouteTypes {
     | '/participant/threads/$threadId'
     | '/participant/threads/new'
     | '/participant/workspaces/$workspaceId'
+    | '/participant/department/'
     | '/participant/receipts/'
     | '/participant/threads/'
     | '/api/public/cron/researcher-digest'
@@ -385,6 +404,7 @@ export interface FileRouteTypes {
     | '/lovable/email/transactional/send'
     | '/participant/department/$classId/receipts'
     | '/participant/department/$classId/threads'
+    | '/participant/department/$classId/'
     | '/participant/department/$classId/assignments/$assignmentId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -395,7 +415,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/unsubscribe'
     | '/email/unsubscribe'
-    | '/participant/department'
     | '/participant/extension'
     | '/participant/fingerprint'
     | '/participant/workspaces'
@@ -404,11 +423,11 @@ export interface FileRouteTypes {
     | '/api/public/extension-status'
     | '/api/public/team-outreach'
     | '/lovable/email/suppression'
-    | '/participant/department/$classId'
     | '/participant/receipts/$receiptId'
     | '/participant/threads/$threadId'
     | '/participant/threads/new'
     | '/participant/workspaces/$workspaceId'
+    | '/participant/department'
     | '/participant/receipts'
     | '/participant/threads'
     | '/api/public/cron/researcher-digest'
@@ -421,6 +440,7 @@ export interface FileRouteTypes {
     | '/lovable/email/transactional/send'
     | '/participant/department/$classId/receipts'
     | '/participant/department/$classId/threads'
+    | '/participant/department/$classId'
     | '/participant/department/$classId/assignments/$assignmentId'
   id:
     | '__root__'
@@ -446,6 +466,7 @@ export interface FileRouteTypes {
     | '/participant/threads/$threadId'
     | '/participant/threads/new'
     | '/participant/workspaces/$workspaceId'
+    | '/participant/department/'
     | '/participant/receipts/'
     | '/participant/threads/'
     | '/api/public/cron/researcher-digest'
@@ -458,6 +479,7 @@ export interface FileRouteTypes {
     | '/lovable/email/transactional/send'
     | '/participant/department/$classId/receipts'
     | '/participant/department/$classId/threads'
+    | '/participant/department/$classId/'
     | '/participant/department/$classId/assignments/$assignmentId'
   fileRoutesById: FileRoutesById
 }
@@ -591,6 +613,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ParticipantReceiptsIndexRouteImport
       parentRoute: typeof ParticipantRoute
     }
+    '/participant/department/': {
+      id: '/participant/department/'
+      path: '/'
+      fullPath: '/participant/department/'
+      preLoaderRoute: typeof ParticipantDepartmentIndexRouteImport
+      parentRoute: typeof ParticipantDepartmentRoute
+    }
     '/participant/workspaces/$workspaceId': {
       id: '/participant/workspaces/$workspaceId'
       path: '/$workspaceId'
@@ -653,6 +682,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/capture-conversation'
       preLoaderRoute: typeof ApiPublicCaptureConversationRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/participant/department/$classId/': {
+      id: '/participant/department/$classId/'
+      path: '/'
+      fullPath: '/participant/department/$classId/'
+      preLoaderRoute: typeof ParticipantDepartmentClassIdIndexRouteImport
+      parentRoute: typeof ParticipantDepartmentClassIdRoute
     }
     '/participant/department/$classId/threads': {
       id: '/participant/department/$classId/threads'
@@ -737,6 +773,7 @@ declare module '@tanstack/react-router' {
 interface ParticipantDepartmentClassIdRouteChildren {
   ParticipantDepartmentClassIdReceiptsRoute: typeof ParticipantDepartmentClassIdReceiptsRoute
   ParticipantDepartmentClassIdThreadsRoute: typeof ParticipantDepartmentClassIdThreadsRoute
+  ParticipantDepartmentClassIdIndexRoute: typeof ParticipantDepartmentClassIdIndexRoute
   ParticipantDepartmentClassIdAssignmentsAssignmentIdRoute: typeof ParticipantDepartmentClassIdAssignmentsAssignmentIdRoute
 }
 
@@ -746,6 +783,8 @@ const ParticipantDepartmentClassIdRouteChildren: ParticipantDepartmentClassIdRou
       ParticipantDepartmentClassIdReceiptsRoute,
     ParticipantDepartmentClassIdThreadsRoute:
       ParticipantDepartmentClassIdThreadsRoute,
+    ParticipantDepartmentClassIdIndexRoute:
+      ParticipantDepartmentClassIdIndexRoute,
     ParticipantDepartmentClassIdAssignmentsAssignmentIdRoute:
       ParticipantDepartmentClassIdAssignmentsAssignmentIdRoute,
   }
@@ -757,11 +796,13 @@ const ParticipantDepartmentClassIdRouteWithChildren =
 
 interface ParticipantDepartmentRouteChildren {
   ParticipantDepartmentClassIdRoute: typeof ParticipantDepartmentClassIdRouteWithChildren
+  ParticipantDepartmentIndexRoute: typeof ParticipantDepartmentIndexRoute
 }
 
 const ParticipantDepartmentRouteChildren: ParticipantDepartmentRouteChildren = {
   ParticipantDepartmentClassIdRoute:
     ParticipantDepartmentClassIdRouteWithChildren,
+  ParticipantDepartmentIndexRoute: ParticipantDepartmentIndexRoute,
 }
 
 const ParticipantDepartmentRouteWithChildren =
