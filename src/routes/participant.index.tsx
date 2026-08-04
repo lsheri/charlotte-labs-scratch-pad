@@ -157,7 +157,7 @@ function ParticipantHome() {
   const name = user?.email?.split("@")[0] ?? "there";
 
   return (
-    <div className="space-y-6" data-tour="home-overview">
+    <div className="space-y-6">
       <WelcomeTourDialog userId={user?.id} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
@@ -255,7 +255,7 @@ function ParticipantHome() {
       </Card>
 
       {/* 2. Study Gaps summary */}
-      <Card>
+      <Card data-tour="home-overview">
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <Target className="h-4 w-4 text-amber-600" />
