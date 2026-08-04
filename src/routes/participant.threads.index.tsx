@@ -350,7 +350,7 @@ export function ThreadsInbox({ classId }: { classId?: string } = {}) {
           </svg>
 
           {/* Left column: Assignments */}
-          <aside data-tour="assignments-column" className="relative space-y-4" style={{ zIndex: 2 }}>
+          <aside data-tour="assignments-column" className="relative self-start space-y-4" style={{ zIndex: 2 }}>
             {!scopedClass && (
               <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Assignments

@@ -99,7 +99,14 @@ export function TourProvider({ children }: { children: ReactNode }) {
       if (el && el.offsetHeight > 24 && el.offsetWidth > 24) {
         const r = el.getBoundingClientRect();
         const visible = r.top >= 0 && r.bottom <= window.innerHeight;
-        if (!visible) el.scrollIntoView({ block: "center", behavior: "smooth" });
+        // Tall targets must scroll to their top; centering them lands the
+        // spotlight on empty space below their content.
+        if (!visible) {
+          el.scrollIntoView({
+            block: r.height > window.innerHeight * 0.8 ? "start" : "center",
+            behavior: "smooth",
+          });
+        }
         setRect(r);
       } else {
         setRect(null);
