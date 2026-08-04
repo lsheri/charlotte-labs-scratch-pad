@@ -316,7 +316,9 @@ export function FluencyRadarChart({
           <RadarChart
             data={data}
             cx="50%"
+            cy="50%"
             outerRadius="90%"
+
 
             margin={{ top: marginY, right: marginX, bottom: marginY, left: marginX }}
           >
