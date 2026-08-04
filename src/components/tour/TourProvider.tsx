@@ -58,6 +58,9 @@ export function TourProvider({ children }: { children: ReactNode }) {
   const [tourCtx, setTourCtx] = useState<TourContext>({ receiptId: null });
 
   const start = useCallback((f: FlowId) => {
+    // Tours only make sense inside the authenticated app shell.
+    const p = typeof window !== "undefined" ? window.location.pathname : "";
+    if (!(p.startsWith("/participant") || p.startsWith("/admin"))) return;
     setFlow(f);
     setIndex(0);
     setRect(null);

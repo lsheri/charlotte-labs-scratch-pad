@@ -9,9 +9,7 @@ const DISMISS_KEY = "charlotte_banner_dismissed_at";
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
 function shouldShow(pathname: string) {
-  return (
-    pathname === "/auth" || pathname.startsWith("/participant") || pathname.startsWith("/admin")
-  );
+  return pathname.startsWith("/participant") || pathname.startsWith("/admin");
 }
 
 export function ResearchBanner() {
