@@ -27,6 +27,15 @@ function ReceiptsRoute() {
 
 interface R { id: string; tool_used: string; prompt_preview: string | null; created_at: string; metadata: any; }
 
+function isFeaturedReceipt(r: R): boolean {
+  return r.metadata?.featured === true;
+}
+
+function getFeaturedReason(r: R): string | null {
+  const reason = r.metadata?.featuredReason;
+  return typeof reason === "string" && reason.trim() ? reason.trim() : null;
+}
+
 const NOTE_KEY = "receipts_directional_note_dismissed_v1";
 
 function DirectionalNote() {
