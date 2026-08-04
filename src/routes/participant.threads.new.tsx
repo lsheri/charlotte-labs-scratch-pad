@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,6 +40,7 @@ function NewThreadPage() {
   const [busy, setBusy] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [turns, setTurns] = useState<ConversationTurn[]>([]);
+  const titleRef = useRef<string>("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const MAX_CHARS = 180_000;
@@ -78,6 +79,27 @@ function NewThreadPage() {
     acceptText(text, file.name);
     toast.success(`Loaded ${file.name}`);
   };
+
+  // Guided demo: drop in a short sample so the parsed-preview step has content.
+  useEffect(() => {
+    const onDemo = () => {
+      setTranscript((cur) => {
+        if (cur.trim()) return cur;
+        const sample = [
+          "You: I need to explain why demand for insulin is inelastic for my ECON 201 problem set.",
+          "ChatGPT: Inelastic demand means quantity demanded barely changes when price changes. Insulin qualifies because it is a medical necessity with no close substitutes.",
+          "You: Give me the elasticity formula and I'll compute it myself from the table in my textbook.",
+          "ChatGPT: Price elasticity of demand = (% change in quantity demanded) / (% change in price). Values below 1 in absolute terms are inelastic.",
+          "You: I got -0.12 from the data. That matches the necessity argument, but I want to check the 2019 price spike numbers against the CDC source before I cite it.",
+        ].join("\n");
+        window.setTimeout(() => setTurns(parseTranscript(sample)), 60);
+        return sample;
+      });
+      if (!titleRef.current) setTitle("Insulin demand elasticity — ECON 201");
+    };
+    document.addEventListener("charlotte:demo-fill-transcript", onDemo);
+    return () => document.removeEventListener("charlotte:demo-fill-transcript", onDemo);
+  }, []);
 
   const reparseFromTextarea = () => {
     if (!transcript.trim()) { toast.error("Paste a transcript first."); return; }

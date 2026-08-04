@@ -233,6 +233,7 @@ export const MANUAL_TOUR: TourStep[] = [
     body: "The extension can't reach everything — phone chats, a shared computer, a tool we don't support yet. Drop a .txt or .md export here and it becomes a normal thread.",
     target: "upload-dropzone",
     to: "/participant/threads/new",
+    emit: "charlotte:demo-fill-transcript",
     placement: "right",
   },
   {
