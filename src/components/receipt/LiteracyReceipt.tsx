@@ -58,13 +58,18 @@ interface Props {
 }
 
 function getProfileScore(profile: ProfileData, canonicalName: string): number {
-  const key = canonicalName
+  const base = canonicalName
     .replace('ethics_data_responsibility', 'ethics')
-    .replace('efficiency_leverage', 'efficiency')
-    + '_score_profile';
-  const v = (profile as unknown as Record<string, number | null>)[key];
+    .replace('efficiency_leverage', 'efficiency');
+  const row = profile as unknown as Record<string, number | null>;
+  // capital_stewardship is tracked per-term only (no cross-term profile column).
+  const key = base === 'capital_stewardship'
+    ? 'capital_stewardship_score_term'
+    : `${base}_score_profile`;
+  const v = row[key];
   return typeof v === 'number' ? v : 3.0;
 }
+
 
 export function LiteracyReceipt({ receipt, audit, runMeta, turns, tools, recommendations, recommendationsLoading = false, profile, showTranscript = false, adminView = false }: Props) {
   const band = audit ? overallBand(audit.overall_level) : null;
