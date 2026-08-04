@@ -11,8 +11,7 @@ import { CharlotteLogo } from "@/components/CharlotteLogo";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { getExtensionHealth } from "@/serverfn/extension";
-import { listClassSidebar } from "@/serverfn/assignments";
-import { useActiveWorkspaceId } from "@/lib/activeWorkspace";
+import { useWorkspace, type WorkspaceClass } from "@/lib/workspace";
 import {
   Collapsible, CollapsibleContent, CollapsibleTrigger,
 } from "@/components/ui/collapsible";
@@ -32,12 +31,7 @@ const baseToolsItems = [
 ];
 
 
-type SidebarClass = {
-  id: string;
-  name: string;
-  courseCode: string | null;
-  assignments: { id: string; code: string; title: string; dueAt: string | null }[];
-};
+type SidebarClass = WorkspaceClass;
 
 export function ParticipantSidebar() {
   const { state } = useSidebar();
@@ -101,7 +95,7 @@ export function ParticipantSidebar() {
 
   const pickWorkspace = (id: string | null) => {
     try { window.localStorage.setItem("charlotte:workspaceChosen", "1"); } catch {}
-    setActiveWorkspaceId(id);
+    setWorkspace(id);
     if (id) navigate({ to: `/participant/department/${id}` as any });
     else navigate({ to: "/participant" });
   };
@@ -186,7 +180,7 @@ export function ParticipantSidebar() {
                   {!activeClass && <Check className="h-4 w-4 text-primary" />}
                 </DropdownMenuItem>
                 {classes.length > 0 && <DropdownMenuSeparator />}
-                {classes.map((c) => (
+                {classes.map((c: SidebarClass) => (
                   <DropdownMenuItem
                     key={c.id}
                     onSelect={() => pickWorkspace(c.id)}
@@ -220,7 +214,7 @@ export function ParticipantSidebar() {
             {!collapsed && <SidebarGroupLabel>Assignments</SidebarGroupLabel>}
             <SidebarGroupContent>
               <SidebarMenu>
-                {activeClass.assignments.map((a) => {
+                {activeClass.assignments.map((a: SidebarClass["assignments"][number]) => {
                   const url = `/participant/department/${activeClass.id}/assignments/${a.id}`;
                   return (
                     <SidebarMenuItem key={a.id}>
@@ -250,7 +244,7 @@ export function ParticipantSidebar() {
             {!collapsed && <SidebarGroupLabel>Classes</SidebarGroupLabel>}
             <SidebarGroupContent>
               <SidebarMenu>
-                {classes.map((c) => {
+                {classes.map((c: SidebarClass) => {
                   const overviewUrl = `/participant/department/${c.id}`;
                   const inClass = path.startsWith(overviewUrl);
                   return (
