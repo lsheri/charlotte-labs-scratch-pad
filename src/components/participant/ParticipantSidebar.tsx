@@ -43,7 +43,7 @@ export function ParticipantSidebar() {
   const [healthStatus, setHealthStatus] = useState<"green" | "amber" | "red" | "unknown" | null>(null);
   const { classes, activeWorkspaceId, activeClass: ctxActiveClass, setWorkspace } = useWorkspace();
 
-  const [deckOpen, setDeckOpen] = useState(false);
+  
 
   useEffect(() => {
     fetchHealth().then((h) => setHealthStatus(h.status)).catch(() => {});
