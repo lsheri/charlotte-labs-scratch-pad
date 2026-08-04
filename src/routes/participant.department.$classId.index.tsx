@@ -158,15 +158,25 @@ function ClassDashboard() {
             <Card>
               <CardHeader className="pb-2"><CardTitle className="text-xs font-medium text-muted-foreground">Assignment risk</CardTitle></CardHeader>
               <CardContent>
-                <MiniSeries
-                  emptyLabel="No submissions yet."
-                  weeks={Array.from(new Set(trends.assignments.flatMap((a: any) => a.points.map((p: any) => p.week)))).sort() as string[]}
-                  max={100}
-                  series={trends.assignments.slice(0, 4).map((a: any) => ({
-                    label: a.code || a.title,
-                    values: a.points.map((p: any) => p.avgRisk),
-                  }))}
-                />
+                {(() => {
+                  const rows: any[] = Array.isArray(trends.assignments)
+                    ? trends.assignments
+                    : (trends.assignments?.assignments ?? []);
+                  return (
+                    <MiniSeries
+                      emptyLabel="No submissions yet."
+                      weeks={Array.from(
+                        new Set(rows.flatMap((a: any) => (a.points ?? []).map((p: any) => p.week))),
+                      ).sort() as string[]}
+                      max={100}
+                      series={rows.slice(0, 4).map((a: any) => ({
+                        label: a.code || a.title,
+                        values: (a.points ?? []).map((p: any) => p.avgRisk),
+                      }))}
+                    />
+                  );
+                })()}
+
               </CardContent>
             </Card>
           </div>
