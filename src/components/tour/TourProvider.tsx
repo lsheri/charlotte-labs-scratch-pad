@@ -52,18 +52,38 @@ export function TourProvider({ children }: { children: ReactNode }) {
     setRect(null);
   }, []);
 
+  const fetchLatestReceipt = useServerFn(getLatestAnalyzedReceiptId);
+  const [tourCtx, setTourCtx] = useState<TourContext>({ receiptId: null });
+
   const start = useCallback((f: FlowId) => {
     setFlow(f);
     setIndex(0);
     setRect(null);
-  }, []);
+    // Resolve a real receipt so the radar step always lands on real data.
+    fetchLatestReceipt()
+      .then((r: any) => setTourCtx({ receiptId: r?.receiptId ?? null }))
+      .catch(() => setTourCtx({ receiptId: null }));
+  }, [fetchLatestReceipt]);
 
   // Navigate to the step's route when needed.
   useEffect(() => {
     if (!step) return;
-    const to = typeof step.to === "function" ? step.to() : step.to;
+    const to = typeof step.to === "function" ? step.to(tourCtx) : step.to;
     if (to && to !== pathname) navigate({ to: to as any });
-  }, [step, pathname, navigate]);
+  }, [step, pathname, navigate, tourCtx]);
+
+  // Clicking a sidebar link exits the tour instead of being trapped by it.
+  useEffect(() => {
+    if (!flow) return;
+    const onClick = (e: MouseEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (!t) return;
+      if (t.closest("[data-tour-callout]")) return;
+      if (t.closest('[data-sidebar], aside, nav, a[href], [role="navigation"]')) stop();
+    };
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, [flow, stop]);
 
   // Track the spotlight target; keeps up with layout shifts and async data.
   useEffect(() => {
@@ -74,7 +94,9 @@ export function TourProvider({ children }: { children: ReactNode }) {
       const el = step.target
         ? (document.querySelector(`[data-tour="${step.target}"]`) as HTMLElement | null)
         : null;
-      if (el) {
+      // Treat an empty/zero-size element as "not ready" rather than spotlighting
+      // a blank box while its data is still loading.
+      if (el && el.offsetHeight > 24 && el.offsetWidth > 24) {
         const r = el.getBoundingClientRect();
         const visible = r.top >= 0 && r.bottom <= window.innerHeight;
         if (!visible) el.scrollIntoView({ block: "center", behavior: "smooth" });
@@ -90,6 +112,7 @@ export function TourProvider({ children }: { children: ReactNode }) {
       if (rafRef.current) window.clearTimeout(rafRef.current);
     };
   }, [step]);
+
 
   const next = useCallback(() => {
     setIndex((i) => {
