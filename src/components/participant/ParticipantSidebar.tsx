@@ -11,8 +11,7 @@ import { CharlotteLogo } from "@/components/CharlotteLogo";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { getExtensionHealth } from "@/serverfn/extension";
-import { listClassSidebar } from "@/serverfn/assignments";
-import { useActiveWorkspaceId } from "@/lib/activeWorkspace";
+import { useWorkspace, type WorkspaceClass } from "@/lib/workspace";
 import {
   Collapsible, CollapsibleContent, CollapsibleTrigger,
 } from "@/components/ui/collapsible";
@@ -32,12 +31,7 @@ const baseToolsItems = [
 ];
 
 
-type SidebarClass = {
-  id: string;
-  name: string;
-  courseCode: string | null;
-  assignments: { id: string; code: string; title: string; dueAt: string | null }[];
-};
+type SidebarClass = WorkspaceClass;
 
 export function ParticipantSidebar() {
   const { state } = useSidebar();
@@ -46,51 +40,30 @@ export function ParticipantSidebar() {
   const { user, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
   const fetchHealth = useServerFn(getExtensionHealth);
-  const fetchClasses = useServerFn(listClassSidebar);
   const [healthStatus, setHealthStatus] = useState<"green" | "amber" | "red" | "unknown" | null>(null);
-  const [classes, setClasses] = useState<SidebarClass[]>([]);
-  const [personalSessionId, setPersonalSessionId] = useState<string | null>(null);
-  const [activeWorkspaceId, setActiveWorkspaceId] = useActiveWorkspaceId();
+  const { classes, activeWorkspaceId, activeClass: ctxActiveClass, setWorkspace } = useWorkspace();
   const [deckOpen, setDeckOpen] = useState(false);
 
   useEffect(() => {
     fetchHealth().then((h) => setHealthStatus(h.status)).catch(() => {});
-    fetchClasses().then((r: any) => {
-      const list = (r.classes ?? []) as SidebarClass[];
-      setClasses(list);
-      setPersonalSessionId(r.personalSessionId ?? null);
-      // Default active workspace to first class (e.g. Econ) so uploaded
-      // content lives in the class workspace, not Personal.
-      // Single-workspace accounts (the demo) are always pinned to their class.
-      if (list.length === 1) {
-        if (activeWorkspaceId !== list[0].id) setActiveWorkspaceId(list[0].id);
-      } else if (list.length > 0 && !activeWorkspaceId) {
-        setActiveWorkspaceId(list[0].id);
-      }
-    }).catch(() => {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchHealth, fetchClasses]);
-
+  }, [fetchHealth]);
 
   useEffect(() => {
     const m = path.match(/^\/participant\/department\/([^/]+)/);
-    if (m && m[1] !== activeWorkspaceId) setActiveWorkspaceId(m[1]);
-  }, [path, activeWorkspaceId, setActiveWorkspaceId]);
+    if (m && m[1] !== activeWorkspaceId) setWorkspace(m[1]!);
+  }, [path, activeWorkspaceId, setWorkspace]);
 
 
   // When the account belongs to exactly one class, there is nothing to switch
   // between: render the workspace as a static label and hide the Workspaces nav.
   const singleWorkspace = classes.length === 1;
 
-  const activeClass = singleWorkspace
-    ? classes[0]
-    : activeWorkspaceId
-      ? classes.find((c) => c.id === activeWorkspaceId) ?? null
-      : null;
+  const activeClass = ctxActiveClass;
   const activeLabel = activeClass ? (activeClass.courseCode ?? activeClass.name) : "Personal";
   const threadsUrl = activeClass ? `/participant/department/${activeClass.id}/threads` : "/participant/threads";
   const receiptsUrl = activeClass ? `/participant/department/${activeClass.id}/receipts` : "/participant/receipts";
   const homeUrl = activeClass ? `/participant/department/${activeClass.id}` : "/participant";
+
 
   const workspaceGroup = {
     label: "Workspace",
@@ -122,7 +95,7 @@ export function ParticipantSidebar() {
 
   const pickWorkspace = (id: string | null) => {
     try { window.localStorage.setItem("charlotte:workspaceChosen", "1"); } catch {}
-    setActiveWorkspaceId(id);
+    setWorkspace(id);
     if (id) navigate({ to: `/participant/department/${id}` as any });
     else navigate({ to: "/participant" });
   };
@@ -162,7 +135,7 @@ export function ParticipantSidebar() {
           {!collapsed && <span className="font-semibold tracking-tight">Charlotte Labs</span>}
         </Link>
         {!collapsed && singleWorkspace && activeClass && (
-          <div className="px-2 pb-1">
+          <div className="px-2 pb-1" data-tour="workspace-header">
             <div className="flex items-start gap-2 px-0.5 py-1">
               <GraduationCap className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
               <div className="min-w-0">
@@ -207,7 +180,7 @@ export function ParticipantSidebar() {
                   {!activeClass && <Check className="h-4 w-4 text-primary" />}
                 </DropdownMenuItem>
                 {classes.length > 0 && <DropdownMenuSeparator />}
-                {classes.map((c) => (
+                {classes.map((c: SidebarClass) => (
                   <DropdownMenuItem
                     key={c.id}
                     onSelect={() => pickWorkspace(c.id)}
@@ -241,7 +214,7 @@ export function ParticipantSidebar() {
             {!collapsed && <SidebarGroupLabel>Assignments</SidebarGroupLabel>}
             <SidebarGroupContent>
               <SidebarMenu>
-                {activeClass.assignments.map((a) => {
+                {activeClass.assignments.map((a: SidebarClass["assignments"][number]) => {
                   const url = `/participant/department/${activeClass.id}/assignments/${a.id}`;
                   return (
                     <SidebarMenuItem key={a.id}>
@@ -271,7 +244,7 @@ export function ParticipantSidebar() {
             {!collapsed && <SidebarGroupLabel>Classes</SidebarGroupLabel>}
             <SidebarGroupContent>
               <SidebarMenu>
-                {classes.map((c) => {
+                {classes.map((c: SidebarClass) => {
                   const overviewUrl = `/participant/department/${c.id}`;
                   const inClass = path.startsWith(overviewUrl);
                   return (

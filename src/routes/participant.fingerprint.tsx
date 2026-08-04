@@ -68,7 +68,7 @@ function FingerprintPage() {
         </div>
       )}
 
-      <div style={{ height: "clamp(420px, 65vh, 760px)" }}>
+      <div data-tour="fingerprint-web" style={{ height: "clamp(420px, 65vh, 760px)" }}>
         <CharlotteWeb participantId={user?.id ?? null} sessionId={effectiveSessionId} />
       </div>
 

@@ -277,7 +277,7 @@ export function LiteracyReceipt({ receipt, audit, runMeta, turns, tools, recomme
 
       {audit && (
         <div className="grid gap-4 md:grid-cols-2">
-          <Card>
+          <Card data-tour="receipt-radar">
             <CardHeader><CardTitle className="text-sm">8-Dimension Fluency</CardTitle></CardHeader>
             <CardContent className="h-[clamp(360px,44vw,510px)]"><FluencyRadarChart series={radarSeries} dimensions={radarSeries ? undefined : receiptDims} confidenceByLabel={confidenceByLabel} /></CardContent>
             {!profileReady && (

@@ -30,14 +30,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import charlotteMascot from "@/assets/charlotte-mascot.png";
 import { setPendingReceiptJob } from "@/lib/pendingReceiptJob";
-import { useActiveWorkspaceId } from "@/lib/activeWorkspace";
+import { useWorkspace } from "@/lib/workspace";
 
 export const Route = createFileRoute("/participant/threads/")({
   component: ThreadsRoute,
 });
 
 function ThreadsRoute() {
-  const [activeWorkspaceId] = useActiveWorkspaceId();
+  const { activeWorkspaceId, ready } = useWorkspace();
+  if (!ready) return <p className="text-sm text-muted-foreground">Loading…</p>;
   return <ThreadsInbox classId={activeWorkspaceId ?? undefined} />;
 }
 
@@ -303,7 +304,7 @@ export function ThreadsInbox({ classId }: { classId?: string } = {}) {
               {selected.size === threads.length ? "Clear" : "Select all"}
             </Button>
           )}
-          <Button size="sm" disabled={!selected.size || busy} onClick={() => openDialog()}>
+          <Button data-tour="generate-receipt" size="sm" disabled={!selected.size || busy} onClick={() => openDialog()}>
             <FileText className="mr-1 h-4 w-4" /> Generate Receipt ({selected.size})
           </Button>
         </div>
@@ -343,7 +344,7 @@ export function ThreadsInbox({ classId }: { classId?: string } = {}) {
           </svg>
 
           {/* Left column: Assignments */}
-          <aside className="relative space-y-4" style={{ zIndex: 2 }}>
+          <aside data-tour="assignments-column" className="relative space-y-4" style={{ zIndex: 2 }}>
             {!scopedClass && (
               <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Assignments
@@ -414,7 +415,7 @@ export function ThreadsInbox({ classId }: { classId?: string } = {}) {
           <div className="hidden lg:block" aria-hidden />
 
           {/* Right column: Threads */}
-          <div className="relative space-y-2" style={{ zIndex: 2 }}>
+          <div data-tour="threads-column" className="relative space-y-2" style={{ zIndex: 2 }}>
             {threads.length === 0 ? (
               <Card>
                 <CardContent className="py-10 text-center text-sm text-muted-foreground">

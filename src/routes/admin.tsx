@@ -1,3 +1,5 @@
+import { TourProvider, useTour } from "@/components/tour/TourProvider";
+import { HelpCircle } from "lucide-react";
 import { createFileRoute, redirect, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
@@ -69,6 +71,7 @@ function AdminDashboard() {
   const activeDept = departments.find((d) => d.id === sessionId);
 
   return (
+    <TourProvider>
     <div className="min-h-screen bg-muted/20">
       <header className="border-b bg-background">
         <div className="mx-auto flex max-w-7xl items-center gap-3 px-6 py-4">
@@ -81,6 +84,7 @@ function AdminDashboard() {
           </div>
 
           <div className="ml-auto flex items-center gap-2">
+            <DeptTourButton />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2">
@@ -124,6 +128,7 @@ function AdminDashboard() {
         {data && <DashboardBody data={data} />}
       </main>
     </div>
+    </TourProvider>
   );
 }
 
@@ -141,7 +146,7 @@ function DashboardBody({ data }: { data: Dashboard }) {
       </div>
 
 
-      <section className="grid grid-cols-2 gap-4 md:grid-cols-5">
+      <section data-tour="dept-kpis" className="grid grid-cols-2 gap-4 md:grid-cols-5">
         <Kpi icon={<Users className="h-4 w-4" />} label="Students" value={overall.participantCount} />
         <Kpi icon={<GraduationCap className="h-4 w-4" />} label="Assignments" value={overall.assignmentCount} />
         <Kpi icon={<MessageSquare className="h-4 w-4" />} label="AI threads" value={overall.threadCount} sub={`${overall.totalTurns.toLocaleString()} turns`} />
@@ -150,7 +155,7 @@ function DashboardBody({ data }: { data: Dashboard }) {
       </section>
 
       <section className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2" data-tour="dept-risk">
           <CardHeader>
             <CardTitle className="text-sm">
               Assignments at risk of AI-trivialization — {session?.join_code ?? session?.name ?? "Department"}
@@ -167,7 +172,7 @@ function DashboardBody({ data }: { data: Dashboard }) {
         </Card>
 
         <div className="space-y-6">
-          <Card>
+          <Card data-tour="dept-fluency">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-sm">
                 <Sparkles className="h-4 w-4 text-primary" /> AI Fluency by dimension
@@ -196,7 +201,7 @@ function DashboardBody({ data }: { data: Dashboard }) {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card data-tour="dept-tools">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-sm">
                 <Wrench className="h-4 w-4 text-primary" /> Tools in use
@@ -363,5 +368,14 @@ function BarRow({
         <div className={`h-full ${bar}`} style={{ width: `${pct}%` }} />
       </div>
     </div>
+  );
+}
+
+function DeptTourButton() {
+  const { start, active } = useTour();
+  return (
+    <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground" disabled={!!active} onClick={() => start("department")}>
+      <HelpCircle className="h-4 w-4" /> How to read this
+    </Button>
   );
 }
