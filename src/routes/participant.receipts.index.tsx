@@ -137,26 +137,43 @@ export function ReceiptsList({ classId }: { classId?: string } = {}) {
         </CardContent></Card>
       ) : (
         <div className="grid gap-2" data-tour="receipts-list">
-          {receipts.map(r => (
-            <Link key={r.id} to="/participant/receipts/$receiptId" params={{ receiptId: r.id }}>
-              <Card className="transition hover:border-primary/60 hover:bg-secondary/30">
-                <CardContent className="flex items-center justify-between gap-4 py-3">
-                  <div className="min-w-0 flex items-center gap-3">
-                    <ProvenanceVial variant={getProvenance(r as any)} verified={isVerifiedLab(r as any)} size="md" />
-                    <ToolLogo tool={r.tool_used} size={32} />
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Badge variant="outline" className="capitalize">{r.tool_used}</Badge>
-                        <Badge variant="secondary">{getWorkflowTypeLabel(r as any)}</Badge>
-                        <span className="text-xs text-muted-foreground">{format(new Date(r.created_at), "MMM d, yyyy · h:mm a")}</span>
+          {receipts.map(r => {
+            const featured = isFeaturedReceipt(r);
+            const featuredReason = getFeaturedReason(r);
+            return (
+              <Link key={r.id} to="/participant/receipts/$receiptId" params={{ receiptId: r.id }}>
+                <Card
+                  className={cn(
+                    "transition",
+                    featured
+                      ? "border-amber-400/80 bg-amber-50/60 shadow-sm hover:border-amber-500 hover:bg-amber-50 dark:border-amber-500/60 dark:bg-amber-950/20 dark:hover:bg-amber-950/30"
+                      : "hover:border-primary/60 hover:bg-secondary/30",
+                  )}
+                  title={featuredReason ?? undefined}
+                >
+                  <CardContent className="flex items-center justify-between gap-4 py-3">
+                    <div className="min-w-0 flex items-center gap-3">
+                      <ProvenanceVial variant={getProvenance(r as any)} verified={isVerifiedLab(r as any)} size="md" />
+                      <ToolLogo tool={r.tool_used} size={32} />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge variant="outline" className="capitalize">{r.tool_used}</Badge>
+                          <Badge variant="secondary">{getWorkflowTypeLabel(r as any)}</Badge>
+                          {featured && (
+                            <Badge className="bg-amber-500 text-white hover:bg-amber-500 border-0">
+                              <Star className="mr-1 h-3 w-3 fill-current" /> Featured
+                            </Badge>
+                          )}
+                          <span className="text-xs text-muted-foreground">{format(new Date(r.created_at), "MMM d, yyyy · h:mm a")}</span>
+                        </div>
+                        <p className="mt-1 truncate text-sm font-medium"><EditableReceiptTitle receipt={r as any} /></p>
                       </div>
-                      <p className="mt-1 truncate text-sm font-medium"><EditableReceiptTitle receipt={r as any} /></p>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+                  </CardContent>
+                </Card>
+              </Link>
+            );
+          })}
         </div>
       )}
       <PendingReceiptJobCard onCompleted={() => refresh()} />
