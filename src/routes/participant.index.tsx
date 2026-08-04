@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
-import { Trash2, ShieldAlert, Target, MessageSquare, GraduationCap, ChevronRight } from "lucide-react";
+import { Trash2, ShieldAlert, Target, MessageSquare, GraduationCap, ChevronRight, PlayCircle } from "lucide-react";
 import { ToolLogo } from "@/components/ToolLogo";
 import { deleteMyData, createPersonalSession, getCaptureTarget } from "@/serverfn/participant";
 import { listMyThreads } from "@/serverfn/threads";
@@ -22,6 +22,7 @@ import { sendEnrollmentConfirmation } from "@/serverfn/study-lifecycle";
 import { getOpenVerificationItems, getRecentStudyGaps } from "@/serverfn/study-analyses";
 import { OverallFluencyCard } from "@/components/participant/OverallFluencyCard";
 import { WelcomeTourDialog } from "@/components/WelcomeTourDialog";
+import { useTour } from "@/components/tour/TourProvider";
 
 export const Route = createFileRoute("/participant/")({ component: ParticipantHome });
 
@@ -37,6 +38,7 @@ const RISK_STYLES: Record<string, string> = {
 
 function ParticipantHome() {
   const { user } = useAuth();
+  const { start: startTour } = useTour();
   const deleteFn = useServerFn(deleteMyData);
   const enrollFn = useServerFn(sendEnrollmentConfirmation);
   
