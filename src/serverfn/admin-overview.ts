@@ -71,7 +71,7 @@ function trivialityRisk(input: {
   return { score, band, drivers };
 }
 
-const DEMO_COHORT = 100;
+
 
 const FLUENCY_DIMENSIONS = [
   { key: "direction", label: "Direction", blurb: "Clarity of student goals given to AI" },
