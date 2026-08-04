@@ -16,10 +16,9 @@ function shouldShow(pathname: string) {
 
 export function ResearchBanner() {
   const { pathname } = useLocation();
-  const isMobile = useIsMobile();
   const { start, active } = useTour();
   const [dismissed, setDismissed] = useState(true); // hide by default until we read storage
-  const [open, setOpen] = useState(false);
+
 
   useEffect(() => {
     if (typeof window === "undefined") return;
