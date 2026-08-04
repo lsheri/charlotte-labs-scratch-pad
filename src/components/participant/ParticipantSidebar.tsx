@@ -61,7 +61,10 @@ export function ParticipantSidebar() {
       setPersonalSessionId(r.personalSessionId ?? null);
       // Default active workspace to first class (e.g. Econ) so uploaded
       // content lives in the class workspace, not Personal.
-      if (list.length > 0 && !activeWorkspaceId) {
+      // Single-workspace accounts (the demo) are always pinned to their class.
+      if (list.length === 1) {
+        if (activeWorkspaceId !== list[0].id) setActiveWorkspaceId(list[0].id);
+      } else if (list.length > 0 && !activeWorkspaceId) {
         setActiveWorkspaceId(list[0].id);
       }
     }).catch(() => {});
@@ -75,9 +78,15 @@ export function ParticipantSidebar() {
   }, [path, activeWorkspaceId, setActiveWorkspaceId]);
 
 
-  const activeClass = activeWorkspaceId
-    ? classes.find((c) => c.id === activeWorkspaceId) ?? null
-    : null;
+  // When the account belongs to exactly one class, there is nothing to switch
+  // between: render the workspace as a static label and hide the Workspaces nav.
+  const singleWorkspace = classes.length === 1;
+
+  const activeClass = singleWorkspace
+    ? classes[0]
+    : activeWorkspaceId
+      ? classes.find((c) => c.id === activeWorkspaceId) ?? null
+      : null;
   const activeLabel = activeClass ? (activeClass.courseCode ?? activeClass.name) : "Personal";
   const threadsUrl = activeClass ? `/participant/department/${activeClass.id}/threads` : "/participant/threads";
   const receiptsUrl = activeClass ? `/participant/department/${activeClass.id}/receipts` : "/participant/receipts";
@@ -87,11 +96,12 @@ export function ParticipantSidebar() {
     label: "Workspace",
     items: [
       { title: "Home", url: homeUrl, icon: Home, exact: !activeClass },
-      { title: "Workspaces", url: "/participant/workspaces", icon: Briefcase },
+      ...(singleWorkspace ? [] : [{ title: "Workspaces", url: "/participant/workspaces", icon: Briefcase }]),
       { title: activeClass ? "Threads" : "All Threads", url: threadsUrl, icon: MessageSquare },
       { title: activeClass ? "Receipts" : "All Receipts", url: receiptsUrl, icon: Receipt },
     ],
   };
+
   const toolsGroup = {
     label: "Tools",
     items: [
