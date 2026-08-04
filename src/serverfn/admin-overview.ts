@@ -201,8 +201,9 @@ export const getDepartmentDashboard = createServerFn({ method: "POST" })
       let score: number;
       if (vals.length > 0) {
         const avg = vals.reduce((s: number, n: number) => s + n, 0) / vals.length;
-        // Profile scores may be 0-1 or 0-100; normalize.
-        score = Math.round(avg <= 1 ? avg * 100 : avg);
+        // Profile scores are stored on a 1-5 rubric scale; render as 0-100.
+        score = Math.round(avg <= 5 ? (avg / 5) * 100 : avg);
+
       } else {
         score = FALLBACK_FLUENCY[d.key];
       }
