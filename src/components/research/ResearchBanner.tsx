@@ -81,12 +81,7 @@ export function ResearchBanner() {
         </div>
 
         <div className="ml-auto flex items-center gap-2">
-          <button
-            onClick={() => setOpen(true)}
-            className="inline-flex items-center gap-1 text-[11px] font-medium text-brand-cream/80 hover:text-brand-mint"
-          >
-            <Bug className="h-3 w-3" /> Report a bug
-          </button>
+
           <button
             onClick={dismiss}
             aria-label="Dismiss banner"
