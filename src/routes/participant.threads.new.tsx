@@ -82,19 +82,14 @@ function NewThreadPage() {
   // Guided demo: drop in a short sample so the parsed-preview step has content.
   useEffect(() => {
     const onDemo = () => {
-      let already = false;
-      setTranscript((cur) => {
-        if (cur.trim()) { already = true; return cur; }
-        const sample = [
-          "You: I need to explain why demand for insulin is inelastic for my ECON 201 problem set.",
-          "ChatGPT: Inelastic demand means quantity demanded barely changes when price changes. Insulin qualifies because it is a medical necessity with no close substitutes.",
-          "You: Give me the elasticity formula and I'll compute it myself from the table in my textbook.",
-          "ChatGPT: Price elasticity of demand = (% change in quantity demanded) / (% change in price). Values below 1 in absolute terms are inelastic.",
-          "You: I got -0.12 from the data. That matches the necessity argument, but I want to check the 2019 price spike numbers against the CDC source before I cite it.",
-        ].join("\n");
-        window.setTimeout(() => { if (!already) acceptText(sample, "chatgpt-insulin.txt"); }, 60);
-        return sample;
-      });
+      const sample = [
+        "You: I need to explain why demand for insulin is inelastic for my ECON 201 problem set.",
+        "ChatGPT: Inelastic demand means quantity demanded barely changes when price changes. Insulin qualifies because it is a medical necessity with no close substitutes.",
+        "You: Give me the elasticity formula and I'll compute it myself from the table in my textbook.",
+        "ChatGPT: Price elasticity of demand = (% change in quantity demanded) / (% change in price). Values below 1 in absolute terms are inelastic.",
+        "You: I got -0.12 from the data. That matches the necessity argument, but I want to check the 2019 price spike numbers against the CDC source before I cite it.",
+      ].join("\n");
+      acceptText(sample, "chatgpt-insulin.txt");
     };
     document.addEventListener("charlotte:demo-fill-transcript", onDemo);
     return () => document.removeEventListener("charlotte:demo-fill-transcript", onDemo);
