@@ -1,20 +1,31 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CharlotteLogo } from "@/components/CharlotteLogo";
 import { FluencyRadarChart } from "@/components/receipt/FluencyRadarChart";
 import authBackground from "@/assets/auth-background.png";
-import { toast } from "sonner";
-import { posthog } from "@/lib/posthog";
+import { redeemDemoCode } from "@/serverfn/demo-auth";
+import { Loader2 } from "lucide-react";
 
-export const Route = createFileRoute("/auth")({ component: AuthPage });
-
+export const Route = createFileRoute("/auth")({
+  component: AuthPage,
+  head: () => ({
+    meta: [
+      { title: "Enter Demo — Charlotte Labs" },
+      { name: "description", content: "Enter your access code to explore the Charlotte Labs AI fluency demo." },
+      { property: "og:title", content: "Enter Demo — Charlotte Labs" },
+      { property: "og:description", content: "Enter your access code to explore the Charlotte Labs AI fluency demo." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+});
 
 const MISSION_RADAR_DIMS = [
   { label: "Your", value: 0.92 },
@@ -30,85 +41,49 @@ const MISSION_RADAR_DIMS = [
 function AuthPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const redeem = useServerFn(redeemDemoCode);
   const [busy, setBusy] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [displayName, setDisplayName] = useState("");
+  const [code, setCode] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && user) navigate({ to: "/" });
   }, [user, loading, navigate]);
 
-  const handleForgotPassword = async () => {
-    if (!email) {
-      toast.error("Enter your email above first, then tap Forgot password.");
-      return;
-    }
-    setBusy(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    setBusy(false);
-    if (error) {
-      posthog.capture("password_reset_failed", { error: error.message });
-      toast.error(error.message);
-    } else {
-      posthog.capture("password_reset_requested");
-      toast.success("Check your email for a link to reset your password.");
-    }
-  };
-
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setBusy(false);
-    if (error) {
-      posthog.capture("signin_failed", { method: "email", error: error.message });
-      toast.error(error.message);
-    } else {
-      posthog.capture("signin_completed", { method: "email" });
-      navigate({ to: "/" });
-    }
-  };
-
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setBusy(true);
-    posthog.capture("signup_started", { method: "email" });
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/`,
-        data: { display_name: displayName || undefined },
-      },
-    });
-    setBusy(false);
-    if (error) {
-      posthog.capture("signup_failed", { method: "email", error: error.message });
-      toast.error(error.message);
-    } else {
-      posthog.capture("signup_completed", {
-        method: "email",
-        has_display_name: Boolean(displayName),
-        requires_email_confirmation: true,
+    setError(null);
+    try {
+      const res = await redeem({ data: { code } });
+      if (!res.ok) {
+        setError(res.error);
+        setBusy(false);
+        return;
+      }
+      const { error: otpErr } = await supabase.auth.verifyOtp({
+        token_hash: res.tokenHash,
+        type: "magiclink",
       });
-      toast.success("Check your email to confirm your account.");
+      if (otpErr) {
+        setError(otpErr.message);
+        setBusy(false);
+        return;
+      }
+      navigate({ to: "/" });
+    } catch {
+      setError("Something went wrong. Please try again.");
+      setBusy(false);
     }
   };
-
-
 
   return (
     <div
       className="relative flex min-h-screen w-full flex-col items-center justify-center gap-6 overflow-hidden bg-cover bg-center px-4 py-10"
       style={{ backgroundImage: `url(${authBackground})` }}
     >
-      {/* Soft overlay for legibility */}
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-white/20" />
 
-      {/* Mission statement title */}
       <div
         aria-hidden
         className="pointer-events-none absolute left-1/2 top-8 z-10 hidden -translate-x-1/2 lg:block"
@@ -121,7 +96,6 @@ function AuthPage() {
         </p>
       </div>
 
-      {/* Live radar tucked between the tree branches (left side of art) */}
       <div
         aria-hidden
         className="auth-radar-no-labels pointer-events-auto absolute z-0 hidden lg:block"
@@ -139,7 +113,6 @@ function AuthPage() {
         <FluencyRadarChart dimensions={MISSION_RADAR_DIMS} />
       </div>
 
-      {/* Hand-drawn "Show Your Work With AI" overlay on top of the radar */}
       <div
         aria-hidden
         className="pointer-events-none absolute z-[5] hidden lg:flex flex-col items-center justify-center text-center"
@@ -166,60 +139,32 @@ function AuthPage() {
       </div>
 
       <div className="relative z-10 flex flex-col items-center gap-0 -space-y-6 sm:-space-y-10 pt-8 sm:pt-12">
-        <CharlotteLogo
-          className="h-64 w-64 sm:h-80 sm:w-80 md:h-96 md:w-96 lg:h-[28rem] lg:w-[28rem]"
-        />
+        <CharlotteLogo className="h-64 w-64 sm:h-80 sm:w-80 md:h-96 md:w-96 lg:h-[28rem] lg:w-[28rem]" />
         <Card className="w-full max-w-md shadow-2xl">
           <CardHeader>
             <CardTitle>Charlotte Labs</CardTitle>
-            <CardDescription>Sign in or create an account to continue.</CardDescription>
+            <CardDescription>Enter your demo access code to continue.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="signin">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="signin">Sign in</TabsTrigger>
-                <TabsTrigger value="signup">Sign up</TabsTrigger>
-              </TabsList>
-              <TabsContent value="signin">
-                <form onSubmit={handleSignIn} className="space-y-3 pt-3">
-                  <div>
-                    <Label htmlFor="si-email">Email</Label>
-                    <Input id="si-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                  </div>
-                  <div>
-                    <Label htmlFor="si-pw">Password</Label>
-                    <Input id="si-pw" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={busy}>Sign in</Button>
-                  <button
-                    type="button"
-                    onClick={handleForgotPassword}
-                    disabled={busy}
-                    className="block w-full text-center text-xs text-muted-foreground hover:text-foreground hover:underline disabled:opacity-50"
-                  >
-                    Forgot password?
-                  </button>
-                </form>
-              </TabsContent>
-              <TabsContent value="signup">
-                <form onSubmit={handleSignUp} className="space-y-3 pt-3">
-                  <div>
-                    <Label htmlFor="su-name">Display name</Label>
-                    <Input id="su-name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
-                  </div>
-                  <div>
-                    <Label htmlFor="su-email">Email</Label>
-                    <Input id="su-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                  </div>
-                  <div>
-                    <Label htmlFor="su-pw">Password</Label>
-                    <Input id="su-pw" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={busy}>Create account</Button>
-                </form>
-              </TabsContent>
-            </Tabs>
-
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <div>
+                <Label htmlFor="demo-code">Demo code</Label>
+                <Input
+                  id="demo-code"
+                  autoFocus
+                  autoComplete="one-time-code"
+                  placeholder="Enter code"
+                  value={code}
+                  onChange={(e) => { setCode(e.target.value); setError(null); }}
+                  required
+                />
+              </div>
+              {error && <p className="text-sm text-destructive">{error}</p>}
+              <Button type="submit" className="w-full" disabled={busy || !code.trim()}>
+                {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Enter demo
+              </Button>
+            </form>
           </CardContent>
         </Card>
       </div>

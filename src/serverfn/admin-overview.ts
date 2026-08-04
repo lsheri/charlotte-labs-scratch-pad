@@ -74,11 +74,14 @@ function trivialityRisk(input: {
 
 
 const FLUENCY_DIMENSIONS = [
-  { key: "direction", label: "Direction", blurb: "Clarity of student goals given to AI" },
-  { key: "delegation", label: "Delegation", blurb: "Right work sent to AI vs. kept human" },
-  { key: "discernment", label: "Discernment", blurb: "Verifying and challenging AI output" },
-  { key: "development", label: "Development", blurb: "Building on AI output, not accepting it" },
-  { key: "ethics", label: "Ethics", blurb: "Attribution, honesty, appropriate use" },
+  { key: "direction", label: "Direction", blurb: "Clarity of student goals given to AI", col: "direction_score_profile" },
+  { key: "delegation", label: "Delegation", blurb: "Right work sent to AI vs. kept human", col: "delegation_score_profile" },
+  { key: "discernment", label: "Discernment", blurb: "Verifying and challenging AI output", col: "discernment_score_profile" },
+  { key: "development", label: "Development", blurb: "Building on AI output, not accepting it", col: "development_score_profile" },
+  { key: "ethics", label: "Ethics & Data Responsibility", blurb: "Attribution, honesty, appropriate use", col: "ethics_score_profile" },
+  { key: "efficiency", label: "Efficiency & Leverage", blurb: "Getting more done per unit of effort", col: "efficiency_score_profile" },
+  { key: "capital_stewardship", label: "Capital Stewardship", blurb: "Spending time, tokens and attention well", col: "capital_stewardship_score_term" },
+  { key: "strategic_agency", label: "Strategic Agency", blurb: "Owning the direction of the work, not drifting", col: "strategic_agency_score_profile" },
 ] as const;
 
 // Demo fallback so the pitch never shows an empty card.
@@ -88,7 +91,11 @@ const FALLBACK_FLUENCY: Record<(typeof FLUENCY_DIMENSIONS)[number]["key"], numbe
   discernment: 52,
   development: 58,
   ethics: 78,
+  efficiency: 66,
+  capital_stewardship: 61,
+  strategic_agency: 55,
 };
+
 
 export const getDepartmentDashboard = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -122,9 +129,10 @@ export const getDepartmentDashboard = createServerFn({ method: "POST" })
         supabaseAdmin
           .from("participant_fluency_profiles")
           .select(
-            "direction_score_profile, delegation_score_profile, discernment_score_profile, development_score_profile, ethics_score_profile",
+            "direction_score_profile, delegation_score_profile, discernment_score_profile, development_score_profile, ethics_score_profile, efficiency_score_profile, strategic_agency_score_profile, capital_stewardship_score_term",
           )
           .eq("session_id", sessionId),
+
       ]);
 
     const threadList = threads.data ?? [];
@@ -194,7 +202,7 @@ export const getDepartmentDashboard = createServerFn({ method: "POST" })
 
     // Fluency by dimension — average real profile scores; fall back to demo values.
     const fluencyByDimension = FLUENCY_DIMENSIONS.map((d) => {
-      const col = `${d.key}_score_profile` as const;
+      const col = d.col;
       const vals = fluencyRows
         .map((r: any) => r[col])
         .filter((v: any): v is number => typeof v === "number" && !Number.isNaN(v));

@@ -20,6 +20,18 @@ const PROFILE_DIMS = [
 type ProfileDim = (typeof PROFILE_DIMS)[number];
 const ALL_DIMS: readonly string[] = [...PROFILE_DIMS, "capital_stewardship"];
 
+/**
+ * The dimension registry uses long canonical names for two dimensions while
+ * the profile columns use short keys. Normalise so analysis runs produced by
+ * the model (registry names) and by seeds/tests (short keys) both aggregate.
+ */
+function normDim(name: string): string {
+  if (name === "ethics_data_responsibility") return "ethics";
+  if (name === "efficiency_leverage") return "efficiency";
+  return name;
+}
+
+
 interface DimScore {
   score: number;
   weight: number;
@@ -131,7 +143,7 @@ export async function updateFluencyProfile(
     const dims: Record<string, DimScore> = {};
     for (const d of rawDims) {
       if (d?.canonical_name && typeof d.score === "number") {
-        dims[d.canonical_name] = {
+        dims[normDim(d.canonical_name)] = {
           score: d.score,
           weight: evidenceWeight(d.evidence_basis),
         };
@@ -161,7 +173,7 @@ export async function updateFluencyProfile(
         )
           ? (tr.analysis_output_json!.dimensions as AnalysisDimension[])
           : [];
-        const match = tdims.find(d => d?.canonical_name === dim);
+        const match = tdims.find(d => d?.canonical_name && normDim(d.canonical_name) === dim);
         if (match && typeof match.score === "number") {
           allScores.push({
             score: match.score,
@@ -267,7 +279,16 @@ export async function updateFluencyProfile(
           ethics_score_term: termScores["ethics"],
           efficiency_score_term: termScores["efficiency"],
           strategic_agency_score_term: termScores["strategic_agency"],
-          capital_stewardship_score_term: termScores["capital_stewardship"],
+          // capital_stewardship has no cross-term profile column; keep the term
+          // value populated from this run when the term window has no runs yet
+          // (e.g. back-dated evidence) so the 8th radar axis is never blank.
+          capital_stewardship_score_term:
+            termScores["capital_stewardship"] ??
+            dims["capital_stewardship"]?.score ??
+            (typeof prior?.["capital_stewardship_score_term"] === "number"
+              ? (prior["capital_stewardship_score_term"] as number)
+              : null),
+
 
           // Cross-term profile scores (student view) — capital_stewardship intentionally excluded
           direction_score_profile: newProfileScores.direction,

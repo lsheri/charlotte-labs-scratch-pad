@@ -34,12 +34,26 @@ const COHORT_EMAIL_DOMAIN = '@charlotte-labs.test';
 const HERO_EMAIL = process.env['DEMO_HERO_EMAIL'] ?? 'liam@charlotte-labs.com';
 const CLASS_CODE = 'ECON201';
 
+// Canonical dimension registry names — all 8 are scored so the participant
+// radar and the department card render a full framework, nothing blank.
 const PROFILE_DIMS = [
   'direction', 'delegation', 'discernment', 'development',
-  'ethics', 'efficiency', 'strategic_agency',
+  'ethics_data_responsibility', 'efficiency_leverage',
+  'capital_stewardship', 'strategic_agency',
 ] as const;
+const DIM_LABELS: Record<string, string> = {
+  direction: 'Direction',
+  delegation: 'Delegation',
+  discernment: 'Discernment',
+  development: 'Development',
+  ethics_data_responsibility: 'Ethics & Data Responsibility',
+  efficiency_leverage: 'Efficiency & Leverage',
+  capital_stewardship: 'Capital Stewardship',
+  strategic_agency: 'Strategic Agency',
+};
 type Dim = (typeof PROFILE_DIMS)[number];
 type DimScores = Record<Dim, number>;
+
 
 // ---------------------------------------------------------------------------
 // Small helpers
@@ -79,7 +93,7 @@ function analysisOutput(s: DimScores, basis = 'direct_evidence') {
   return {
     dimensions: Object.entries(s).map(([canonical_name, score]) => ({
       canonical_name,
-      display_name: canonical_name,
+      display_name: DIM_LABELS[canonical_name] ?? canonical_name,
       score,
       evidence_basis: basis,
       explanation: 'Seeded demo data',
@@ -329,19 +343,19 @@ const HERO_RECEIPTS: Array<{ label: string; goal: string; dayIndex: number; tool
     label: 'Problem Set 1 — Supply & Demand',
     goal: 'Understand opportunity cost and supply/demand well enough to explain it without notes.',
     dayIndex: 12, tool: 'chatgpt', assignmentCode: 'PS1',
-    scores: { direction: 2.8, delegation: 2.6, discernment: 2.4, development: 2.7, ethics: 3.4, efficiency: 3.0, strategic_agency: 2.5 },
+    scores: { direction: 2.8, delegation: 2.6, discernment: 2.4, development: 2.7, ethics_data_responsibility: 3.4, efficiency_leverage: 3.0, capital_stewardship: 2.6, strategic_agency: 2.5 },
   },
   {
     label: 'Problem Set 2 — Elasticity & Costs',
     goal: 'Get from formula-following to actually reasoning about elasticity and cost curves.',
     dayIndex: 32, tool: 'claude', assignmentCode: 'PS2',
-    scores: { direction: 3.5, delegation: 3.4, discernment: 3.3, development: 3.4, ethics: 3.8, efficiency: 3.6, strategic_agency: 3.2 },
+    scores: { direction: 3.5, delegation: 3.4, discernment: 3.3, development: 3.4, ethics_data_responsibility: 3.8, efficiency_leverage: 3.6, capital_stewardship: 3.3, strategic_agency: 3.2 },
   },
   {
     label: 'Applied Market Analysis — Presentation',
     goal: 'Build an original market analysis and use AI only as a critic, not an author.',
     dayIndex: 75, tool: 'claude', assignmentCode: 'PRES1',
-    scores: { direction: 4.3, delegation: 4.1, discernment: 4.2, development: 4.2, ethics: 4.5, efficiency: 4.0, strategic_agency: 4.1 },
+    scores: { direction: 4.3, delegation: 4.1, discernment: 4.2, development: 4.2, ethics_data_responsibility: 4.5, efficiency_leverage: 4.0, capital_stewardship: 4.2, strategic_agency: 4.1 },
   },
 ];
 

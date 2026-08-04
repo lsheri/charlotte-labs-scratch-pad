@@ -161,19 +161,22 @@ export function ParticipantSidebar() {
           <CharlotteLogo className="h-7 w-7 shrink-0" />
           {!collapsed && <span className="font-semibold tracking-tight">Charlotte Labs</span>}
         </Link>
-        {!collapsed && singleWorkspace && (
+        {!collapsed && singleWorkspace && activeClass && (
           <div className="px-2 pb-1">
-            <div className="w-full rounded-md border bg-background px-2.5 py-2 text-left">
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Working in
-              </div>
-              <div className="mt-0.5 flex items-center gap-2">
-                <GraduationCap className="h-4 w-4 shrink-0 text-primary" />
-                <span className="flex-1 truncate text-sm font-semibold">{activeLabel}</span>
+            <div className="flex items-start gap-2 px-0.5 py-1">
+              <GraduationCap className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+              <div className="min-w-0">
+                <div className="truncate text-sm font-semibold leading-tight">
+                  {activeClass.courseCode ?? activeClass.name}
+                </div>
+                <div className="truncate text-xs leading-tight text-muted-foreground">
+                  {activeClass.name}
+                </div>
               </div>
             </div>
           </div>
         )}
+
         {!collapsed && !singleWorkspace && (
           <div className="px-2 pb-1">
             <DropdownMenu>
@@ -231,7 +234,39 @@ export function ParticipantSidebar() {
       <SidebarContent>
         {renderGroup(workspaceGroup)}
 
-        {classes.length > 0 && (
+        {/* Single-class accounts get a flat, always-open Assignments group —
+            no "Classes" wrapper and no duplicate Threads/Receipts entries. */}
+        {singleWorkspace && activeClass && activeClass.assignments.length > 0 && (
+          <SidebarGroup>
+            {!collapsed && <SidebarGroupLabel>Assignments</SidebarGroupLabel>}
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {activeClass.assignments.map((a) => {
+                  const url = `/participant/department/${activeClass.id}/assignments/${a.id}`;
+                  return (
+                    <SidebarMenuItem key={a.id}>
+                      <SidebarMenuButton asChild isActive={isActive(url)}>
+                        <Link to={url} className="flex items-center gap-2">
+                          <FileText className="h-4 w-4 shrink-0 opacity-70" />
+                          {!collapsed && (
+                            <>
+                              <span className="font-medium">{a.code}</span>
+                              <span className="truncate text-muted-foreground">
+                                {a.title.replace(/^.*—\s*/, "")}
+                              </span>
+                            </>
+                          )}
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {!singleWorkspace && classes.length > 0 && (
           <SidebarGroup>
             {!collapsed && <SidebarGroupLabel>Classes</SidebarGroupLabel>}
             <SidebarGroupContent>
@@ -254,6 +289,7 @@ export function ParticipantSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
         )}
+
 
         {renderGroup(toolsGroup)}
 
