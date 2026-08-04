@@ -132,26 +132,19 @@ export const getDepartmentDashboard = createServerFn({ method: "POST" })
     const assignmentList = assignments.data ?? [];
     const fluencyRows = fluency.data ?? [];
 
-    const realParticipants = (participants.data ?? []).length;
-    const scale = realParticipants > 0 ? DEMO_COHORT / realParticipants : DEMO_COHORT;
-    const scaleCount = (n: number) => Math.round(n * scale);
+    const participantCount = (participants.data ?? []).length;
 
-    // Tool usage across all threads in this department (scaled)
+    // Tool usage across all threads in this department
     const toolCounts: Record<string, number> = {};
     for (const t of threadList) toolCounts[t.tool] = (toolCounts[t.tool] ?? 0) + 1;
     const toolBreakdown = Object.entries(toolCounts)
-      .map(([tool, count]) => ({ tool, count: scaleCount(count) }))
+      .map(([tool, count]) => ({ tool, count }))
       .sort((a, b) => b.count - a.count);
 
-    // Verification pattern across all threads (scaled)
+    // Verification pattern across all threads
     const verifCounts = { none: 0, partial: 0, high: 0, unknown: 0 };
     for (const t of threadList) verifCounts[verificationFromTitle(t.title)]++;
-    const verifScaled = {
-      none: scaleCount(verifCounts.none),
-      partial: scaleCount(verifCounts.partial),
-      high: scaleCount(verifCounts.high),
-      unknown: scaleCount(verifCounts.unknown),
-    };
+
 
     // Per-assignment rollups
     const threadById = new Map(threadList.map((t) => [t.id, t]));
