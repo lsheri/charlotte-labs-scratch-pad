@@ -46,51 +46,30 @@ export function ParticipantSidebar() {
   const { user, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
   const fetchHealth = useServerFn(getExtensionHealth);
-  const fetchClasses = useServerFn(listClassSidebar);
   const [healthStatus, setHealthStatus] = useState<"green" | "amber" | "red" | "unknown" | null>(null);
-  const [classes, setClasses] = useState<SidebarClass[]>([]);
-  const [personalSessionId, setPersonalSessionId] = useState<string | null>(null);
-  const [activeWorkspaceId, setActiveWorkspaceId] = useActiveWorkspaceId();
+  const { classes, activeWorkspaceId, activeClass: ctxActiveClass, setWorkspace } = useWorkspace();
   const [deckOpen, setDeckOpen] = useState(false);
 
   useEffect(() => {
     fetchHealth().then((h) => setHealthStatus(h.status)).catch(() => {});
-    fetchClasses().then((r: any) => {
-      const list = (r.classes ?? []) as SidebarClass[];
-      setClasses(list);
-      setPersonalSessionId(r.personalSessionId ?? null);
-      // Default active workspace to first class (e.g. Econ) so uploaded
-      // content lives in the class workspace, not Personal.
-      // Single-workspace accounts (the demo) are always pinned to their class.
-      if (list.length === 1) {
-        if (activeWorkspaceId !== list[0].id) setActiveWorkspaceId(list[0].id);
-      } else if (list.length > 0 && !activeWorkspaceId) {
-        setActiveWorkspaceId(list[0].id);
-      }
-    }).catch(() => {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchHealth, fetchClasses]);
-
+  }, [fetchHealth]);
 
   useEffect(() => {
     const m = path.match(/^\/participant\/department\/([^/]+)/);
-    if (m && m[1] !== activeWorkspaceId) setActiveWorkspaceId(m[1]);
-  }, [path, activeWorkspaceId, setActiveWorkspaceId]);
+    if (m && m[1] !== activeWorkspaceId) setWorkspace(m[1]!);
+  }, [path, activeWorkspaceId, setWorkspace]);
 
 
   // When the account belongs to exactly one class, there is nothing to switch
   // between: render the workspace as a static label and hide the Workspaces nav.
   const singleWorkspace = classes.length === 1;
 
-  const activeClass = singleWorkspace
-    ? classes[0]
-    : activeWorkspaceId
-      ? classes.find((c) => c.id === activeWorkspaceId) ?? null
-      : null;
+  const activeClass = ctxActiveClass;
   const activeLabel = activeClass ? (activeClass.courseCode ?? activeClass.name) : "Personal";
   const threadsUrl = activeClass ? `/participant/department/${activeClass.id}/threads` : "/participant/threads";
   const receiptsUrl = activeClass ? `/participant/department/${activeClass.id}/receipts` : "/participant/receipts";
   const homeUrl = activeClass ? `/participant/department/${activeClass.id}` : "/participant";
+
 
   const workspaceGroup = {
     label: "Workspace",
