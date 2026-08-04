@@ -73,7 +73,7 @@ export function LiteracyReceipt({ receipt, audit, runMeta, turns, tools, recomme
   const profileReady = !!profile && profileReceiptCount >= 3;
   const radarSeries: RadarSeries[] | undefined = (() => {
     if (!profileReady || !audit?.dimensions?.length) return undefined;
-    const dims = audit.dimensions.filter((d: any) => d.canonical_name !== 'capital_stewardship');
+    const dims = audit.dimensions;
     const profileDims = dims.map((d: any) => ({ label: d.display_name, value: getProfileScore(profile!, d.canonical_name) }));
     const receiptOverlay = dims.map((d: any) => ({ label: d.display_name, value: d.score ?? 0 }));
     return [
@@ -85,7 +85,7 @@ export function LiteracyReceipt({ receipt, audit, runMeta, turns, tools, recomme
     if (!profileReady || !audit?.dimensions) return {};
     const map: Record<string, number> = {};
     for (const d of audit.dimensions) {
-      if (d.canonical_name === 'capital_stewardship') continue;
+      if (!d?.canonical_name) continue;
       const confKey = d.canonical_name
         .replace('ethics_data_responsibility', 'ethics')
         .replace('efficiency_leverage', 'efficiency')
@@ -110,7 +110,7 @@ export function LiteracyReceipt({ receipt, audit, runMeta, turns, tools, recomme
 
   const [transcriptOpen, setTranscriptOpen] = useState(false);
   const handleSnippetClick = (_idx: number) => { if (showTranscript) setTranscriptOpen(true); };
-  const visibleDims = (audit?.dimensions ?? []).filter((d: any) => d.canonical_name !== 'capital_stewardship');
+  const visibleDims = audit?.dimensions ?? [];
 
   const [tourOpen, setTourOpen] = useState(false);
   const fetchCheckup = useServerFn(getReceiptCheckup);

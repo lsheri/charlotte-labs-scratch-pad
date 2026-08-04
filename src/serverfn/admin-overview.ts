@@ -202,7 +202,7 @@ export const getDepartmentDashboard = createServerFn({ method: "POST" })
 
     // Fluency by dimension — average real profile scores; fall back to demo values.
     const fluencyByDimension = FLUENCY_DIMENSIONS.map((d) => {
-      const col = `${d.key}_score_profile` as const;
+      const col = d.col;
       const vals = fluencyRows
         .map((r: any) => r[col])
         .filter((v: any): v is number => typeof v === "number" && !Number.isNaN(v));
