@@ -113,3 +113,27 @@ export const renameReceipt = createServerFn({ method: "POST" })
 
     return { ok: true, label: trimmed || null };
   });
+
+/** Most recent receipt that has a completed fluency analysis (used by the guided tour). */
+export const getLatestAnalyzedReceiptId = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: receipts } = await supabase
+      .from("receipts")
+      .select("id, created_at")
+      .eq("participant_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    const ids = (receipts ?? []).map((r) => r.id);
+    if (!ids.length) return { receiptId: null as string | null };
+
+    const { data: runs } = await supabase
+      .from("fluency_analysis_runs")
+      .select("receipt_id, created_at")
+      .in("receipt_id", ids)
+      .order("created_at", { ascending: false })
+      .limit(1);
+    const withRun = runs?.[0]?.receipt_id ?? null;
+    return { receiptId: (withRun ?? ids[0]) as string | null };
+  });
