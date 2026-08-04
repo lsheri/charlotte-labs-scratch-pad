@@ -20,6 +20,18 @@ const PROFILE_DIMS = [
 type ProfileDim = (typeof PROFILE_DIMS)[number];
 const ALL_DIMS: readonly string[] = [...PROFILE_DIMS, "capital_stewardship"];
 
+/**
+ * The dimension registry uses long canonical names for two dimensions while
+ * the profile columns use short keys. Normalise so analysis runs produced by
+ * the model (registry names) and by seeds/tests (short keys) both aggregate.
+ */
+function normDim(name: string): string {
+  if (name === "ethics_data_responsibility") return "ethics";
+  if (name === "efficiency_leverage") return "efficiency";
+  return name;
+}
+
+
 interface DimScore {
   score: number;
   weight: number;
