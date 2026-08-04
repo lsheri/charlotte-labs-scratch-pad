@@ -34,12 +34,26 @@ const COHORT_EMAIL_DOMAIN = '@charlotte-labs.test';
 const HERO_EMAIL = process.env['DEMO_HERO_EMAIL'] ?? 'liam@charlotte-labs.com';
 const CLASS_CODE = 'ECON201';
 
+// Canonical dimension registry names — all 8 are scored so the participant
+// radar and the department card render a full framework, nothing blank.
 const PROFILE_DIMS = [
   'direction', 'delegation', 'discernment', 'development',
-  'ethics', 'efficiency', 'strategic_agency',
+  'ethics_data_responsibility', 'efficiency_leverage',
+  'capital_stewardship', 'strategic_agency',
 ] as const;
+const DIM_LABELS: Record<string, string> = {
+  direction: 'Direction',
+  delegation: 'Delegation',
+  discernment: 'Discernment',
+  development: 'Development',
+  ethics_data_responsibility: 'Ethics & Data Responsibility',
+  efficiency_leverage: 'Efficiency & Leverage',
+  capital_stewardship: 'Capital Stewardship',
+  strategic_agency: 'Strategic Agency',
+};
 type Dim = (typeof PROFILE_DIMS)[number];
 type DimScores = Record<Dim, number>;
+
 
 // ---------------------------------------------------------------------------
 // Small helpers
