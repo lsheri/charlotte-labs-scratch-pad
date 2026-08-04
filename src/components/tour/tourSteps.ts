@@ -214,19 +214,48 @@ export const RECEIPT_TOUR: TourStep[] = [
   {
     id: "rc-templates",
     title: "Pick what gets generated",
-    body: "Academic Fluency: the 8-dimension read on how you partnered with AI. Verification & Risk: claims you never checked and outputs prone to hallucination. Study Gaps: what you still can't do without AI. Each runs as its own analysis with its own prompt — pick one or all three.",
+    body: "Three separate analyses, each with its own prompt, each answering a different question. Academic Fluency scores how you actually collaborated with the AI across eight dimensions — direction, delegation, discernment and the rest — and that radar is the evidence behind the grade. Verification & Risk pulls out the claims you never checked and the outputs most likely to be hallucinated, like an arc elasticity calculation the AI produced for you; it's your pre-submission checklist. Study Gaps flags where you offloaded the thinking instead of learning it — midpoint elasticity, cost function derivations — so you know what to actually practice before the exam. Pick one or all three.",
     target: "receipt-templates",
     placement: "left",
   },
   {
     id: "rc-result",
     title: "The finished receipt",
-    body: "The result is a single reviewable artifact: what you directed, what the AI did, what you verified, and the fluency radar behind it.",
+    body: "The result is one reviewable artifact with a tab per analysis you ran. Everything below is generated from your real conversations — nothing is self-reported.",
+    target: "template-tabs",
+    to: (ctx) => (ctx.receiptId ? `/participant/receipts/${ctx.receiptId}` : "/participant/receipts"),
+    search: { template: "classic_fluency" },
+    placement: "bottom",
+  },
+  {
+    id: "rc-fluency",
+    title: "Academic Fluency: the radar",
+    body: "Eight dimensions scored from what you did in the transcript, each with the specific turns used as evidence. A professor can see at a glance whether you directed the work or let the model drive — and can click into any spike or dip to read why.",
     target: "receipt-radar",
     to: (ctx) => (ctx.receiptId ? `/participant/receipts/${ctx.receiptId}` : "/participant/receipts"),
+    search: { template: "classic_fluency" },
+    placement: "left",
+  },
+  {
+    id: "rc-verification",
+    title: "Verification & Risk: what to double-check",
+    body: "Every factual claim the AI made that you never verified, plus the outputs most prone to hallucination — numbers, citations, derivations. Each item can be marked checked, so the receipt doubles as a pre-submission checklist rather than a report card.",
+    target: "verification-risk-body",
+    to: (ctx) => (ctx.receiptId ? `/participant/receipts/${ctx.receiptId}` : "/participant/receipts"),
+    search: { template: "verification_risk" },
+    placement: "left",
+  },
+  {
+    id: "rc-gaps",
+    title: "Study Gaps: what you offloaded",
+    body: "The topics you handed to the AI instead of learning — here, things like midpoint elasticity and cost function derivations — ranked by exam risk. This is the study plan that falls out of the work you already did.",
+    target: "study-gaps-body",
+    to: (ctx) => (ctx.receiptId ? `/participant/receipts/${ctx.receiptId}` : "/participant/receipts"),
+    search: { template: "study_gaps" },
     placement: "left",
   },
 ];
+
 
 /** Walkthrough of manual transcript upload. */
 export const MANUAL_TOUR: TourStep[] = [
