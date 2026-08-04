@@ -7,7 +7,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import { Receipt as ReceiptIcon, TrendingUp, X, Fingerprint, Star } from "lucide-react";
+import { Receipt as ReceiptIcon, TrendingUp, X, Fingerprint, Star, Radar, ShieldAlert, BookOpen } from "lucide-react";
+import { InfoHint, GLOSSARY } from "@/components/InfoHint";
+
 import { ToolLogo } from "@/components/ToolLogo";
 import { getWorkflowTypeLabel, getProvenance, isVerifiedLab } from "@/lib/displayNames";
 import { ProvenanceVial } from "@/components/provenance/ProvenanceVial";
@@ -85,6 +87,65 @@ function DirectionalNote() {
   );
 }
 
+const EXAMPLE_RECEIPT_ID = "4cc19ba9-290f-43bd-86bc-815309f8c0c5";
+
+const TEMPLATE_CARDS = [
+  {
+    key: "classic_fluency",
+    title: "Academic Fluency",
+    icon: Radar,
+    blurb:
+      "The 8-dimension radar of how you actually collaborated with AI — direction, delegation, discernment and more. The evidence behind the grade.",
+  },
+  {
+    key: "verification_risk",
+    title: "Verification & Risk",
+    icon: ShieldAlert,
+    blurb:
+      "Surfaces unverified claims and hallucination-prone AI outputs in the conversation — what to double-check before you submit.",
+  },
+  {
+    key: "study_gaps",
+    title: "Study Gaps",
+    icon: BookOpen,
+    blurb:
+      "Flags topics you leaned on AI for instead of learning yourself — the cognitive offloading signal, so you know what to practice.",
+  },
+] as const;
+
+function TemplateExplainers() {
+  return (
+    <div className="space-y-2">
+      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        What's inside a receipt
+      </p>
+      <div className="grid gap-3 sm:grid-cols-3">
+        {TEMPLATE_CARDS.map((t) => (
+          <Card key={t.key} className="flex flex-col">
+            <CardContent className="flex flex-1 flex-col gap-2 py-4">
+              <div className="flex items-center gap-2">
+                <t.icon className="h-4 w-4 text-brand-navy" />
+                <span className="text-sm font-semibold">{t.title}</span>
+              </div>
+              <p className="flex-1 text-xs leading-relaxed text-muted-foreground">{t.blurb}</p>
+              <Link
+                to="/participant/receipts/$receiptId"
+                params={{ receiptId: EXAMPLE_RECEIPT_ID }}
+                search={{ template: t.key }}
+                className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 hover:underline dark:text-amber-400"
+              >
+                <Star className="h-3 w-3 fill-current" />
+                See it in action on “Econ Presentation” →
+              </Link>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+
 export function ReceiptsList({ classId }: { classId?: string } = {}) {
   const { user } = useAuth();
   const [receipts, setReceipts] = useState<R[]>([]);
@@ -121,6 +182,7 @@ export function ReceiptsList({ classId }: { classId?: string } = {}) {
       <div>
         <h1 className="text-2xl font-semibold flex items-center gap-2">
           <ReceiptIcon className="h-6 w-6" /> Receipts
+          <InfoHint text={GLOSSARY.receipt} label="What is a receipt?" />
         </h1>
         <p className="text-sm text-muted-foreground">
           {classId
@@ -128,8 +190,10 @@ export function ReceiptsList({ classId }: { classId?: string } = {}) {
             : "Analyzed AI fluency receipts you've generated from your threads."}
         </p>
       </div>
+      <TemplateExplainers />
       <DirectionalNote />
       <IncompleteJobsPanel onChange={refresh} />
+
       {loading ? (
         <p className="text-sm text-muted-foreground">Loading…</p>
       ) : receipts.length === 0 ? (

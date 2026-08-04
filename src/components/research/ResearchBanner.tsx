@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
-import { X, Bug, Play, Home } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { TeamOutreachPanel } from "./TeamOutreachPanel";
+import { X, Play, Home } from "lucide-react";
 import { useTour } from "@/components/tour/TourProvider";
 import { DEMOS } from "@/components/tour/demos";
+
 
 const DISMISS_KEY = "charlotte_banner_dismissed_at";
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
@@ -19,10 +16,9 @@ function shouldShow(pathname: string) {
 
 export function ResearchBanner() {
   const { pathname } = useLocation();
-  const isMobile = useIsMobile();
   const { start, active } = useTour();
   const [dismissed, setDismissed] = useState(true); // hide by default until we read storage
-  const [open, setOpen] = useState(false);
+
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -81,12 +77,7 @@ export function ResearchBanner() {
         </div>
 
         <div className="ml-auto flex items-center gap-2">
-          <button
-            onClick={() => setOpen(true)}
-            className="inline-flex items-center gap-1 text-[11px] font-medium text-brand-cream/80 hover:text-brand-mint"
-          >
-            <Bug className="h-3 w-3" /> Report a bug
-          </button>
+
           <button
             onClick={dismiss}
             aria-label="Dismiss banner"
@@ -97,32 +88,7 @@ export function ResearchBanner() {
         </div>
       </div>
 
-      {isMobile ? (
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger className="hidden" />
-          <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto">
-            <SheetHeader>
-              <SheetTitle>Charlotte Labs</SheetTitle>
-            </SheetHeader>
-            <div className="mt-4">
-              <TeamOutreachPanel initialTab="bug" onClose={() => setOpen(false)} />
-            </div>
-          </SheetContent>
-        </Sheet>
-      ) : (
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <span className="absolute left-1/2 top-full block h-0 w-0" />
-          </PopoverTrigger>
-          <PopoverContent
-            align="center"
-            sideOffset={4}
-            className="w-[min(640px,calc(100vw-2rem))] p-4"
-          >
-            <TeamOutreachPanel initialTab="bug" onClose={() => setOpen(false)} />
-          </PopoverContent>
-        </Popover>
-      )}
+
     </div>
   );
 }

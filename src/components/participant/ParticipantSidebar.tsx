@@ -3,11 +3,11 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   Home, MessageSquare, Receipt, Plug, Fingerprint, LogOut, Plus,
   Briefcase, GraduationCap, ChevronRight, FileText, Check, ChevronsUpDown, User,
-  Building2, Presentation,
+  Building2,
 } from "lucide-react";
-import { PitchDeck } from "@/components/participant/PitchDeck";
 import { useServerFn } from "@tanstack/react-start";
 import { CharlotteLogo } from "@/components/CharlotteLogo";
+
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { getExtensionHealth } from "@/serverfn/extension";
@@ -42,7 +42,8 @@ export function ParticipantSidebar() {
   const fetchHealth = useServerFn(getExtensionHealth);
   const [healthStatus, setHealthStatus] = useState<"green" | "amber" | "red" | "unknown" | null>(null);
   const { classes, activeWorkspaceId, activeClass: ctxActiveClass, setWorkspace } = useWorkspace();
-  const [deckOpen, setDeckOpen] = useState(false);
+
+  
 
   useEffect(() => {
     fetchHealth().then((h) => setHealthStatus(h.status)).catch(() => {});
@@ -267,21 +268,8 @@ export function ParticipantSidebar() {
 
 
         {renderGroup(toolsGroup)}
-
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => setDeckOpen(true)}>
-                  <Presentation className="h-4 w-4 shrink-0" />
-                  {!collapsed && <span className="flex-1">Deck</span>}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
-      {deckOpen && <PitchDeck onClose={() => setDeckOpen(false)} />}
+
       <SidebarFooter>
         <div className="flex items-center gap-2 px-2 py-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-xs font-semibold">

@@ -31,6 +31,8 @@ import {
 import charlotteMascot from "@/assets/charlotte-mascot.png";
 import { setPendingReceiptJob } from "@/lib/pendingReceiptJob";
 import { useWorkspace } from "@/lib/workspace";
+import { InfoHint, GLOSSARY } from "@/components/InfoHint";
+
 
 export const Route = createFileRoute("/participant/threads/")({
   component: ThreadsRoute,
@@ -307,7 +309,9 @@ export function ThreadsInbox({ classId }: { classId?: string } = {}) {
         <div>
           <h1 className="text-2xl font-semibold flex items-center gap-2">
             <MessageSquare className="h-6 w-6" /> Threads
+            <InfoHint text={GLOSSARY.thread} label="What is a thread?" />
           </h1>
+
           <p className="text-sm text-muted-foreground">
             {scopedClass
               ? `${scopedClass.courseCode ?? scopedClass.name} · Captured AI conversations for this class. Map them to assignments, or generate a receipt.`
