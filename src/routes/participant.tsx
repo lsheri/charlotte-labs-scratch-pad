@@ -22,9 +22,6 @@ function ParticipantLayout() {
               <ExtensionHealthBanner />
               <header className="flex h-12 items-center gap-2 border-b bg-background px-4">
                 <SidebarTrigger />
-                <div className="ml-auto">
-                  <TourLauncher />
-                </div>
               </header>
               <main className="w-full flex-1 px-2 py-6">
                 <Outlet />
