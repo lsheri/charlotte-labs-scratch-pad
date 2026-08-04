@@ -98,7 +98,13 @@ export function ReceiptsList({ classId }: { classId?: string } = {}) {
     // Workspace scope: receipts belong to the class session directly.
     if (classId) q = q.eq("session_id", classId);
     const { data } = await q;
-    const rows = (data ?? []) as R[];
+    let rows = (data ?? []) as R[];
+    // Surface the featured example first so casual browsers see the best receipt immediately.
+    rows = rows.sort((a, b) => {
+      const af = isFeaturedReceipt(a) ? 1 : 0;
+      const bf = isFeaturedReceipt(b) ? 1 : 0;
+      return bf - af;
+    });
     setReceipts(rows);
     if (typeof window !== "undefined" && rows[0]) {
       window.localStorage.setItem("charlotte:firstReceiptId", rows[0].id);
