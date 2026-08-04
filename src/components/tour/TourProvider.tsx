@@ -9,16 +9,18 @@ import { X, ArrowLeft, ArrowRight } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { getLatestAnalyzedReceiptId } from "@/serverfn/receipts";
 import {
-  PARTICIPANT_TOUR, DEPARTMENT_TOUR, ROADMAP_TOUR,
+  PARTICIPANT_TOUR, DEPARTMENT_TOUR, ROADMAP_TOUR, RECEIPT_TOUR, MANUAL_TOUR,
   type TourStep, type TourContext,
 } from "./tourSteps";
 
-type FlowId = "participant" | "department" | "roadmap";
+export type FlowId = "participant" | "department" | "roadmap" | "receipt" | "manual";
 
 const FLOWS: Record<FlowId, TourStep[]> = {
   participant: PARTICIPANT_TOUR,
   department: DEPARTMENT_TOUR,
   roadmap: ROADMAP_TOUR,
+  receipt: RECEIPT_TOUR,
+  manual: MANUAL_TOUR,
 };
 
 
@@ -72,6 +74,15 @@ export function TourProvider({ children }: { children: ReactNode }) {
     if (to && to !== pathname) navigate({ to: to as any });
   }, [step, pathname, navigate, tourCtx]);
 
+  // Let the page put itself in the state a step describes.
+  useEffect(() => {
+    if (!step?.emit) return;
+    const t = window.setTimeout(() => {
+      document.dispatchEvent(new CustomEvent(step.emit as string));
+    }, 700);
+    return () => window.clearTimeout(t);
+  }, [step]);
+
   // Clicking a sidebar link exits the tour instead of being trapped by it.
   useEffect(() => {
     if (!flow) return;
@@ -96,7 +107,7 @@ export function TourProvider({ children }: { children: ReactNode }) {
         : null;
       // Treat an empty/zero-size element as "not ready" rather than spotlighting
       // a blank box while its data is still loading.
-      if (el && el.offsetHeight > 24 && el.offsetWidth > 24) {
+      if (el && el.offsetHeight > 12 && el.offsetWidth > 12) {
         const r = el.getBoundingClientRect();
         const visible = r.top >= 0 && r.bottom <= window.innerHeight;
         // Tall targets must scroll to their top; centering them lands the
@@ -189,10 +200,27 @@ function TourOverlay({
   onExit: () => void;
 }) {
   const calloutStyle = calloutPosition(rect, step.placement);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+
+  // Radix dialogs mark every other body child aria-hidden/inert while open.
+  // The tour overlay must stay reachable when a step explains a dialog field.
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    const clean = () => {
+      if (el.hasAttribute("aria-hidden")) el.removeAttribute("aria-hidden");
+      if (el.hasAttribute("inert")) el.removeAttribute("inert");
+    };
+    clean();
+    const obs = new MutationObserver(clean);
+    obs.observe(el, { attributes: true, attributeFilter: ["aria-hidden", "inert"] });
+    return () => obs.disconnect();
+  }, []);
 
   return (
     <div
-      className="pointer-events-none fixed inset-0 z-[200]"
+      ref={rootRef}
+      className="pointer-events-none fixed inset-0 z-[9999]"
       role="dialog"
       aria-modal="false"
       aria-label="Guided tour"

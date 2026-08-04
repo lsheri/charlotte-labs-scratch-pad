@@ -199,6 +199,7 @@ function NewThreadPage() {
               const f = e.dataTransfer.files?.[0]; if (f) handleFile(f);
             }}
             onClick={() => fileInputRef.current?.click()}
+            data-tour="upload-dropzone"
             className={`cursor-pointer rounded-xl border-2 border-dashed p-6 text-center transition ${dragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
           >
             <FileText className="h-8 w-8 mx-auto text-muted-foreground" />
@@ -213,7 +214,7 @@ function NewThreadPage() {
             />
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1" data-tour="upload-transcript">
             <div className="flex items-center justify-between">
               <Label htmlFor="transcript">Transcript</Label>
               <Button type="button" variant="ghost" size="sm" className="h-7 text-xs" onClick={reparseFromTextarea} disabled={!transcript.trim()}>
@@ -234,11 +235,11 @@ function NewThreadPage() {
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
-            <div className="space-y-1">
+            <div className="space-y-1" data-tour="upload-title">
               <Label htmlFor="title">Thread title</Label>
               <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Give this conversation a name" />
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1" data-tour="upload-tool">
               <Label>AI tool</Label>
               <Select value={tool} onValueChange={setTool}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
@@ -252,7 +253,7 @@ function NewThreadPage() {
       </Card>
 
       {turns.length > 0 && (
-        <Card>
+        <Card data-tour="upload-preview">
           <CardHeader>
             <CardTitle className="text-base flex items-center justify-between">
               <span>Parsed conversation</span>

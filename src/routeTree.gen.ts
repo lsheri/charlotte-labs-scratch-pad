@@ -21,6 +21,7 @@ import { Route as ParticipantWorkspacesRouteImport } from './routes/participant.
 import { Route as ParticipantFingerprintRouteImport } from './routes/participant.fingerprint'
 import { Route as ParticipantExtensionRouteImport } from './routes/participant.extension'
 import { Route as ParticipantDepartmentRouteImport } from './routes/participant.department'
+import { Route as ParticipantDemoRouteImport } from './routes/participant.demo'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as ParticipantThreadsIndexRouteImport } from './routes/participant.threads.index'
 import { Route as ParticipantReceiptsIndexRouteImport } from './routes/participant.receipts.index'
@@ -105,6 +106,11 @@ const ParticipantExtensionRoute = ParticipantExtensionRouteImport.update({
 const ParticipantDepartmentRoute = ParticipantDepartmentRouteImport.update({
   id: '/department',
   path: '/department',
+  getParentRoute: () => ParticipantRoute,
+} as any)
+const ParticipantDemoRoute = ParticipantDemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => ParticipantRoute,
 } as any)
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
@@ -260,6 +266,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/participant/demo': typeof ParticipantDemoRoute
   '/participant/department': typeof ParticipantDepartmentRouteWithChildren
   '/participant/extension': typeof ParticipantExtensionRoute
   '/participant/fingerprint': typeof ParticipantFingerprintRoute
@@ -298,6 +305,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/participant/demo': typeof ParticipantDemoRoute
   '/participant/extension': typeof ParticipantExtensionRoute
   '/participant/fingerprint': typeof ParticipantFingerprintRoute
   '/participant/workspaces': typeof ParticipantWorkspacesRouteWithChildren
@@ -336,6 +344,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/participant/demo': typeof ParticipantDemoRoute
   '/participant/department': typeof ParticipantDepartmentRouteWithChildren
   '/participant/extension': typeof ParticipantExtensionRoute
   '/participant/fingerprint': typeof ParticipantFingerprintRoute
@@ -377,6 +386,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/unsubscribe'
     | '/email/unsubscribe'
+    | '/participant/demo'
     | '/participant/department'
     | '/participant/extension'
     | '/participant/fingerprint'
@@ -415,6 +425,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/unsubscribe'
     | '/email/unsubscribe'
+    | '/participant/demo'
     | '/participant/extension'
     | '/participant/fingerprint'
     | '/participant/workspaces'
@@ -452,6 +463,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/unsubscribe'
     | '/email/unsubscribe'
+    | '/participant/demo'
     | '/participant/department'
     | '/participant/extension'
     | '/participant/fingerprint'
@@ -590,6 +602,13 @@ declare module '@tanstack/react-router' {
       path: '/department'
       fullPath: '/participant/department'
       preLoaderRoute: typeof ParticipantDepartmentRouteImport
+      parentRoute: typeof ParticipantRoute
+    }
+    '/participant/demo': {
+      id: '/participant/demo'
+      path: '/demo'
+      fullPath: '/participant/demo'
+      preLoaderRoute: typeof ParticipantDemoRouteImport
       parentRoute: typeof ParticipantRoute
     }
     '/email/unsubscribe': {
@@ -824,6 +843,7 @@ const ParticipantWorkspacesRouteWithChildren =
   )
 
 interface ParticipantRouteChildren {
+  ParticipantDemoRoute: typeof ParticipantDemoRoute
   ParticipantDepartmentRoute: typeof ParticipantDepartmentRouteWithChildren
   ParticipantExtensionRoute: typeof ParticipantExtensionRoute
   ParticipantFingerprintRoute: typeof ParticipantFingerprintRoute
@@ -837,6 +857,7 @@ interface ParticipantRouteChildren {
 }
 
 const ParticipantRouteChildren: ParticipantRouteChildren = {
+  ParticipantDemoRoute: ParticipantDemoRoute,
   ParticipantDepartmentRoute: ParticipantDepartmentRouteWithChildren,
   ParticipantExtensionRoute: ParticipantExtensionRoute,
   ParticipantFingerprintRoute: ParticipantFingerprintRoute,
