@@ -81,31 +81,17 @@ export function ReceiptsList({ classId }: { classId?: string } = {}) {
 
   const refresh = useCallback(async () => {
     if (!user) return;
-    let receiptIdFilter: string[] | null = null;
-    if (classId) {
-      const { data: subs } = await supabase
-        .from("assignment_submissions")
-        .select("receipt_id, assignments!inner(class_id)")
-        .eq("participant_id", user.id)
-        .eq("assignments.class_id", classId);
-      receiptIdFilter = Array.from(
-        new Set(((subs ?? []) as any[]).map((s) => s.receipt_id).filter(Boolean)),
-      );
-      if (receiptIdFilter.length === 0) {
-        setReceipts([]);
-        setLoading(false);
-        return;
-      }
-    }
     let q = supabase.from("receipts")
       .select("id, tool_used, prompt_preview, created_at, metadata")
       .eq("participant_id", user.id)
       .order("created_at", { ascending: false }).limit(200);
-    if (receiptIdFilter) q = q.in("id", receiptIdFilter);
+    // Workspace scope: receipts belong to the class session directly.
+    if (classId) q = q.eq("session_id", classId);
     const { data } = await q;
     setReceipts((data ?? []) as R[]);
     setLoading(false);
   }, [user, classId]);
+
 
   useEffect(() => { refresh(); }, [refresh]);
 
