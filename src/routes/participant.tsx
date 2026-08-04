@@ -1,13 +1,10 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { useEffect } from "react";
 import { useParticipantGuard } from "@/lib/guards";
-import { HelpCircle, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { ParticipantSidebar } from "@/components/participant/ParticipantSidebar";
 import { ExtensionHealthBanner } from "@/components/participant/ExtensionHealthBanner";
-import { Button } from "@/components/ui/button";
-import { WorkspaceProvider, useWorkspace } from "@/lib/workspace";
-import { useTour } from "@/components/tour/TourProvider";
+import { WorkspaceProvider } from "@/lib/workspace";
 
 export const Route = createFileRoute("/participant")({ component: ParticipantLayout });
 
