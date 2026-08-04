@@ -135,7 +135,7 @@ export function ParticipantSidebar() {
           {!collapsed && <span className="font-semibold tracking-tight">Charlotte Labs</span>}
         </Link>
         {!collapsed && singleWorkspace && activeClass && (
-          <div className="px-2 pb-1">
+          <div className="px-2 pb-1" data-tour="workspace-header">
             <div className="flex items-start gap-2 px-0.5 py-1">
               <GraduationCap className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
               <div className="min-w-0">
