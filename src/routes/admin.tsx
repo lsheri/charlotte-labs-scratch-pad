@@ -128,7 +128,7 @@ function AdminDashboard() {
 }
 
 function DashboardBody({ data }: { data: Dashboard }) {
-  const { overall, toolBreakdown, verifCounts, perAssignment, fluencyByDimension, session, cohortSize } = data;
+  const { overall, toolBreakdown, verifCounts, perAssignment, fluencyByDimension, session } = data;
   const totalTools = toolBreakdown.reduce((s, t) => s + t.count, 0);
   const totalVerif = Object.values(verifCounts).reduce((s, n) => s + n, 0);
 
@@ -136,10 +136,10 @@ function DashboardBody({ data }: { data: Dashboard }) {
     <>
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Badge variant="outline" className="border-primary/40 text-primary">
-          Demo cohort · {cohortSize} students
+          {session?.name ?? "Class"} · {overall.participantCount} students
         </Badge>
-        <span>Counts projected from live pilot data</span>
       </div>
+
 
       <section className="grid grid-cols-2 gap-4 md:grid-cols-5">
         <Kpi icon={<Users className="h-4 w-4" />} label="Students" value={overall.participantCount} />
