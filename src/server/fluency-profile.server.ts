@@ -279,7 +279,16 @@ export async function updateFluencyProfile(
           ethics_score_term: termScores["ethics"],
           efficiency_score_term: termScores["efficiency"],
           strategic_agency_score_term: termScores["strategic_agency"],
-          capital_stewardship_score_term: termScores["capital_stewardship"],
+          // capital_stewardship has no cross-term profile column; keep the term
+          // value populated from this run when the term window has no runs yet
+          // (e.g. back-dated evidence) so the 8th radar axis is never blank.
+          capital_stewardship_score_term:
+            termScores["capital_stewardship"] ??
+            dims["capital_stewardship"]?.score ??
+            (typeof prior?.["capital_stewardship_score_term"] === "number"
+              ? (prior["capital_stewardship_score_term"] as number)
+              : null),
+
 
           // Cross-term profile scores (student view) — capital_stewardship intentionally excluded
           direction_score_profile: newProfileScores.direction,
