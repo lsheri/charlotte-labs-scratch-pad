@@ -6,14 +6,21 @@ import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { X, ArrowLeft, ArrowRight } from "lucide-react";
-import { PARTICIPANT_TOUR, DEPARTMENT_TOUR, type TourStep } from "./tourSteps";
+import { useServerFn } from "@tanstack/react-start";
+import { getLatestAnalyzedReceiptId } from "@/serverfn/receipts";
+import {
+  PARTICIPANT_TOUR, DEPARTMENT_TOUR, ROADMAP_TOUR,
+  type TourStep, type TourContext,
+} from "./tourSteps";
 
-type FlowId = "participant" | "department";
+type FlowId = "participant" | "department" | "roadmap";
 
 const FLOWS: Record<FlowId, TourStep[]> = {
   participant: PARTICIPANT_TOUR,
   department: DEPARTMENT_TOUR,
+  roadmap: ROADMAP_TOUR,
 };
+
 
 interface TourApi {
   start: (flow: FlowId) => void;
@@ -45,18 +52,38 @@ export function TourProvider({ children }: { children: ReactNode }) {
     setRect(null);
   }, []);
 
+  const fetchLatestReceipt = useServerFn(getLatestAnalyzedReceiptId);
+  const [tourCtx, setTourCtx] = useState<TourContext>({ receiptId: null });
+
   const start = useCallback((f: FlowId) => {
     setFlow(f);
     setIndex(0);
     setRect(null);
-  }, []);
+    // Resolve a real receipt so the radar step always lands on real data.
+    fetchLatestReceipt()
+      .then((r: any) => setTourCtx({ receiptId: r?.receiptId ?? null }))
+      .catch(() => setTourCtx({ receiptId: null }));
+  }, [fetchLatestReceipt]);
 
   // Navigate to the step's route when needed.
   useEffect(() => {
     if (!step) return;
-    const to = typeof step.to === "function" ? step.to() : step.to;
+    const to = typeof step.to === "function" ? step.to(tourCtx) : step.to;
     if (to && to !== pathname) navigate({ to: to as any });
-  }, [step, pathname, navigate]);
+  }, [step, pathname, navigate, tourCtx]);
+
+  // Clicking a sidebar link exits the tour instead of being trapped by it.
+  useEffect(() => {
+    if (!flow) return;
+    const onClick = (e: MouseEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (!t) return;
+      if (t.closest("[data-tour-callout]")) return;
+      if (t.closest('[data-sidebar], aside, nav, a[href], [role="navigation"]')) stop();
+    };
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, [flow, stop]);
 
   // Track the spotlight target; keeps up with layout shifts and async data.
   useEffect(() => {
@@ -67,10 +94,19 @@ export function TourProvider({ children }: { children: ReactNode }) {
       const el = step.target
         ? (document.querySelector(`[data-tour="${step.target}"]`) as HTMLElement | null)
         : null;
-      if (el) {
+      // Treat an empty/zero-size element as "not ready" rather than spotlighting
+      // a blank box while its data is still loading.
+      if (el && el.offsetHeight > 24 && el.offsetWidth > 24) {
         const r = el.getBoundingClientRect();
         const visible = r.top >= 0 && r.bottom <= window.innerHeight;
-        if (!visible) el.scrollIntoView({ block: "center", behavior: "smooth" });
+        // Tall targets must scroll to their top; centering them lands the
+        // spotlight on empty space below their content.
+        if (!visible) {
+          el.scrollIntoView({
+            block: r.height > window.innerHeight * 0.8 ? "start" : "center",
+            behavior: "smooth",
+          });
+        }
         setRect(r);
       } else {
         setRect(null);
@@ -83,6 +119,7 @@ export function TourProvider({ children }: { children: ReactNode }) {
       if (rafRef.current) window.clearTimeout(rafRef.current);
     };
   }, [step]);
+
 
   const next = useCallback(() => {
     setIndex((i) => {
@@ -154,7 +191,12 @@ function TourOverlay({
   const calloutStyle = calloutPosition(rect, step.placement);
 
   return (
-    <div className="fixed inset-0 z-[200]" role="dialog" aria-modal="true" aria-label="Guided tour">
+    <div
+      className="pointer-events-none fixed inset-0 z-[200]"
+      role="dialog"
+      aria-modal="false"
+      aria-label="Guided tour"
+    >
       {rect ? (
         <div
           className="pointer-events-none absolute rounded-xl ring-2 ring-primary/70 transition-all duration-200"
@@ -167,11 +209,12 @@ function TourOverlay({
           }}
         />
       ) : (
-        <div className="absolute inset-0 bg-[rgba(9,14,30,0.62)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[rgba(9,14,30,0.62)]" />
       )}
 
       <div
-        className="absolute w-[min(92vw,360px)] rounded-xl border bg-card p-4 shadow-2xl"
+        data-tour-callout
+        className="pointer-events-auto absolute w-[min(92vw,360px)] rounded-xl border bg-card p-4 shadow-2xl"
         style={calloutStyle}
       >
         <div className="flex items-start gap-2">
@@ -179,9 +222,15 @@ function TourOverlay({
             <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">
               Step {index + 1} of {total}
             </p>
+            {step.preview && (
+              <span className="mt-1 inline-block rounded-full border border-amber-400 bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-900">
+                Demo · In development
+              </span>
+            )}
             <h2 className="mt-1 text-base font-semibold leading-tight">{step.title}</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{step.body}</p>
           </div>
+
           <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={onExit} aria-label="Exit tour">
             <X className="h-4 w-4" />
           </Button>

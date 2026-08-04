@@ -3,7 +3,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Briefcase, GraduationCap } from "lucide-react";
+import { Briefcase, GraduationCap, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useTour } from "@/components/tour/TourProvider";
 import { CharlotteWeb } from "@/components/web/CharlotteWeb";
 import { WorkflowsSection } from "@/components/web/WorkflowsSection";
 
@@ -21,6 +23,7 @@ const MEDIA_LEGEND = [
 
 function FingerprintPage() {
   const { user } = useAuth();
+  const { start: startTour } = useTour();
   const [sessions, setSessions] = useState<SessionOpt[]>([]);
   const [sessionId, setSessionId] = useState<string>("all");
 
@@ -52,7 +55,20 @@ function FingerprintPage() {
         <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
           Every tool you touch. Every project you build. One living map of how you collaborate with AI.
         </p>
+        <div className="mt-4 flex flex-col items-center gap-1.5">
+          <Button
+            onClick={() => startTour("roadmap")}
+            className="gap-2 bg-violet-500 font-semibold text-white shadow-lg shadow-violet-500/30 hover:bg-violet-400"
+          >
+            <Sparkles className="h-4 w-4" />
+            What's Next with Charlotte
+          </Button>
+          <span className="rounded-full border border-amber-400 bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-900">
+            Demo · In development
+          </span>
+        </div>
       </header>
+
 
       {sessions.length > 0 && (
         <div className="flex justify-end">

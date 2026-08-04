@@ -1,3 +1,8 @@
+export interface TourContext {
+  /** Most recent receipt with real analysis, resolved when the tour starts. */
+  receiptId: string | null;
+}
+
 export interface TourStep {
   id: string;
   title: string;
@@ -5,8 +10,10 @@ export interface TourStep {
   /** `data-tour` value of the element to spotlight. */
   target?: string;
   /** Route to navigate to before the step is shown. */
-  to?: string | (() => string | null);
+  to?: string | ((ctx: TourContext) => string | null);
   placement?: "right" | "left" | "top" | "bottom";
+  /** Roadmap/concept content — badged so nobody mistakes it for shipped product. */
+  preview?: boolean;
 }
 
 /**
@@ -67,11 +74,7 @@ export const PARTICIPANT_TOUR: TourStep[] = [
     title: "Eight dimensions of AI fluency",
     body: "Direction, delegation, discernment, development, ethics, efficiency, strategic agency and capital stewardship — scored from what you actually did, not what you claim.",
     target: "receipt-radar",
-    to: () => {
-      if (typeof window === "undefined") return null;
-      const id = window.localStorage.getItem("charlotte:firstReceiptId");
-      return id ? `/participant/receipts/${id}` : null;
-    },
+    to: (ctx) => (ctx.receiptId ? `/participant/receipts/${ctx.receiptId}` : "/participant/receipts"),
     placement: "left",
   },
   {
@@ -113,5 +116,44 @@ export const DEPARTMENT_TOUR: TourStep[] = [
     body: "Which AI tools students actually use, and how often they challenge or cross-check what the AI produced.",
     target: "dept-tools",
     placement: "left",
+  },
+];
+
+/**
+ * Roadmap preview. Every step is concept-only and badged "Demo · In development".
+ */
+export const ROADMAP_TOUR: TourStep[] = [
+  {
+    id: "roadmap-intro",
+    title: "What's next with Charlotte",
+    body: "The next few screens describe where Charlotte is heading. None of it is shipped yet — treat it as a product preview, not a live feature.",
+    target: "fingerprint-web",
+    to: "/participant/fingerprint",
+    placement: "top",
+    preview: true,
+  },
+  {
+    id: "roadmap-portfolio",
+    title: "A portable AI portfolio",
+    body: "Planned: export your fingerprint as a verifiable portfolio an employer or grad program can check — receipts, verification habits and tool range in one shareable link.",
+    target: "fingerprint-web",
+    placement: "top",
+    preview: true,
+  },
+  {
+    id: "roadmap-coach",
+    title: "Live coaching in the chat",
+    body: "Planned: Charlotte nudges you inside ChatGPT or Claude while you work — flagging unverified claims and suggesting a stronger next prompt in the moment.",
+    target: "fingerprint-web",
+    placement: "top",
+    preview: true,
+  },
+  {
+    id: "roadmap-curriculum",
+    title: "Curriculum feedback loop",
+    body: "Planned: department-level signals feed straight into assignment redesign, so faculty see which tasks AI has made trivial before the term starts.",
+    target: "fingerprint-web",
+    placement: "top",
+    preview: true,
   },
 ];

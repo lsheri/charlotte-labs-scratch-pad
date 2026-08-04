@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
-import { Trash2, ShieldAlert, Target, MessageSquare, GraduationCap, ChevronRight } from "lucide-react";
+import { Trash2, ShieldAlert, Target, MessageSquare, GraduationCap, ChevronRight, PlayCircle } from "lucide-react";
 import { ToolLogo } from "@/components/ToolLogo";
 import { deleteMyData, createPersonalSession, getCaptureTarget } from "@/serverfn/participant";
 import { listMyThreads } from "@/serverfn/threads";
@@ -22,6 +22,7 @@ import { sendEnrollmentConfirmation } from "@/serverfn/study-lifecycle";
 import { getOpenVerificationItems, getRecentStudyGaps } from "@/serverfn/study-analyses";
 import { OverallFluencyCard } from "@/components/participant/OverallFluencyCard";
 import { WelcomeTourDialog } from "@/components/WelcomeTourDialog";
+import { useTour } from "@/components/tour/TourProvider";
 
 export const Route = createFileRoute("/participant/")({ component: ParticipantHome });
 
@@ -37,6 +38,7 @@ const RISK_STYLES: Record<string, string> = {
 
 function ParticipantHome() {
   const { user } = useAuth();
+  const { start: startTour } = useTour();
   const deleteFn = useServerFn(deleteMyData);
   const enrollFn = useServerFn(sendEnrollmentConfirmation);
   
@@ -157,10 +159,21 @@ function ParticipantHome() {
   return (
     <div className="space-y-6">
       <WelcomeTourDialog userId={user?.id} />
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight">{greeting}, {name}.</h1>
-        <p className="text-sm text-muted-foreground">Your study coach for AI-assisted work.</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">{greeting}, {name}.</h1>
+          <p className="text-sm text-muted-foreground">Your study coach for AI-assisted work.</p>
+        </div>
+        <Button
+          size="lg"
+          onClick={() => startTour("participant")}
+          className="gap-2 bg-amber-400 font-bold text-amber-950 shadow-lg shadow-amber-500/30 hover:bg-amber-300"
+        >
+          <PlayCircle className="h-5 w-5" />
+          Play Demo
+        </Button>
       </div>
+
 
       {/* Connect / target row */}
       {target ? (
@@ -242,7 +255,7 @@ function ParticipantHome() {
       </Card>
 
       {/* 2. Study Gaps summary */}
-      <Card>
+      <Card data-tour="home-overview">
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <Target className="h-4 w-4 text-amber-600" />
