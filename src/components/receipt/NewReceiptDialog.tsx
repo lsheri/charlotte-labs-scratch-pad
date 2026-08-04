@@ -122,7 +122,8 @@ export function NewReceiptDialog({
         onInteractOutside={(e) => {
           // Guided demo: clicking the tour callout must not dismiss the dialog
           // the current step is explaining.
-          const t = e.target as HTMLElement | null;
+          const orig = (e as any).detail?.originalEvent?.target as HTMLElement | null;
+          const t = orig ?? (e.target as HTMLElement | null);
           if (t?.closest?.("[data-tour-callout]")) e.preventDefault();
         }}
       >
