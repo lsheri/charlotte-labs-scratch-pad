@@ -24,6 +24,7 @@ import { Route as ParticipantDepartmentRouteImport } from './routes/participant.
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as ParticipantThreadsIndexRouteImport } from './routes/participant.threads.index'
 import { Route as ParticipantReceiptsIndexRouteImport } from './routes/participant.receipts.index'
+import { Route as ParticipantDepartmentIndexRouteImport } from './routes/participant.department.index'
 import { Route as ParticipantWorkspacesWorkspaceIdRouteImport } from './routes/participant.workspaces.$workspaceId'
 import { Route as ParticipantThreadsNewRouteImport } from './routes/participant.threads.new'
 import { Route as ParticipantThreadsThreadIdRouteImport } from './routes/participant.threads.$threadId'
@@ -121,6 +122,12 @@ const ParticipantReceiptsIndexRoute =
     id: '/receipts/',
     path: '/receipts/',
     getParentRoute: () => ParticipantRoute,
+  } as any)
+const ParticipantDepartmentIndexRoute =
+  ParticipantDepartmentIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => ParticipantDepartmentRoute,
   } as any)
 const ParticipantWorkspacesWorkspaceIdRoute =
   ParticipantWorkspacesWorkspaceIdRouteImport.update({
@@ -267,6 +274,7 @@ export interface FileRoutesByFullPath {
   '/participant/threads/$threadId': typeof ParticipantThreadsThreadIdRoute
   '/participant/threads/new': typeof ParticipantThreadsNewRoute
   '/participant/workspaces/$workspaceId': typeof ParticipantWorkspacesWorkspaceIdRoute
+  '/participant/department/': typeof ParticipantDepartmentIndexRoute
   '/participant/receipts/': typeof ParticipantReceiptsIndexRoute
   '/participant/threads/': typeof ParticipantThreadsIndexRoute
   '/api/public/cron/researcher-digest': typeof ApiPublicCronResearcherDigestRoute
@@ -290,7 +298,6 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
-  '/participant/department': typeof ParticipantDepartmentRouteWithChildren
   '/participant/extension': typeof ParticipantExtensionRoute
   '/participant/fingerprint': typeof ParticipantFingerprintRoute
   '/participant/workspaces': typeof ParticipantWorkspacesRouteWithChildren
@@ -303,6 +310,7 @@ export interface FileRoutesByTo {
   '/participant/threads/$threadId': typeof ParticipantThreadsThreadIdRoute
   '/participant/threads/new': typeof ParticipantThreadsNewRoute
   '/participant/workspaces/$workspaceId': typeof ParticipantWorkspacesWorkspaceIdRoute
+  '/participant/department': typeof ParticipantDepartmentIndexRoute
   '/participant/receipts': typeof ParticipantReceiptsIndexRoute
   '/participant/threads': typeof ParticipantThreadsIndexRoute
   '/api/public/cron/researcher-digest': typeof ApiPublicCronResearcherDigestRoute
@@ -342,6 +350,7 @@ export interface FileRoutesById {
   '/participant/threads/$threadId': typeof ParticipantThreadsThreadIdRoute
   '/participant/threads/new': typeof ParticipantThreadsNewRoute
   '/participant/workspaces/$workspaceId': typeof ParticipantWorkspacesWorkspaceIdRoute
+  '/participant/department/': typeof ParticipantDepartmentIndexRoute
   '/participant/receipts/': typeof ParticipantReceiptsIndexRoute
   '/participant/threads/': typeof ParticipantThreadsIndexRoute
   '/api/public/cron/researcher-digest': typeof ApiPublicCronResearcherDigestRoute
@@ -382,6 +391,7 @@ export interface FileRouteTypes {
     | '/participant/threads/$threadId'
     | '/participant/threads/new'
     | '/participant/workspaces/$workspaceId'
+    | '/participant/department/'
     | '/participant/receipts/'
     | '/participant/threads/'
     | '/api/public/cron/researcher-digest'
@@ -405,7 +415,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/unsubscribe'
     | '/email/unsubscribe'
-    | '/participant/department'
     | '/participant/extension'
     | '/participant/fingerprint'
     | '/participant/workspaces'
@@ -418,6 +427,7 @@ export interface FileRouteTypes {
     | '/participant/threads/$threadId'
     | '/participant/threads/new'
     | '/participant/workspaces/$workspaceId'
+    | '/participant/department'
     | '/participant/receipts'
     | '/participant/threads'
     | '/api/public/cron/researcher-digest'
@@ -456,6 +466,7 @@ export interface FileRouteTypes {
     | '/participant/threads/$threadId'
     | '/participant/threads/new'
     | '/participant/workspaces/$workspaceId'
+    | '/participant/department/'
     | '/participant/receipts/'
     | '/participant/threads/'
     | '/api/public/cron/researcher-digest'
@@ -601,6 +612,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/participant/receipts/'
       preLoaderRoute: typeof ParticipantReceiptsIndexRouteImport
       parentRoute: typeof ParticipantRoute
+    }
+    '/participant/department/': {
+      id: '/participant/department/'
+      path: '/'
+      fullPath: '/participant/department/'
+      preLoaderRoute: typeof ParticipantDepartmentIndexRouteImport
+      parentRoute: typeof ParticipantDepartmentRoute
     }
     '/participant/workspaces/$workspaceId': {
       id: '/participant/workspaces/$workspaceId'
@@ -778,11 +796,13 @@ const ParticipantDepartmentClassIdRouteWithChildren =
 
 interface ParticipantDepartmentRouteChildren {
   ParticipantDepartmentClassIdRoute: typeof ParticipantDepartmentClassIdRouteWithChildren
+  ParticipantDepartmentIndexRoute: typeof ParticipantDepartmentIndexRoute
 }
 
 const ParticipantDepartmentRouteChildren: ParticipantDepartmentRouteChildren = {
   ParticipantDepartmentClassIdRoute:
     ParticipantDepartmentClassIdRouteWithChildren,
+  ParticipantDepartmentIndexRoute: ParticipantDepartmentIndexRoute,
 }
 
 const ParticipantDepartmentRouteWithChildren =
