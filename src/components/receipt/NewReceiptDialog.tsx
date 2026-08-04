@@ -117,7 +117,16 @@ export function NewReceiptDialog({
         if (!o) cancel();
       }}
     >
-      <DialogContent className="max-w-lg flex max-h-[90vh] flex-col p-0 gap-0">
+      <DialogContent
+        className="max-w-lg flex max-h-[90vh] flex-col p-0 gap-0"
+        onInteractOutside={(e) => {
+          // Guided demo: clicking the tour callout must not dismiss the dialog
+          // the current step is explaining.
+          const orig = (e as any).detail?.originalEvent?.target as HTMLElement | null;
+          const t = orig ?? (e.target as HTMLElement | null);
+          if (t?.closest?.("[data-tour-callout]")) e.preventDefault();
+        }}
+      >
         <DialogHeader className="px-6 pt-6 pb-3 border-b">
           <DialogTitle>New study receipt</DialogTitle>
           <DialogDescription>
@@ -127,7 +136,7 @@ export function NewReceiptDialog({
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-          <div className="space-y-2">
+          <div className="space-y-2" data-tour="receipt-name">
             <Label htmlFor="wf-name" className="text-sm font-semibold">
               Name this receipt{" "}
               <span className="text-muted-foreground text-xs font-normal">(optional)</span>
@@ -142,7 +151,7 @@ export function NewReceiptDialog({
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2" data-tour="receipt-goal">
             <Label htmlFor="wf-goal">
               What are you studying / trying to learn?{" "}
               <span className="text-muted-foreground text-xs font-normal">(optional)</span>
@@ -158,7 +167,7 @@ export function NewReceiptDialog({
             <p className="text-[11px] text-muted-foreground">{goal.length}/200</p>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2" data-tour="receipt-templates">
             <Label>What should Charlotte generate?</Label>
             <div className="space-y-2">
               {OPTIONS.map((opt) => {

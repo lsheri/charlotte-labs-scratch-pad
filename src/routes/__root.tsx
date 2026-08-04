@@ -14,6 +14,8 @@ import appCss from "../styles.css?url";
 import { AuthProvider } from "@/lib/auth";
 import { Toaster } from "@/components/ui/sonner";
 import { ResearchBanner } from "@/components/research/ResearchBanner";
+import { TourProvider } from "@/components/tour/TourProvider";
+
 import { initPostHog, posthog } from "@/lib/posthog";
 import { PostHogIdentify } from "@/components/PostHogIdentify";
 
@@ -139,11 +141,14 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <PostHogIdentify />
-        <ResearchBanner />
-        <Outlet />
-        <Toaster />
+        <TourProvider>
+          <PostHogIdentify />
+          <ResearchBanner />
+          <Outlet />
+          <Toaster />
+        </TourProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
 }
+

@@ -76,6 +76,21 @@ export function ThreadsInbox({ classId }: { classId?: string } = {}) {
   const [focusedAssignment, setFocusedAssignment] = useState<string | null>(null);
   const [assignmentSubmitTarget, setAssignmentSubmitTarget] = useState<string | null>(null);
 
+  // Demo hook: the guided receipt tour asks the page to enter the state the
+  // step is describing (a couple of threads selected, dialog open).
+  useEffect(() => {
+    const onDemo = () => {
+      setThreads((cur) => {
+        const ids = cur.slice(0, 2).map((t: any) => t.id);
+        if (ids.length) setSelected(new Set(ids));
+        return cur;
+      });
+      window.setTimeout(() => setDialogOpen(true), 250);
+    };
+    document.addEventListener("charlotte:demo-open-receipt-dialog", onDemo);
+    return () => document.removeEventListener("charlotte:demo-open-receipt-dialog", onDemo);
+  }, []);
+
   const loadThreads = async () => {
     setLoading(true);
     try { setThreads(((await listFn()) as any).threads ?? []); }
@@ -437,7 +452,7 @@ export function ThreadsInbox({ classId }: { classId?: string } = {}) {
                 </CardContent>
               </Card>
             ) : (
-              orderedThreads.map((th) => {
+              orderedThreads.map((th, ti) => {
                 const isMappedToFocused = focusedAssignment
                   ? (assignmentIdsByThread.get(th.id) ?? []).includes(focusedAssignment)
                   : false;
@@ -454,7 +469,9 @@ export function ThreadsInbox({ classId }: { classId?: string } = {}) {
                     }`}
                   >
                     <CardContent className="flex items-start gap-3 py-3">
-                      <Checkbox className="mt-1" checked={selected.has(th.id)} onCheckedChange={() => toggle(th.id)} />
+                      <span className="inline-flex" data-tour={ti === 0 ? "thread-select" : undefined}>
+                        <Checkbox className="mt-1" checked={selected.has(th.id)} onCheckedChange={() => toggle(th.id)} />
+                      </span>
                       <ToolLogo tool={th.tool} size={28} />
                       <Link
                         to="/participant/threads/$threadId"

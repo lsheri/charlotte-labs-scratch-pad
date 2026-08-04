@@ -1,4 +1,4 @@
-import { TourProvider, useTour } from "@/components/tour/TourProvider";
+import { useTour } from "@/components/tour/TourProvider";
 import { HelpCircle } from "lucide-react";
 import { createFileRoute, redirect, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -71,7 +71,6 @@ function AdminDashboard() {
   const activeDept = departments.find((d) => d.id === sessionId);
 
   return (
-    <TourProvider>
     <div className="min-h-screen bg-muted/20">
       <header className="border-b bg-background">
         <div className="mx-auto flex max-w-7xl items-center gap-3 px-6 py-4">
@@ -128,7 +127,6 @@ function AdminDashboard() {
         {data && <DashboardBody data={data} />}
       </main>
     </div>
-    </TourProvider>
   );
 }
 

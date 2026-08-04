@@ -7,7 +7,7 @@ import { ParticipantSidebar } from "@/components/participant/ParticipantSidebar"
 import { ExtensionHealthBanner } from "@/components/participant/ExtensionHealthBanner";
 import { Button } from "@/components/ui/button";
 import { WorkspaceProvider, useWorkspace } from "@/lib/workspace";
-import { TourProvider, useTour } from "@/components/tour/TourProvider";
+import { useTour } from "@/components/tour/TourProvider";
 
 export const Route = createFileRoute("/participant")({ component: ParticipantLayout });
 
@@ -48,7 +48,6 @@ function ParticipantLayout() {
   }
   return (
     <WorkspaceProvider>
-      <TourProvider>
         <SidebarProvider>
           <div className="flex min-h-screen w-full bg-background">
             <ParticipantSidebar />
@@ -66,7 +65,6 @@ function ParticipantLayout() {
             </SidebarInset>
           </div>
         </SidebarProvider>
-      </TourProvider>
     </WorkspaceProvider>
   );
 }
