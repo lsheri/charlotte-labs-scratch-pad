@@ -38,7 +38,23 @@ Keep `main` current automatically (every 30 min, macOS):
 
 `sync` refuses to run if you edited the main folder, so it can never clobber work. It only fast-forwards.
 
-## Daily use
+## The loop: hand off, look, decide
+
+```sh
+lasso-x try hero "Make the landing hero calmer, one focal point"   # Claude works in the background
+lasso-x pair ask-bar "Compact Ask bar on phone"                    # two Claudes, variant a and b, in parallel
+lasso-x list            # who's still working
+lasso-x log hero        # what Claude did and which route to open
+lasso-x run hero        # localhost:<port>/<route>?x=hero
+lasso-x keep hero       # guard check, push design/hero, prints PR link
+lasso-x scrap ask-bar-b # gone, folder and branch
+```
+
+`keep` refuses if the change touches `supabase/`, `drizzle/` or a lockfile, or if Claude is still running. It pushes `design/<name>`, never `main`. Merging is the normal PR, so Lovable only ever sees reviewed work.
+
+`try` needs the Claude Code CLI (`claude`) on your laptop. It runs with edits auto-accepted, inside that one folder only.
+
+## Manual use
 
 | You want | Run |
 |---|---|
@@ -47,7 +63,7 @@ Keep `main` current automatically (every 30 min, macOS):
 | Two versions of the same idea | `lasso-x pair ask-bar` then `run ask-bar-a` / `run ask-bar-b` in two terminals |
 | See what's open, how stale | `lasso-x list` |
 | Pull new main into an experiment | `lasso-x refresh tooltips` |
-| Throw it away | `lasso-x done tooltips -D` |
+| Throw it away | `lasso-x scrap tooltips` |
 
 Open the experiment folder in Claude Code (or Cursor) and work there. The skill tells the agent the rules.
 

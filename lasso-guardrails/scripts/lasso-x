@@ -13,6 +13,14 @@
 #   lasso-x run <name>           start its dev server on its own port
 #   lasso-x refresh <name>       rebase an experiment onto latest origin/main
 #   lasso-x done <name>          remove the folder (branch kept unless -D)
+#
+# Hand an idea to Claude, look at it, decide:
+#   lasso-x try <name> "<idea>"  new folder + Claude works on it in the background
+#   lasso-x pair <name> "<idea>" same, two variants (-a, -b) built in parallel
+#   lasso-x log <name>           what that Claude is doing
+#   lasso-x run <name>           view it on localhost
+#   lasso-x keep <name>          checks it, pushes design/<name>, prints the PR link
+#   lasso-x scrap <name>         delete folder and branch. Nothing else to undo.
 set -euo pipefail
 
 MAIN="${LASSO_HOME:-$HOME/code/lasso}"
@@ -48,6 +56,8 @@ cmd_new() {
   dir="$(dir_for "$name")"
   [ -e "$dir" ] && die "$dir already exists"
   g fetch origin
+  local ex; ex="$(cd "$MAIN" && cd "$(git rev-parse --git-common-dir)" && pwd)/info/exclude"; mkdir -p "$(dirname "$ex")"
+  grep -qs '^.lasso-x' "$ex" || printf '.lasso-x.log\n.lasso-x.pid\n' >> "$ex"
   g worktree add --no-track -b "x/$name" "$dir" "$base"
   install_deps "$dir"
   echo
@@ -56,19 +66,75 @@ cmd_new() {
 }
 
 cmd_pair() {
-  local name="${1:?name required}"
-  cmd_new "$name-a"
-  cmd_new "$name-b"
+  local name="${1:?name required}" idea="${2:-}"
+  if [ -n "$idea" ]; then
+    cmd_try "$name-a" "$idea Build variant A: the most direct take."
+    cmd_try "$name-b" "$idea Build variant B: a deliberately different take from the obvious one."
+  else
+    cmd_new "$name-a"; cmd_new "$name-b"
+  fi
   echo "Compare: lasso-x run $name-a  and  lasso-x run $name-b  in two terminals"
+}
+
+agent_running() { local f="$1/.lasso-x.pid"; [ -f "$f" ] && kill -0 "$(cat "$f")" 2>/dev/null; }
+
+cmd_try() {
+  local name="${1:?name required}" idea="${2:?idea required, in quotes}" dir
+  command -v claude >/dev/null 2>&1 || die "Claude Code CLI not found (npm i -g @anthropic-ai/claude-code)"
+  cmd_new "$name"
+  dir="$(dir_for "$name")"
+  local prompt="Exploration task on Lasso. Follow .claude/skills/lasso-explore/SKILL.md exactly.
+You are on branch x/$name in your own folder. Put the change behind the URL flag ?x=$name.
+Idea: $idea
+When done: commit everything on x/$name (do not push, do not open a PR), then reply with
+what you built, the route to open, and the files you touched."
+  ( cd "$dir" && nohup claude -p "$prompt" --permission-mode acceptEdits > .lasso-x.log 2>&1 & echo $! > .lasso-x.pid )
+  echo "Claude is working on $name. Watch: lasso-x log $name   View: lasso-x run $name"
+}
+
+cmd_log() {
+  local dir; dir="$(dir_for "${1:?name required}")"
+  agent_running "$dir" && echo "(still working)" || echo "(finished)"
+  tail -n 40 "$dir/.lasso-x.log" 2>/dev/null || echo "no log"
+}
+
+cmd_keep() {
+  local name="${1:?name required}" force="${2:-}" dir url
+  dir="$(dir_for "$name")"; [ -d "$dir" ] || die "no experiment $name"
+  agent_running "$dir" && die "Claude is still working on $name"
+  [ -z "$(git -C "$dir" status --porcelain)" ] || die "uncommitted changes in $dir. Commit or discard first."
+  g fetch origin
+  git -C "$dir" rebase origin/main
+  local risky; risky=$(git -C "$dir" diff --name-only origin/main...HEAD | grep -E '^(supabase/|drizzle/|bun\.lock$|package-lock\.json$)' || true)
+  if [ -n "$risky" ] && [ "$force" != "--force" ]; then
+    echo "Touches shared/locked files:"; echo "$risky"
+    die "not pushed. Review with the architect, or rerun with --force."
+  fi
+  [ -n "$(git -C "$dir" log --oneline origin/main..HEAD)" ] || die "nothing to keep: no commits beyond main"
+  git -C "$dir" push origin "x/$name:refs/heads/design/$name"
+  url=$(g remote get-url origin | sed -E 's#git@github.com:#https://github.com/#; s#\.git$##')
+  echo
+  echo "Pushed design/$name. Open the PR (template fills in):"
+  echo "  $url/compare/main...design/$name?expand=1"
+  echo "When merged: lasso-x scrap $name"
+}
+
+cmd_scrap() {
+  local name="${1:?name required}" dir; dir="$(dir_for "$name")"
+  if agent_running "$dir"; then kill "$(cat "$dir/.lasso-x.pid")" || true; fi
+  g worktree remove --force "$dir"
+  g branch -D "x/$name"
+  echo "scrapped $name"
 }
 
 cmd_list() {
   g fetch -q origin || true
-  printf '%-28s %-6s %-8s %s\n' EXPERIMENT PORT BEHIND PATH
+  printf '%-28s %-6s %-8s %-9s %s\n' EXPERIMENT PORT BEHIND CLAUDE PATH
   g worktree list --porcelain | awk '/^worktree /{p=$2} /^branch refs\/heads\/x\//{sub("refs/heads/x/","",$2); print $2" "p}' |
   while read -r name path; do
     behind=$(g rev-list --count "x/$name..origin/main")
-    printf '%-28s %-6s %-8s %s\n' "$name" "$(port_for "$name")" "$behind" "$path"
+    if agent_running "$path"; then st=working; elif [ -f "$path/.lasso-x.log" ]; then st=done; else st=-; fi
+    printf '%-28s %-6s %-8s %-9s %s\n' "$name" "$(port_for "$name")" "$behind" "$st" "$path"
   done
 }
 
@@ -103,5 +169,9 @@ case "${1:-}" in
   run)     shift; cmd_run "$@";;
   refresh) shift; cmd_refresh "$@";;
   done|rm) shift; cmd_done "$@";;
-  *) sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//';;
+  try)     shift; cmd_try "$@";;
+  log)     shift; cmd_log "$@";;
+  keep)    shift; cmd_keep "$@";;
+  scrap)   shift; cmd_scrap "$@";;
+  *) sed -n '2,26p' "$0" | sed 's/^# \{0,1\}//';;
 esac

@@ -53,6 +53,8 @@ Report three things, every time:
 
 **Bin** means deleting the branch. Nothing else to clean up, because nothing shared was touched.
 
+If you were started by `lasso-x try`: commit on `x/<name>`, do not push. The founder views it on localhost and runs `lasso-x keep` or `lasso-x scrap`.
+
 ## Quick check before any push
 
 - [ ] Branch starts with `x/`
