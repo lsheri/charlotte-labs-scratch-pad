@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+# lasso-x: run side experiments on Lasso without touching anyone else's work.
+#
+# Layout it manages (siblings of your main checkout):
+#   ~/code/lasso            main checkout. Mirror of origin/main. Never edit here.
+#   ~/code/lasso-x-<name>   one folder per experiment, on branch x/<name>
+#
+# Usage:
+#   lasso-x sync                 fast-forward the main checkout to origin/main
+#   lasso-x new <name> [base]    new experiment folder from origin/main (or base)
+#   lasso-x pair <name>          two variants: x/<name>-a and x/<name>-b
+#   lasso-x list                 experiments, ports, how far behind main
+#   lasso-x run <name>           start its dev server on its own port
+#   lasso-x refresh <name>       rebase an experiment onto latest origin/main
+#   lasso-x done <name>          remove the folder (branch kept unless -D)
+set -euo pipefail
+
+MAIN="${LASSO_HOME:-$HOME/code/lasso}"
+PARENT="$(dirname "$MAIN")"
+BASE_PORT=5180
+
+die() { echo "lasso-x: $*" >&2; exit 1; }
+[ -d "$MAIN/.git" ] || die "main checkout not found at $MAIN (set LASSO_HOME)"
+g() { git -C "$MAIN" "$@"; }
+
+dir_for()  { echo "$PARENT/lasso-x-$1"; }
+port_for() { # stable port per name, 5180-5279
+  local n; n=$(printf '%s' "$1" | cksum | cut -d' ' -f1)
+  echo $(( BASE_PORT + n % 100 ))
+}
+install_deps() {
+  if command -v bun >/dev/null 2>&1; then (cd "$1" && bun install --frozen-lockfile)
+  else (cd "$1" && npm ci); fi
+}
+
+cmd_sync() {
+  g fetch --prune origin
+  if [ -n "$(g status --porcelain)" ]; then
+    die "main checkout has local edits. Move them to an experiment; main stays a clean mirror."
+  fi
+  [ "$(g rev-parse --abbrev-ref HEAD)" = main ] || g switch main
+  g merge --ff-only origin/main
+  echo "main is at $(g log -1 --format='%h %s (%ar)')"
+}
+
+cmd_new() {
+  local name="${1:?name required}" base="${2:-origin/main}" dir
+  dir="$(dir_for "$name")"
+  [ -e "$dir" ] && die "$dir already exists"
+  g fetch origin
+  g worktree add --no-track -b "x/$name" "$dir" "$base"
+  install_deps "$dir"
+  echo
+  echo "Experiment ready: $dir  (branch x/$name, port $(port_for "$name"))"
+  echo "Start it: lasso-x run $name"
+}
+
+cmd_pair() {
+  local name="${1:?name required}"
+  cmd_new "$name-a"
+  cmd_new "$name-b"
+  echo "Compare: lasso-x run $name-a  and  lasso-x run $name-b  in two terminals"
+}
+
+cmd_list() {
+  g fetch -q origin || true
+  printf '%-28s %-6s %-8s %s\n' EXPERIMENT PORT BEHIND PATH
+  g worktree list --porcelain | awk '/^worktree /{p=$2} /^branch refs\/heads\/x\//{sub("refs/heads/x/","",$2); print $2" "p}' |
+  while read -r name path; do
+    behind=$(g rev-list --count "x/$name..origin/main")
+    printf '%-28s %-6s %-8s %s\n' "$name" "$(port_for "$name")" "$behind" "$path"
+  done
+}
+
+cmd_run() {
+  local name="${1:?name required}" dir
+  dir="$(dir_for "$name")"; [ -d "$dir" ] || die "no experiment $name"
+  cd "$dir"
+  if command -v bun >/dev/null 2>&1; then exec bun run dev --port "$(port_for "$name")" --strictPort
+  else exec npm run dev -- --port "$(port_for "$name")" --strictPort; fi
+}
+
+cmd_refresh() {
+  local name="${1:?name required}" dir
+  dir="$(dir_for "$name")"; [ -d "$dir" ] || die "no experiment $name"
+  g fetch origin
+  git -C "$dir" rebase origin/main   # x/ branches are yours alone, so rebasing is safe
+  install_deps "$dir"
+}
+
+cmd_done() {
+  local name="${1:?name required}" force="${2:-}" dir
+  dir="$(dir_for "$name")"
+  g worktree remove "$dir"
+  if [ "$force" = "-D" ]; then g branch -D "x/$name"; else echo "branch x/$name kept (pass -D to delete)"; fi
+}
+
+case "${1:-}" in
+  sync)    shift; cmd_sync "$@";;
+  new)     shift; cmd_new "$@";;
+  pair)    shift; cmd_pair "$@";;
+  list|ls) shift; cmd_list "$@";;
+  run)     shift; cmd_run "$@";;
+  refresh) shift; cmd_refresh "$@";;
+  done|rm) shift; cmd_done "$@";;
+  *) sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//';;
+esac
